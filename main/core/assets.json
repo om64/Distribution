@@ -3,7 +3,8 @@
     "entry": {
       "user-management": "modules/users/module",
       "organization-management": "modules/organization/module",
-      "plugin-management": "modules/plugins/module"
+      "plugin-management": "modules/plugins/module",
+      "resource-heading": "modules/resources/heading/module"
     }
   }
 }

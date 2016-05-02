@@ -11,9 +11,9 @@
 {% block title %}{{ _resource.getResourceNode().getName() | striptags | raw }}{% endblock %}
 
 {% block section_content %}
-    <div class="panel-heading">
-        <h3 class="panel-title">{{ _resource.getResourceNode().getName() }}</h3>
-    </div>
+    <resource-heading ng-app="ResourceHeading"></resource-heading>
+    <script src="{{ hotAsset('dist/claroline-distribution-main-core-resource-heading.js') }}"></script>
+
     <div class="panel-body" id="text_content">
         {{ text|raw }}
     </div>
@@ -26,4 +26,11 @@
         {'resourceId': _resource.resourceNode.id, 'resourceClass': _resource.resourceNode.class}
         ) %}
     </div>
+{% endblock %}
+
+
+
+{% block javascripts %}
+    {{ parent() }}
+    <script src="{{ hotAsset('dist/claroline-distribution-main-core-resource-heading.js') }}"></script>
 {% endblock %}
