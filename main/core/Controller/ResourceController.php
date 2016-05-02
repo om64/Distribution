@@ -362,7 +362,7 @@ class ResourceController
      * Handles any custom action (i.e. not defined in this controller) on a
      * resource of a given type.
      *
-     * If the ResourceType is null, it's an action (resource action) valides for all type of resources.
+     * If the ResourceType is null, it's an action (resource action) valid for all type of resources.
      *
      * @param string       $action the action
      * @param ResourceNode $node   the resource

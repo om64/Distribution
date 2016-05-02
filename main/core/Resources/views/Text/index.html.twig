@@ -32,5 +32,8 @@
 
 {% block javascripts %}
     {{ parent() }}
+    <script>
+        window.resourceNodeId = {{ _resource.getResourceNode().getId() }}
+    </script>
     <script src="{{ hotAsset('dist/claroline-distribution-main-core-resource-heading.js') }}"></script>
 {% endblock %}
