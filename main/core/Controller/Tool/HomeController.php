@@ -119,6 +119,24 @@ class HomeController extends Controller
 
     /**
      * @EXT\Route(
+     *     "/desktop/home/display",
+     *     name="claro_desktop_home_display",
+     *     options = {"expose"=true}
+     * )
+     * @EXT\ParamConverter("user", options={"authenticatedUser" = true})
+     * @EXT\Template("ClarolineCoreBundle:Tool\desktop\home:desktopHome.html.twig")
+     *
+     * Displays the desktop
+     *
+     * @return \Symfony\Component\HttpFoundation\Response
+     */
+    public function desktopHomeDisplayAction()
+    {
+        return array();
+    }
+
+    /**
+     * @EXT\Route(
      *     "/desktop/tab/{tabId}",
      *     name="claro_display_desktop_home_tab",
      *     options = {"expose"=true}
@@ -908,6 +926,8 @@ class HomeController extends Controller
             $homeTabConfig->setUser($user);
             $homeTabConfig->setLocked(false);
             $homeTabConfig->setVisible(true);
+            $color = $form->get('color')->getData();
+            $homeTabConfig->setDetails(array('color' => $color));
 
             $lastOrder = $this->homeTabManager->getOrderOfLastDesktopHomeTabConfigByUser($user);
 
@@ -942,8 +962,11 @@ class HomeController extends Controller
     public function desktopHomeTabEditFormAction(User $user, HomeTab $homeTab)
     {
         $this->checkUserAccessForHomeTab($homeTab, $user);
+        $homeTabConfig = $this->homeTabManager->getHomeTabConfigByHomeTabAndUser($homeTab, $user);
+        $details = !is_null($homeTabConfig) ? $homeTabConfig->getDetails() : null;
+        $color = isset($details['color']) ? $details['color'] : null;
 
-        $form = $this->formFactory->create(new HomeTabType(), $homeTab);
+        $form = $this->formFactory->create(new HomeTabType(null, false, $color), $homeTab);
 
         return array(
             'form' => $form->createView(),
@@ -975,7 +998,21 @@ class HomeController extends Controller
         $form->handleRequest($this->request);
 
         if ($form->isValid()) {
-            $this->homeTabManager->insertHomeTab($homeTab);
+            $homeTabConfig = $this->homeTabManager->getHomeTabConfigByHomeTabAndUser($homeTab, $user);
+
+            if (is_null($homeTabConfig)) {
+                $this->homeTabManager->insertHomeTab($homeTab);
+            } else {
+                $color = $form->get('color')->getData();
+                $details = $homeTabConfig->getDetails();
+
+                if (is_null($details)) {
+                    $details = array();
+                }
+                $details['color'] = $color;
+                $homeTabConfig->setDetails($details);
+                $this->homeTabManager->persistHomeTabConfigs($homeTab, $homeTabConfig);
+            }
 
             return new JsonResponse(
                 array('id' => $homeTab->getId(), 'name' => $homeTab->getName()),
@@ -1121,6 +1158,8 @@ class HomeController extends Controller
             } else {
                 $homeTabConfig->setTabOrder($lastOrder['order_max'] + 1);
             }
+            $color = $homeTabForm->get('color')->getData();
+            $homeTabConfig->setDetails(array('color' => $color));
             $this->homeTabManager->persistHomeTabConfigs($homeTab, $homeTabConfig);
 
             return new JsonResponse($homeTab->getId(), 200);
@@ -1152,9 +1191,11 @@ class HomeController extends Controller
     ) {
         $this->checkWorkspaceEditionAccess($workspace);
         $this->checkWorkspaceAccessForHomeTab($homeTab, $workspace);
+        $details = $homeTabConfig->getDetails();
+        $color = isset($details['color']) ? $details['color'] : null;
 
         $homeTabForm = $this->formFactory->create(
-            new HomeTabType($workspace),
+            new HomeTabType($workspace, false, $color),
             $homeTab
         );
         $homeTabConfigForm = $this->formFactory->create(
@@ -1202,6 +1243,14 @@ class HomeController extends Controller
         $homeTabConfigForm->handleRequest($this->request);
 
         if ($homeTabForm->isValid() && $homeTabConfigForm->isValid()) {
+            $color = $homeTabForm->get('color')->getData();
+            $details = $homeTabConfig->getDetails();
+
+            if (is_null($details)) {
+                $details = array();
+            }
+            $details['color'] = $color;
+            $homeTabConfig->setDetails($details);
             $this->homeTabManager->persistHomeTabConfigs($homeTab, $homeTabConfig);
             $visibility = $homeTabConfig->isVisible() ? 'visible' : 'hidden';
 
@@ -1264,6 +1313,7 @@ class HomeController extends Controller
         User $user
     ) {
         $this->checkWorkspaceAccessForHomeTab($homeTab, $workspace);
+        $workspaceHTC = $this->homeTabManager->getHomeTabConfigByHomeTabAndWorkspace($homeTab, $workspace);
         $homeTabConfig = $this->homeTabManager->getOneVisibleWorkspaceUserHTC(
             $homeTab,
             $user
@@ -1281,6 +1331,10 @@ class HomeController extends Controller
                 $homeTabConfig->setTabOrder(1);
             } else {
                 $homeTabConfig->setTabOrder($lastOrder['order_max'] + 1);
+            }
+
+            if (!is_null($workspaceHTC)) {
+                $homeTabConfig->setDetails($workspaceHTC->getDetails());
             }
             $this->homeTabManager->insertHomeTabConfig($homeTabConfig);
         }

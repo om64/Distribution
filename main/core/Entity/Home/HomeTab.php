@@ -16,6 +16,9 @@ use Claroline\CoreBundle\Entity\User;
 use Claroline\CoreBundle\Entity\Workspace\Workspace;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\Mapping as ORM;
+use JMS\Serializer\Annotation\Groups;
+use JMS\Serializer\Annotation\SerializedName;
+
 
 /**
  * @ORM\Entity
@@ -27,16 +30,22 @@ class HomeTab
      * @ORM\Id
      * @ORM\Column(type="integer")
      * @ORM\GeneratedValue(strategy="AUTO")
+     * @Groups({"api_home_tab"})
+     * @SerializedName("id")
      */
     protected $id;
 
     /**
      * @ORM\Column(nullable=false)
+     * @Groups({"api_home_tab"})
+     * @SerializedName("name")
      */
     protected $name;
 
     /**
      * @ORM\Column(nullable=false)
+     * @Groups({"api_home_tab"})
+     * @SerializedName("type")
      */
     protected $type;
 
@@ -74,6 +83,8 @@ class HomeTab
 
     /**
      * @ORM\Column(nullable=true)
+     * @Groups({"api_home_tab"})
+     * @SerializedName("icon")
      */
     protected $icon;
 

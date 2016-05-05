@@ -12,26 +12,42 @@
 namespace Claroline\CoreBundle\Form;
 
 use Claroline\CoreBundle\Entity\Workspace\Workspace;
+use Claroline\CoreBundle\Form\Angular\AngularType;
 use Doctrine\ORM\EntityRepository;
-use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolverInterface;
 use Symfony\Component\Validator\Constraints\NotBlank;
 
-class HomeTabType extends AbstractType
+class HomeTabType extends AngularType
 {
     private $isAdmin;
     private $workspace;
+    private $color;
+    private $forApi = false;
+    private $ngAlias;
 
-    public function __construct(Workspace $workspace = null, $isAdmin = false)
+    public function __construct(Workspace $workspace = null, $isAdmin = false, $color = null, $ngAlias = 'htfmc')
     {
         $this->isAdmin = $isAdmin;
         $this->workspace = $workspace;
+        $this->color = $color;
+        $this->ngAlias = $ngAlias;
     }
 
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
         $builder->add('name', 'text', array('constraints' => new NotBlank(), 'label' => 'name'));
+        $builder->add(
+            'color',
+            'text',
+            array(
+                'required' => false,
+                'mapped' => false,
+                'label' => 'color',
+                'data' => $this->color,
+                'attr' => array('colorpicker' => 'hex')
+            )
+        );
         $workspace = $this->workspace;
 
         if (!is_null($workspace)) {
@@ -87,10 +103,19 @@ class HomeTabType extends AbstractType
 
     public function setDefaultOptions(OptionsResolverInterface $resolver)
     {
-        $resolver->setDefaults(
-            array(
-                'translation_domain' => 'platform',
-            )
-        );
+        $default = array('translation_domain' => 'platform');
+
+        if ($this->forApi) {
+            $default['csrf_protection'] = false;
+        }
+        $default['ng-model'] = 'homeTab';
+        $default['ng-controllerAs'] = $this->ngAlias;
+
+        $resolver->setDefaults($default);
+    }
+
+    public function enableApi()
+    {
+        $this->forApi = true;
     }
 }

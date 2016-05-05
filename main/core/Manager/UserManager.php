@@ -1328,6 +1328,8 @@ class UserManager
             $options->setDesktopMode(UserOptions::READ_ONLY_MODE);
         }
         $this->persistUserOptions($options);
+
+        return $options;
     }
 
     public function getUsersForUserPicker(

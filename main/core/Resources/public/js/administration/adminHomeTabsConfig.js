@@ -150,6 +150,10 @@
     $('body').on('focus', '#widget_display_config_form_color', function () {
         $(this).colorpicker();
     });
+
+    $('body').on('focus', '#home_tab_form_color', function () {
+        $(this).colorpicker();
+    });
     
     $('#widgets-section').on('click', '#create-widget-instance', function () {
         window.Claroline.Modal.displayForm(

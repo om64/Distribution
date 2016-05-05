@@ -126,13 +126,13 @@ class DesktopController extends Controller
                             $configs[] = $adminConfig;
                         }
                     } else {
-                        $existingWidgetConfig = $this->homeTabManager
-                            ->getUserAdminWidgetHomeTabConfig(
-                                $homeTab,
-                                $adminConfig->getWidgetInstance(),
-                                $user
-                            );
-                        if (count($existingWidgetConfig) === 0) {
+                        $existingWidgetConfig = $this->homeTabManager->getUserAdminWidgetHomeTabConfig(
+                            $homeTab,
+                            $adminConfig->getWidgetInstance(),
+                            $user
+                        );
+
+                        if (is_null($existingWidgetConfig)) {
                             $newWHTC = new WidgetHomeTabConfig();
                             $newWHTC->setHomeTab($homeTab);
                             $newWHTC->setWidgetInstance($adminConfig->getWidgetInstance());
@@ -144,7 +144,7 @@ class DesktopController extends Controller
                             $this->homeTabManager->insertWidgetHomeTabConfig($newWHTC);
                             $configs[] = $newWHTC;
                         } else {
-                            $configs[] = $existingWidgetConfig[0];
+                            $configs[] = $existingWidgetConfig;
                         }
                     }
                 }

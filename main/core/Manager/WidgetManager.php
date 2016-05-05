@@ -250,10 +250,8 @@ class WidgetManager
      *
      * @return \Claroline\CoreBundle\Entity\Widget\WidgetInstance[]
      */
-    public function getWorkspaceWidgetInstance(
-        Workspace $workspace,
-        array $excludedWidgetInstances
-    ) {
+    public function getWorkspaceWidgetInstance(Workspace $workspace, array $excludedWidgetInstances)
+    {
         if (count($excludedWidgetInstances) === 0) {
             return $this->widgetInstanceRepo->findBy(
                 array(
@@ -264,8 +262,27 @@ class WidgetManager
             );
         }
 
-        return $this->widgetInstanceRepo
-            ->findWorkspaceWidgetInstance($workspace, $excludedWidgetInstances);
+        return $this->widgetInstanceRepo->findWorkspaceWidgetInstance($workspace, $excludedWidgetInstances);
+    }
+
+    public function getAdminWidgetDisplayConfigsByWHTCs(array $widgetHTCs)
+    {
+        $results = array();
+        $widgetInstances = array();
+
+        foreach ($widgetHTCs as $whtc) {
+            $widgetInstance = $whtc->getWidgetInstance();
+            $widgetInstances[] = $widgetInstance;
+        }
+        $adminWDCs = $this->getAdminWidgetDisplayConfigsByWidgets($widgetInstances);
+
+        foreach ($adminWDCs as $wdc) {
+            $widgetInstance = $wdc->getWidgetInstance();
+            $id = $widgetInstance->getId();
+            $results[$id] = $wdc;
+        }
+
+        return $results;
     }
 
     public function generateWidgetDisplayConfigsForUser(User $user, array $widgetHTCs)
@@ -306,18 +323,21 @@ class WidgetManager
                 if (isset($mappedWHTCs[$id]) && isset($adminTab[$id])) {
                     $changed = false;
 
-                    if ($userTab[$id]->getColor() !== $adminTab[$id]->getColor()) {
+                    if ($userTab[$id]->getColor() !== $adminTab[$id]->getColor() ||
+                        $userTab[$id]->getDetails() !== $adminTab[$id]->getDetails()) {
+
                         $userTab[$id]->setColor($adminTab[$id]->getColor());
+                        $userTab[$id]->setDetails($adminTab[$id]->getDetails());
                         $changed = true;
                     }
 
-                    if ($mappedWHTCs[$id]->isLocked()) {
-                        $userTab[$id]->setRow($adminTab[$id]->getRow());
-                        $userTab[$id]->setColumn($adminTab[$id]->getColumn());
-                        $userTab[$id]->setWidth($adminTab[$id]->getWidth());
-                        $userTab[$id]->setHeight($adminTab[$id]->getHeight());
-                        $changed = true;
-                    }
+//                    if ($mappedWHTCs[$id]->isLocked()) {
+//                        $userTab[$id]->setRow($adminTab[$id]->getRow());
+//                        $userTab[$id]->setColumn($adminTab[$id]->getColumn());
+//                        $userTab[$id]->setWidth($adminTab[$id]->getWidth());
+//                        $userTab[$id]->setHeight($adminTab[$id]->getHeight());
+//                        $changed = true;
+//                    }
 
                     if ($changed) {
                         $this->om->persist($userTab[$id]);
@@ -464,9 +484,14 @@ class WidgetManager
         $this->om->flush();
     }
 
-    /************************************
-     * Access to TeamRepository methods *
-     ************************************/
+    /***************************************************
+     * Access to WidgetDisplayConfigRepository methods *
+     ***************************************************/
+
+    public function getWidgetDisplayConfigById($id)
+    {
+        return $this->widgetDisplayConfigRepo->findOneById($id);
+    }
 
     public function getWidgetDisplayConfigsByUserAndWidgets(
         User $user,
