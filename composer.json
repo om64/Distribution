@@ -131,6 +131,7 @@
         "claroline/dev-bundle": "*",
         "innova/video-recorder-bundle": "*",
         "innova/audio-recorder-bundle": "*",
+        "innova/media-resource-bundle": "*",
         "icap/lesson-bundle": "*"
     },
     "autoload": {
@@ -181,6 +182,7 @@
             "Icap\\WebsiteBundle\\": "plugin/website",
             "Innova\\VideoRecorderBundle\\": "plugin/video-recorder",
             "Innova\\AudioRecorderBundle\\": "plugin/audio-recorder",
+            "Innova\\MediaResourceBundle\\": "plugin/media-resource",
             "Icap\\LessonBundle\\": "plugin/lesson"
         }
     },
@@ -230,6 +232,7 @@
             "Icap\\WebsiteBundle\\IcapWebsiteBundle",
             "Innova\\VideoRecorderBundle\\InnovaVideoRecorderBundle",
             "Innova\\AudioRecorderBundle\\InnovaAudioRecorderBundle",
+            "Innova\\MediaResourceBundle\\InnovaMediaResourceBundle",
             "Icap\\LessonBundle\\IcapLessonBundle"
         ]
     }

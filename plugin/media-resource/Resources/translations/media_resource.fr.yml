@@ -1,0 +1,86 @@
+# a
+add: Ajouter
+add_marker: Ajouter un marqueur
+accent_primary: Accent primaire
+accent_secondary: Accent secondaire
+accent_weak_vowel: Voyelle faible
+accent_no_accent: Texte normal
+alert_only_one_region_left: Il n'y a qu'un seul segment. Vous ne pouvez pas le supprimer!
+
+# b
+back: Quitter
+btn_auto_pause: Pause automatique
+btn_active_listening: Ecoute active
+btn_live_listening: Ecoute live
+back_to_media_resource_details: Retour aux details de %s
+
+# c
+close: Fermer
+creation_error_wrong_file_format: Le format du fichier fournit n'est pas autorisé (mp3 / ogg / wav)
+current_segment: Segment courant
+confirm: Confirmer
+
+# d
+delete_media_resource: Supprimer la ressource
+dialog_region_configure: Configurer le segment
+
+
+# e
+error_while_uploading: Erreur lors de l'upload du fichier.
+error_while_encoding: Erreur lors de la conversion du fichier.
+
+# h
+help_modal_intro: <h4>Il est possible que vous ayez raté le bon segment.</h4><h5>Ici vous pouvez choisir entre le segment courant et le précédent (si il existe).</h5><h5>Vous verrez l'aide correspondante (si elle existe) sur l'autre onglet.</h5>
+help_modal_choice_tab_label: Choix du segment
+help_modal_help_tab_label: Aide disponible pour le segment
+
+# i
+innova_media_resource: Ressource média
+
+#m
+move_backward: Aller au marqueur précédent
+move_forward: Aller au marqueur suivant
+
+#n
+none: Aucune
+no_media_resource: Aucune resource trouvée.
+
+#p
+play_pause: PLay / Pause
+previous_segment: Segment précédent
+playlists_manage: Gérer les playlistes pour ce média
+playlists_title: Playlists
+playlist_none: Aucune playliste n'existe pour cette ressource!
+playlist_add: Créer une playliste
+playlist_save_success: La playliste a bien été enregistrée.
+playlist_save_error: Une erreur est survenue lors de l'enregistrement de la playliste.
+playlist_deletion_success: La playliste a bien été supprimée.
+playlist_deletion_error: Une erreur est survenue lors de la suppression de la playliste.
+playlist_deletion_confirm: Etes vous sur de vouloir supprimer cette playliste ?
+
+#r
+region_help: Aide sur un segment
+region_config: Configurer le segment
+region_delete: Supprimer le segment
+region_config_allow_rate: Autoriser le changement de vitesse de lecture
+region_config_allow_bwb: Autoriser la lecture en backward building
+region_config_allow_loop: Autoriser la lecture en boucle
+region_config_help_text: Texte d'aide
+region_config_help_region_title: Segment d'aide
+region_delete_confirm_base: Etes vous sur de vouloir supprimer le segment?
+region_delete_confirm_sub: Cette région est affectée à une ou plusieurs aides.<br/> Ces aides seront supprimées automatiquement.
+resource_update_success: La ressource à bien été mise à jour.
+resource_update_error: Une erreur est survenue lors de la mise à jour de la ressource.
+region_help_help_text_label: Voir l'élément textuel
+region_help_segment_playback_label: Lecture du segment
+region_help_segment_playback: Jouer le segment
+region_help_segment_playback_backward: Lire le segment en backward building
+region_help_segment_playback_loop: Lire le segment en boucle
+region_help_segment_playback_rate: Lire le segment plus lentement
+region_help_related_segment_playback: Lire le segment connexe
+region_help_no_help_available: Aucune aide disponible pour le segment.
+
+#s
+save: Sauvegarder
+
+

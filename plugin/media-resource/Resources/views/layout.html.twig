@@ -1,0 +1,55 @@
+{% set layout = "ClarolineCoreBundle:Workspace:layout.html.twig" %}
+
+{% if isDesktop() %}
+    {% set layout = "ClarolineCoreBundle:Desktop:layout.html.twig" %}
+{% endif %}
+{% extends layout %}
+
+{% block stylesheets %}
+    {{ parent() }}
+
+    {% stylesheets debug=false filter='cssmin'  output='vendor/innovamediaresource/css/innova_media_resource.css' 
+        '@InnovaMediaResourceBundle/Resources/public/css/bootstrap-switch.css'
+    %}
+    <link rel="stylesheet" href="{{ asset_url }}" />
+    {% endstylesheets %}
+
+    {% stylesheets debug=false filter='lessphp, cssmin' output='vendor/innovamediaresource/innova_media_resource2.css'
+        '@InnovaMediaResourceBundle/Resources/public/less/app.less'
+    %}
+    <link href="{{ asset_url }}" rel="stylesheet" media="screen" />
+    {% endstylesheets %}
+{% endblock %}
+
+
+
+{% block content %}
+
+    <div class="media-resource-content-container">
+        <div class="panel panel-default">
+            {% block media_resource_content %}
+            {% endblock %}
+        </div>
+    </div>
+{% endblock %}
+
+{% block javascripts %}
+    {{parent()}}
+    <script type="text/javascript" src="{{ url('bazinga_jstranslation_js', { 'domain':'media_resource' }) }}"></script>
+
+
+
+    {% javascripts
+        '@InnovaMediaResourceBundle/Resources/public/js/bootstrap-switch.js'
+        '@InnovaMediaResourceBundle/Resources/public/js/jquery.restfulizer.js'
+        '@InnovaMediaResourceBundle/Resources/public/js/bootbox.js'
+        '@InnovaMediaResourceBundle/Resources/public/js/JavascriptUtils.js'
+        '@InnovaMediaResourceBundle/Resources/public/js/StringUtils.js'
+        '@InnovaMediaResourceBundle/Resources/public/js/WavesurferUtils.js'
+        '@InnovaMediaResourceBundle/Resources/public/js/DomUtils.js'
+    %}
+
+    <script src="{{ asset_url }}"></script>
+    {% endjavascripts %}
+
+{% endblock %}
