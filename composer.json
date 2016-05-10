@@ -132,6 +132,7 @@
         "claroline/dev-bundle": "*",
         "innova/video-recorder-bundle": "*",
         "innova/audio-recorder-bundle": "*",
+"innova/media-resource-bundle": "*",
         "ujm/exo-bundle": "*",
         "icap/lesson-bundle": "*"
     },
@@ -184,6 +185,7 @@
             "UJM\\ExoBundle\\": "plugin/exo",
             "Innova\\VideoRecorderBundle\\": "plugin/video-recorder",
             "Innova\\AudioRecorderBundle\\": "plugin/audio-recorder",
+"Innova\\MediaResourceBundle\\": "plugin/media-resource",
             "Icap\\LessonBundle\\": "plugin/lesson",
             "Claroline\\FlashCardBundle\\": "plugin/flashcard"
         }
@@ -236,6 +238,7 @@
             "Innova\\AudioRecorderBundle\\InnovaAudioRecorderBundle",
             "Icap\\LessonBundle\\IcapLessonBundle",
             "Claroline\\FlashCardBundle\\ClarolineFlashCardBundle",
+ "Innova\\MediaResourceBundle\\InnovaMediaResourceBundle",
             "UJM\\ExoBundle\\UJMExoBundle",
             "Icap\\LessonBundle\\IcapLessonBundle"
         ]
