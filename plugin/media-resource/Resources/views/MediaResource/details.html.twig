@@ -19,24 +19,20 @@
         </div>
     {% else %}
         <div class="panel-heading" style="height: 75px;">
-            <form role="form" class="form-inline" id="media_resource_change_view"  method="post" action="{{path('media_resource_change_view', {'workspaceId': workspace.id ,'id':_resource.id})}}" name="view">          
+            <form role="form" class="form-inline" id="media_resource_change_view" method="post" action="{{path('media_resource_change_view', {'workspaceId': workspace.id ,'id':_resource.id})}}" name="view">
                 <div class="form-row">
                     <div class="col-md-4 form-group">
                         <h3 class="panel-title"> {{_resource.resourceNode.name}} </h3>
                     </div>
                     <div class="col-md-8 form-group">
-                        <div class="btn-group">                            
-                            <input type="submit" name="pause" class="btn btn-default" value="{{'btn_auto_pause' | trans({}, 'media_resource')}}">                        
-                            <input type="submit" name="live" class="btn btn-default" value="{{'btn_live_listening' | trans({}, 'media_resource')}}">
-                            <input type="submit" name="active" class="btn btn-default active" value="{{'btn_active_listening' | trans({}, 'media_resource')}}">
-                        </div>
+                      {% include "InnovaMediaResourceBundle:MediaResource:toggle-view.html.twig"  with {'view': 'active'} %}
                     </div>
                 </div>
             </form>
         </div>
     {% endif %}
 
-    <div class="panel-body">   
+    <div class="panel-body">
         <!-- waveform -->
         <hr/>
         <div class="row media-container">
@@ -55,19 +51,20 @@
         <!-- media controls -->
         <div class="row">
             <div class="col-md-12 text-center">
+                {% if edit %}
                 <button type="button" role="button" class="btn btn-default fa fa-step-backward" data-action="backward" title="{{'move_backward' | trans({}, 'media_resource')}}">
                 </button>
+                {% endif %}
                 <button type="button" class="btn btn-default" data-action="play" title="{{'play_pause' | trans({}, 'media_resource')}}">
                     <i class="fa fa-play"></i>
                     /
                     <i class="fa fa-pause"></i>
                 </button>
-                <button type="button" class="btn btn-default fa fa-step-forward" data-action="forward" title="{{'move_forward' | trans({}, 'media_resource')}}">
-                </button>
-
                 {% if edit %}
+                    <button type="button" class="btn btn-default fa fa-step-forward" data-action="forward" title="{{'move_forward' | trans({}, 'media_resource')}}">
+                    </button>
                     <button type="button" class="btn btn-danger fa fa-flag" title="{{'add_marker' | trans({}, 'media_resource')}}" data-action="mark">
-                    </button> 
+                    </button>
                 {% endif %}
                 <button type="button" class="btn btn-default fa fa-question" data-action="help" title="{{'region_help' | trans({}, 'media_resource')}}">
                 </button>
@@ -78,20 +75,20 @@
             {% if edit %}
                 <div class="row">
                     <div class="col-md-12 text-right">
-                        <div class="btn-group">                            
-                            <button type="submit" class="btn btn-default fa fa-floppy-o" title="{{'save' | trans({}, 'media_resource')}}"></button>  
+                        <div class="btn-group">
+                            <button type="submit" class="btn btn-default fa fa-floppy-o" title="{{'save' | trans({}, 'media_resource')}}"></button>
                         </div>
                     </div>
                 </div>
                 <hr/>
-            {% endif %}  
+            {% endif %}
             <!-- segments -->
             <div class="row">
-                <div class="col-md-12 text-center regions-container" {% if edit == false %} style="display:none;" {% endif %}>               
+                <div class="col-md-12 text-center regions-container" {% if edit == false %} style="display:none;" {% endif %}>
                     {% if regions | length > 0 %}
                         {% for region in regions %}
                             <div class="row form-row region" id="{{region.uuid}}" data-uuid="{{region.uuid}}">
-                                <div class="col-xs-1">                                    
+                                <div class="col-xs-1">
                                     <div class="time-text start">{{ region.start | hmsTime }}</div>
                                 </div>
                                 <div class="col-xs-1">
@@ -114,7 +111,7 @@
                                                 <button role="button" type="button" class="btn btn-danger fa fa-trash-o" title="{{'region_delete' | trans({}, 'media_resource')}}" onclick="deleteRegion(this);"></button>
                                         </div>
                                     </div>
-                                {% endif %}                            
+                                {% endif %}
                                 <input type="hidden" class="hidden-start" name="start[]" value="{{ region.start }}" required="required">
                                 <input type="hidden" class="hidden-end" name="end[]" value="{{ region.end }}" required="required">
                                 <input type="hidden" class="hidden-note" name="note[]" value="{{ region.note }}">
@@ -127,7 +124,7 @@
                                 <input type="hidden" class="hidden-config-rate" name="rate[]" value="{{ region.regionConfig.hasRate ? '1' : '0' }}">
                                 <input type="hidden" class="hidden-config-text" name="text[]" value="{{ region.regionConfig.helpText ? region.regionConfig.helpText : '' }}">
                             </div>
-                        {% endfor %}                
+                        {% endfor %}
                     {% endif %}
                 </div>
             </div>
@@ -157,7 +154,6 @@
     <input type="hidden" name="type" value="audio">
     <input type="hidden" name="wId" value="{{workspace.id}}">
     <input type="hidden" name="mrId" value="{{_resource.id}}">
-    <input type="hidden" name="serveMediaAction" value="{{path('innova_get_mediaresource_resource_file',  {'workspaceId': workspace.id ,'id':_resource.id})}}">
 
     {% if edit %}
         <input type="hidden" name="update_url" value="{{path('media_resource_save',  {'workspaceId': workspace.id ,'id':_resource.id})}}" />
@@ -168,17 +164,18 @@
 
 {% block javascripts  %}
     {{parent()}}
-    {% javascripts         
-        '@InnovaMediaResourceBundle/Resources/public/js/wavesurfer/wavesurfer.js' 
-        '@InnovaMediaResourceBundle/Resources/public/js/wavesurfer/webaudio.js' 
-        '@InnovaMediaResourceBundle/Resources/public/js/wavesurfer/drawer.js' 
-        '@InnovaMediaResourceBundle/Resources/public/js/wavesurfer/drawer.canvas.js'
-        '@InnovaMediaResourceBundle/Resources/public/js/wavesurfer/plugins/wavesurfer.timeline.js'
-        '@InnovaMediaResourceBundle/Resources/public/js/wavesurfer/plugins/wavesurfer.regions.js'
-        '@InnovaMediaResourceBundle/Resources/public/js/wavesurfer/plugins/wavesurfer.minimap.js'
+    {% javascripts
+        '@InnovaMediaResourceBundle/Resources/public/js/libs/wavesurfer/wavesurfer.js'
+        '@InnovaMediaResourceBundle/Resources/public/js/libs/wavesurfer/webaudio.js'
+        '@InnovaMediaResourceBundle/Resources/public/js/libs/wavesurfer/drawer.js'
+        '@InnovaMediaResourceBundle/Resources/public/js/libs/wavesurfer/drawer.canvas.js'
+        '@InnovaMediaResourceBundle/Resources/public/js/libs/wavesurfer/plugins/wavesurfer.timeline.js'
+        '@InnovaMediaResourceBundle/Resources/public/js/libs/wavesurfer/plugins/wavesurfer.regions.js'
+        '@InnovaMediaResourceBundle/Resources/public/js/libs/wavesurfer/plugins/wavesurfer.minimap.js'
         '@InnovaMediaResourceBundle/Resources/public/js/play.js'
-        
+
     %}
+
     <script src="{{ asset_url }}"></script>
     {% endjavascripts %}
-{% endblock %} 
+{% endblock %}

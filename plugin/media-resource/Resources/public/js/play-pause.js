@@ -7,7 +7,6 @@ var regions = [];
 var audioPlayer;
 var playButton;
 
-var serveMediaAction;
 var wId;
 var mrId;
 
@@ -20,7 +19,6 @@ $(document).ready(function () {
     playButton = document.getElementById('play');
     audioPlayer.loop = false;
 
-    serveMediaAction = $('input[name="serveMediaAction"]').val();
     wId = $('input[name="wId"]').val();
     mrId = $('input[name="mrId"]').val();
 
@@ -36,22 +34,9 @@ $(document).ready(function () {
         workspaceId: wId,
         id: mrId
     };
-    // get media data
-    $.get(serveMediaAction, data)
-            .done(function (response) {
-                var byteCharacters = atob(response);
-                var byteNumbers = new Array(byteCharacters.length);
-                for (var i = 0; i < byteCharacters.length; i++) {
-                    byteNumbers[i] = byteCharacters.charCodeAt(i);
-                }
-                var byteArray = new Uint8Array(byteNumbers);
-                var blob = new Blob([byteArray]);
-                baseAudioUrl = URL.createObjectURL(blob);
-                audioPlayer.src = baseAudioUrl;
-            })
-            .fail(function () {
-                console.log('loading media resource file failed');
-            });
+
+    baseAudioUrl = Routing.generate('innova_get_mediaresource_resource_file', {workspaceId: data.workspaceId ,id: data.id});
+    audioPlayer.src = baseAudioUrl;
 
     // draw progress bar while playing
     audioPlayer.addEventListener('timeupdate', function (e) {
@@ -62,7 +47,7 @@ $(document).ready(function () {
     audioPlayer.addEventListener('pause', function (e) {
         nextRegion = getNextRegion(audioPlayer.currentTime);
         if (!ended && nextRegion) {
-            
+
             offset = nextRegion.start;
             paramString = '#t=' + offset + ',' + nextRegion.end;
             audioPlayer.src = baseAudioUrl + paramString;
