@@ -13,6 +13,7 @@ btn_auto_pause: Pause automatique
 btn_active_listening: Ecoute active
 btn_live_listening: Ecoute live
 back_to_media_resource_details: Retour aux details de %s
+btn_exercise_view: Vue Exercice
 
 # c
 close: Fermer
@@ -82,5 +83,3 @@ region_help_no_help_available: Aucune aide disponible pour le segment.
 
 #s
 save: Sauvegarder
-
-

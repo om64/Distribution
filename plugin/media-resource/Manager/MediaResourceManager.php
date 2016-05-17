@@ -7,32 +7,63 @@ use Symfony\Component\Translation\TranslatorInterface;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Innova\MediaResourceBundle\Entity\MediaResource;
 use Innova\MediaResourceBundle\Entity\Media;
+use JMS\DiExtraBundle\Annotation as DI;
+use Symfony\Component\DependencyInjection\ContainerInterface;
+use Symfony\Component\HttpFoundation\File\File;
+use Claroline\CoreBundle\Entity\Workspace\Workspace;
+use Symfony\Component\Filesystem\Filesystem;
 
 /**
- * MediaResource Manager
+ * @DI\Service("innova_media_resource.manager.media_resource")
  */
-class MediaResourceManager {
-
+class MediaResourceManager
+{
     protected $em;
     protected $translator;
-    protected $uploadFileDir;
+    protected $fileDir;
+    //protected $tokenStorage;
+    protected $claroUtils;
+    protected $container;
+    protected $workspaceManager;
 
-    public function __construct(EntityManager $em, TranslatorInterface $translator, $uploadfileDir) {
+    /**
+     * @DI\InjectParams({
+     *      "container"   = @DI\Inject("service_container"),
+     *      "em"          = @DI\Inject("doctrine.orm.entity_manager"),
+     *      "translator"  = @DI\Inject("translator"),
+     *      "fileDir"     = @DI\Inject("%claroline.param.files_directory%")
+     * })
+     *
+     * @param ContainerInterface  $container
+     * @param EntityManager       $em
+     * @param TranslatorInterface $translator
+     * @param string              $fileDir
+     */
+    public function __construct(ContainerInterface $container, EntityManager $em, TranslatorInterface $translator, $fileDir)
+    {
         $this->em = $em;
         $this->translator = $translator;
-        $this->uploadFileDir = $uploadfileDir;
+        $this->container = $container;
+        $this->fileDir = $fileDir;
+        //$this->tokenStorage = $container->get('security.token_storage');
+        $this->claroUtils = $container->get('claroline.utilities.misc');
+        $this->workspaceManager = $container->get('claroline.manager.workspace_manager');
     }
 
-    public function getRepository() {
+    public function getRepository()
+    {
         return $this->em->getRepository('InnovaMediaResourceBundle:MediaResource');
     }
 
     /**
-     * Delete associated Media (removing from server hard drive) before deleting the entity
+     * Delete associated Media (removing from server hard drive) before deleting the entity.
+     *
      * @param MediaResource $mr
+     *
      * @return \Innova\MediaResourceBundle\Manager\MediaResourceManager
      */
-    public function delete(MediaResource $mr) {
+    public function delete(MediaResource $mr)
+    {
         // delete all files from server
         $medias = $mr->getMedias();
         foreach ($medias as $media) {
@@ -40,47 +71,65 @@ class MediaResourceManager {
         }
         $this->em->remove($mr);
         $this->em->flush();
+
         return $this;
     }
 
     /**
-     * Handle MediaResource associated files
-     * @param UploadedFile $file
+     * Handle MediaResource associated files.
+     *
+     * @param UploadedFile  $file
      * @param MediaResource $mr
+     * @param Workspace     $workspace
      */
-    public function handleMediaResourceMedia(UploadedFile $file, MediaResource $mr) {
+    public function handleMediaResourceMedia(UploadedFile $file, MediaResource $mr, Workspace $workspace)
+    {
+
+        // final file upload dir
+        $targetDir = '';
+        if (!is_null($workspace)) {
+            $targetDir = $this->workspaceManager->getStorageDirectory($workspace);
+        } else {
+            $targetDir = $this->fileDir.DIRECTORY_SEPARATOR.$this->tokenStorage->getToken()->getUsername();
+        }
+
+        // if the taget dir does not exist, create it
+        $fs = new Filesystem();
+        if (!$fs->exists($targetDir)) {
+            $fs->mkdir($targetDir);
+        }
         // set new filename
-        $name = $this->setFileName($file->getClientOriginalName());
+        $originalName = $file->getClientOriginalName();
+        $ext = $file->getClientOriginalExtension();
+        $uniqueBaseName = $this->claroUtils->generateGuid();
 
         // upload file
-        if ($this->upload($file, $name)) {
-            // encode original file and create Media Entity
-            $audioMedia = $this->createAudioMedia($name, false);
-            // update Exercise with new Media Entity infos
-            if ($audioMedia) {
-                $mr->addMedia($audioMedia);
-                $this->em->persist($mr);
-                $audioMedia->setMediaResource($mr);
-                // delete original file
-                $this->removeUpload($name);
-            } else {
-                $this->removeUpload($name);
-                $message = $this->translator->trans("error_while_encoding", array(), "media_resource");
-                throw new \Exception($message);
-            }
+        if ($file->move($targetDir, $uniqueBaseName.'.'.$ext)) {
+            // create Media Entity
+            $media = new Media();
+            $media->setType('audio');
+            $media->setUrl('WORKSPACE_'.$workspace->getId().DIRECTORY_SEPARATOR.$uniqueBaseName.'.'.$ext);
+            $mr->addMedia($media);
+            $this->em->persist($mr);
+            $media->setMediaResource($mr);
             $this->em->flush();
+            unset($file);
         } else {
-            $message = $this->translator->trans("error_while_uploading", array(), "media_resource");
+            $message = $this->translator->trans('error_while_uploading', array(), 'media_resource');
             throw new \Exception($message);
         }
+
         return $mr;
     }
 
-    public function copyMedia(MediaResource $mr, Media $origin) {
-
-        $newName = $this->setFileName($origin->getUrl());
+    public function copyMedia(MediaResource $mr, Media $origin)
+    {
+        $originalName = $origin->getUrl();
+        $ext = pathinfo($origin->getUrl(), PATHINFO_EXTENSION);
+        $newName = $this->claroUtils->generateGuid().'.'.$ext;
+        $baseUrl = $this->container->getParameter('claroline.param.files_directory').DIRECTORY_SEPARATOR;
         // make a copy of the file
-        if (copy($this->getUploadDirectory() . '/' . $origin->getUrl(), $this->getUploadDirectory() . '/' . $newName)) {
+        if (copy($baseUrl.$origin->getUrl(), $baseUrl.$newName)) {
             // duplicate file
             $new = new Media();
             $new->setType($origin->getType());
@@ -91,68 +140,17 @@ class MediaResourceManager {
         }
     }
 
-    /**
-     * set a name for a file
-     * @param string $originalName
-     * @return string the new name
-     */
-    public function setFileName($originalName) {
-        $ext = pathinfo($originalName, PATHINFO_EXTENSION);
-        return sha1(uniqid(mt_rand(), true)) . '.' . $ext;
-    }
+    public function removeUpload($url)
+    {
+        $fullPath = $this->container->getParameter('claroline.param.files_directory')
+           .DIRECTORY_SEPARATOR
+           .$url;
+        if (file_exists($fullPath)) {
+            unlink($fullPath);
 
-    /**
-     * encode original file (in any case!!) an create a Media Entity
-     * @param string $url original video file url
-     * @param bool $fromVideo if we must extract audio from video or just convert original file to ogg
-     * @return Media or null if conversion error
-     */
-    public function createAudioMedia($url) {
-
-        // we want to ensure that the audio file uploaded will be correctly decoded by audioBuffer.decodeAudioData (WebAudio Api)
-        // so we want to force the audio format in any case
-        $ext = pathinfo($url, PATHINFO_EXTENSION);
-        $name = basename($url, "." . $ext);
-        $suffix = '_coded.ogg';
-        // $cmd = 'avconv -i ' . $this->getUploadDirectory() . '/' . $url . ' -id3v2_version 3 -acodec  libmp3lame -ac 2 -ar 44100 -ab 128k -f mp3 - > ' . $this->getUploadDirectory() . '/' . $name . $suffix;
-        $cmd = 'avconv -i '. $this->getUploadDirectory() . '/' . $url .' -c:a libvorbis -q:a 5 ' . $this->getUploadDirectory() . '/' . $name . $suffix;
-        
-        $output;
-        $returnVar;
-        exec($cmd, $output, $returnVar);
-        
-        // error
-        if ($returnVar !== 0) {
-            return null;
-        } else {
-            // 2 - create a Media with this sound file
-            $media = new Media();
-            $media->setType('audio');
-            $media->setUrl($name . $suffix);
-            return $media;
-        }
-    }
-
-    public function upload(UploadedFile $file, $url) {
-        if (null === $file) {
-            return;
-        }
-        $uploaded = $file->move($this->getUploadDirectory(), $url);
-        unset($file);
-        return $uploaded;
-    }
-
-    public function removeUpload($filename) {
-        $url = $this->getUploadDirectory() . '/' . $filename;
-        if (file_exists($url)) {
-            unlink($url);
             return true;
         } else {
             return false;
         }
-    }
-
-    protected function getUploadDirectory() {
-        return $this->uploadFileDir;
     }
 }

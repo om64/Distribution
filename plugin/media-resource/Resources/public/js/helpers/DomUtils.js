@@ -5,10 +5,10 @@ var DomUtils = {
      * Open help for a region
      * @param object current : current wavesurfer region
      * @param object previous : previous (relatively to current) wavesurfer region can be null
-     * @param string audioUrl : current media audio url
+     * @param string audioData : current media audio data
      * @returns bootbox modal object
      */
-    openRegionHelpModal: function (current, previous, audioUrl) {
+    openRegionHelpModal: function (current, previous, audioData) {
         var html = '<div id="help-tab-panel" class="row" role="tabpanel">';
         html += '       <ul class="nav nav-tabs" role="tablist">';
         html += '           <li role="presentation" class="active">';
@@ -68,7 +68,7 @@ var DomUtils = {
         html += '           </div>';
         html += '       </div>';
         html += '   </div>';
-        html += '   <audio id="help-audio-player" style="display:none;" src="' + audioUrl + '">'; // will not show as no controls are defined
+        html += '   <audio id="help-audio-player" style="display:none;" src="' + audioData + '">'; // will not show as no controls are defined
         html += '   </audio>';
 
 
@@ -241,10 +241,10 @@ var DomUtils = {
         return config;
     },
     appendHelpModalConfig: function (modal, config, region) {
-        var root = $(modal).find('#region-help-available');        
+        var root = $(modal).find('#region-help-available');
         $(root).empty();
         var html = '<hr/>';
-        if (config.loop || config.backward || config.rate || config.text !== '' || config.relatedRegionUuid !== '') {            
+        if (config.loop || config.backward || config.rate || config.text !== '' || config.relatedRegionUuid !== '') {
             if (config.loop) {
                 html += '<div class="row">';
                 html += '   <div class="col-md-12">';
@@ -253,7 +253,7 @@ var DomUtils = {
                 html += '       </button>';
                 html += '       <label>' + Translator.trans('region_help_segment_playback_loop', {}, 'media_resource') + '</label>';
                 html += '   </div>';
-                html += '</div>';               
+                html += '</div>';
             }
             if (config.backward) {
                 html += '<hr/>';
@@ -317,11 +317,11 @@ var DomUtils = {
             $('#help-modal-help-text').text(config.text.split(';')[currentLevel]);
             currentLevel++;
             $('#help-modal-help-text').show();
-        });   
+        });
     },
     /**
      * Add the region to the DOM at the right place
-     * @param region wavesurfer.region 
+     * @param region wavesurfer.region
      */
     addRegionToDom: function (wavesurfer, wavesurferUtils, region, uuid) {
         var my = this;
@@ -405,7 +405,7 @@ var DomUtils = {
     },
     /**
      * Find the row after which we have to insert the new one
-     * @param start 
+     * @param start
      * @returns DOM Object the row
      */
     findPreviousRegionRow: function (start) {
@@ -442,8 +442,8 @@ var DomUtils = {
         return row;
     },
     /**
-     * Highlight a row 
-     * @param region wavesurfer.region 
+     * Highlight a row
+     * @param region wavesurfer.region
      */
     highlightRegionRow: function (region) {
         var row = this.getRegionRow(region.start + 0.1, region.end - 0.1);
@@ -476,13 +476,13 @@ var DomUtils = {
     /**
      * Open help for a region
      * @param object current : current wavesurfer region
-     * @param string audioUrl : current media audio url
+     * @param string audioData : current media audio url
      * @returns bootbox modal object
      */
-    openSimpleHelpModal: function (current, audioUrl) {
+    openSimpleHelpModal: function (current, audioData) {
         var html = '<div class="row">';
         html += '       <div class="col-md-12 text-center">';
-        html += '           <audio id="help-audio-player" src="' + audioUrl + '"></audio>'; // will not show as no controls are defined
+        html += '           <audio id="help-audio-player" src="' + audioData + '"></audio>'; // will not show as no controls are defined
         html += '           <div class="row">';
         html += '               <div class="col-md-12">';
         html += '                   <div class="btn-group">';

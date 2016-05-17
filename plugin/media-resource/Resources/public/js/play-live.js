@@ -2,7 +2,6 @@
 var transitionType = 'fast';
 var currentExerciseType = '';
 var audioUrl = '';
-var serveMediaAction;
 var wId;
 var mrId;
 var wavesurfer;
@@ -33,9 +32,8 @@ var wavesurferOptions = {
 $(document).ready(function () {
     // get some hidden inputs usefull values
     currentExerciseType = 'audio';
-    
+
     domUtils = Object.create(DomUtils);
-    serveMediaAction = $('input[name="serveMediaAction"]').val();
     wId = $('input[name="wId"]').val();
     mrId = $('input[name="mrId"]').val();
 
@@ -79,23 +77,10 @@ $(document).ready(function () {
         workspaceId: wId,
         id: mrId
     };
-    
-    // get media data
-    $.get(serveMediaAction, data)
-            .done(function (response) {
-                var byteCharacters = atob(response);
-                var byteNumbers = new Array(byteCharacters.length);
-                for (var i = 0; i < byteCharacters.length; i++) {
-                    byteNumbers[i] = byteCharacters.charCodeAt(i);
-                }
-                var byteArray = new Uint8Array(byteNumbers);
-                var blob = new Blob([byteArray]);
-                wavesurfer.loadBlob(blob);
-                audioUrl = URL.createObjectURL(blob);
-            })
-            .fail(function () {
-                console.log('loading media resource file failed');
-            });
+
+    audioUrl = Routing.generate('innova_get_mediaresource_resource_file', {workspaceId: data.workspaceId ,id: data.id});
+    wavesurfer.load(audioUrl);
+
 
     wavesurfer.on('ready', function () {
         var timeline = Object.create(WaveSurfer.Timeline);
@@ -115,7 +100,7 @@ $(document).ready(function () {
                 wavesurfer.regions.list[index].remove();
             }
         }
-        // 
+        //
     });
     /* /WAVESURFER */
 
@@ -205,7 +190,7 @@ function toggleLoop(elem) {
  * @param {float} end
  */
 function playHelp(start, end, loop, rate) {
-    helpAudioPlayer = document.getElementsByTagName("audio")[0];   
+    helpAudioPlayer = document.getElementsByTagName("audio")[0];
     helpAudioPlayer.loop = loop;
     if (rate) {
         helpAudioPlayer.playbackRate = 0.8;
@@ -242,4 +227,3 @@ function playHelp(start, end, loop, rate) {
 // ======================================================================================================== //
 // HELP MODAL FUNCTIONS END
 // ======================================================================================================== //
-

@@ -7,7 +7,7 @@ var domUtils;
 // VARS
 var transitionType = 'fast';
 var currentExerciseType = '';
-var audioUrl = '';
+var audioUrl;
 var serveMediaAction;
 var wId;
 var mrId;
@@ -32,7 +32,7 @@ var helpPlaybackRate = 1;
 var helpAudioPlayer;
 var helpCurrentWRegion; // the wavesurfer region where we are when asking help
 var helpPreviousWRegion; // the previous wavesurfer region relatively to helpCurrentWRegion
-var currentHelpRelatedRegion; // the related help region; 
+var currentHelpRelatedRegion; // the related help region;
 var helpRegion; // the region we are listening to
 var currentHelpTextLevel = 0;
 var hModal;
@@ -178,7 +178,7 @@ var actions = {
             helpPreviousWRegion = null;
             helpCurrentWRegion = null;
             hModal = null;
-            helpAudioPlayer = null;
+            //helpAudioPlayer = null;
             helpRegion = {};
         });
 
@@ -280,7 +280,7 @@ $(document).ready(function () {
             };
         }
 
-        // enable selected region preview button only        
+        // enable selected region preview button only
         $('#help-region-choice .input-group').each(function () {
             $(this).find('button').prop('disabled', $(this).find('input[name=segment]').val() !== selectedValue);
         });
@@ -331,21 +331,7 @@ $(document).ready(function () {
         id: mrId
     };
 
-    $.get(serveMediaAction, data)
-            .done(function (response) {
-                var byteCharacters = atob(response);
-                var byteNumbers = new Array(byteCharacters.length);
-                for (var i = 0; i < byteCharacters.length; i++) {
-                    byteNumbers[i] = byteCharacters.charCodeAt(i);
-                }
-                var byteArray = new Uint8Array(byteNumbers);
-                var blob = new Blob([byteArray]);
-                wavesurfer.loadBlob(blob);
-                audioUrl = URL.createObjectURL(blob);
-            })
-            .fail(function () {
-                console.log('loading media resource file failed');
-            });
+    loadAudio(data);
 
     wavesurfer.on('ready', function () {
         var timeline = Object.create(WaveSurfer.Timeline);
@@ -462,6 +448,12 @@ $(document).ready(function () {
 // DOCUMENT READY END
 // ======================================================================================================== //
 
+
+function loadAudio(data){
+    audioUrl = Routing.generate('innova_get_mediaresource_resource_file', {workspaceId: data.workspaceId ,id: data.id});
+    wavesurfer.load(audioUrl);
+    return true;
+}
 
 // ======================================================================================================== //
 // HELP MODAL FUNCTIONS
@@ -727,7 +719,7 @@ function deleteRegion(elem) {
                             });
                             wavesurfer.regions.list[id].remove();
 
-                            // update time (DOM)                           
+                            // update time (DOM)
                             var hiddenInputToUpdate = currentRow.next().find("input.hidden-start");
                             hiddenInputToUpdate.val(start);
 
@@ -760,7 +752,7 @@ function deleteRegion(elem) {
                             });
                             wavesurfer.regions.list[id].remove();
 
-                            // update time (DOM)                           
+                            // update time (DOM)
                             var hiddenInputToUpdate = currentRow.prev().find("input.hidden-end");
                             hiddenInputToUpdate.val(end);
                             var divToUpdate = currentRow.prev().find(".time-text.end");
@@ -806,7 +798,7 @@ function playRegionFrom(start) {
 
 /**
  * Add a color to region config button if any config parameter found for the row
- * 
+ *
  */
 function toggleConfigButtonColor() {
     $('.region').each(function () {

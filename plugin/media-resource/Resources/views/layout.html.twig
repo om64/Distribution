@@ -8,7 +8,7 @@
 {% block stylesheets %}
     {{ parent() }}
 
-    {% stylesheets debug=false filter='cssmin'  output='vendor/innovamediaresource/css/innova_media_resource.css' 
+    {% stylesheets debug=false filter='cssmin'  output='vendor/innovamediaresource/css/innova_media_resource.css'
         '@InnovaMediaResourceBundle/Resources/public/css/bootstrap-switch.css'
     %}
     <link rel="stylesheet" href="{{ asset_url }}" />
@@ -37,19 +37,21 @@
     {{parent()}}
     <script type="text/javascript" src="{{ url('bazinga_jstranslation_js', { 'domain':'media_resource' }) }}"></script>
 
-
+    <script type="text/javascript" src="{{ asset('bundles/frontend/jquery-ui/ui/minified/draggable.min.js') }}"> </script>
+    <script type="text/javascript" src="{{ asset('bundles/frontend/jquery-ui/ui/minified/droppable.min.js') }}"> </script>
 
     {% javascripts
-        '@InnovaMediaResourceBundle/Resources/public/js/bootstrap-switch.js'
-        '@InnovaMediaResourceBundle/Resources/public/js/jquery.restfulizer.js'
-        '@InnovaMediaResourceBundle/Resources/public/js/bootbox.js'
-        '@InnovaMediaResourceBundle/Resources/public/js/JavascriptUtils.js'
-        '@InnovaMediaResourceBundle/Resources/public/js/StringUtils.js'
-        '@InnovaMediaResourceBundle/Resources/public/js/WavesurferUtils.js'
-        '@InnovaMediaResourceBundle/Resources/public/js/DomUtils.js'
+        '@InnovaMediaResourceBundle/Resources/public/js/libs/bootstrap-switch.js'
+        '@InnovaMediaResourceBundle/Resources/public/js/libs/jquery.restfulizer.js'
+        '@InnovaMediaResourceBundle/Resources/public/js/libs/bootbox.js'
+        '@InnovaMediaResourceBundle/Resources/public/js/helpers/JavascriptUtils.js'
+        '@InnovaMediaResourceBundle/Resources/public/js/helpers/StringUtils.js'
+        '@InnovaMediaResourceBundle/Resources/public/js/helpers/WavesurferUtils.js'
+        '@InnovaMediaResourceBundle/Resources/public/js/helpers/DomUtils.js'
     %}
 
     <script src="{{ asset_url }}"></script>
+
     {% endjavascripts %}
 
 {% endblock %}
