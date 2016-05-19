@@ -8,8 +8,9 @@
  */
 
 export default class WidgetService {
-  constructor($http, $uibModal, ClarolineAPIService) {
+  constructor ($http, $sce, $uibModal, ClarolineAPIService) {
     this.$http = $http
+    this.$sce = $sce
     this.$uibModal = $uibModal
     this.ClarolineAPIService = ClarolineAPIService
     this.widgets = []
@@ -29,7 +30,6 @@ export default class WidgetService {
           this.widgetHasChanged = true
         },
         stop: (event, $element, widget) => {
-
           if (this.widgetHasChanged) {
             this.widgetHasChanged = false
             this._updateWidgetsDisplay()
@@ -44,7 +44,6 @@ export default class WidgetService {
           this.widgetHasChanged = true
         },
         stop: (event, $element, widget) => {
-
           if (this.widgetHasChanged) {
             this.widgetHasChanged = false
             this._updateWidgetsDisplay()
@@ -53,12 +52,11 @@ export default class WidgetService {
       }
     }
     this._addUserWidgetCallback = this._addUserWidgetCallback.bind(this)
-    this._updateUserWidgetCallback = this._updateUserWidgetCallback.bind(this)
     this._updateWidgetsDisplay = this._updateWidgetsDisplay.bind(this)
     this._removeWidgetCallback = this._removeWidgetCallback.bind(this)
   }
 
-  _addUserWidgetCallback(data) {
+  _addUserWidgetCallback (data) {
     this.widgetsDisplayOptions[data['displayId']] = {
       id: data['displayId'],
       row: data['row'],
@@ -67,25 +65,15 @@ export default class WidgetService {
       sizeY: data['sizeY']
     }
     this.widgets.push(data)
+    this.loadWidgetContent(data['instanceId'])
     this.checkDesktopWidgetsDisplayOptions()
   }
 
-  _updateUserWidgetCallback(data) {
-    const index = this.widgets.findIndex(w => w['instanceId'] === data['instanceId'])
-
-    if (index > -1) {
-      this.widgets[index]['instanceName'] = data['instanceName']
-      this.widgets[index]['color'] = data['color']
-      this.widgets[index]['textTitleColor'] = data['textTitleColor']
-    }
-  }
-
-  _updateWidgetsDisplay() {
+  _updateWidgetsDisplay () {
     this.checkDesktopWidgetsDisplayOptions()
   }
 
-  _removeWidgetCallback(data) {
-
+  _removeWidgetCallback (data) {
     if (data['id']) {
       const index = this.widgets.findIndex(w => data['id'] === w['instanceId'])
 
@@ -96,31 +84,31 @@ export default class WidgetService {
     }
   }
 
-  getWidgets() {
+  getWidgets () {
     return this.widgets
   }
 
-  getWidgetsDisplayOptions() {
+  getWidgetsDisplayOptions () {
     return this.widgetsDisplayOptions
   }
 
-  getOptions() {
+  getOptions () {
     return this.options
   }
 
-  getGridsterOptions() {
+  getGridsterOptions () {
     return this.gridsterOptions
   }
 
-  loadDesktopWidgets(tabId, isEditionEnabled) {
+  loadDesktopWidgets (tabId, isEditionEnabled) {
     this.options['canEdit'] = false
 
     if (tabId === 0) {
       this.widgets.splice(0, this.widgets.length)
     } else {
-      const route = Routing.generate('api_get_desktop_home_tab_widgets', {homeTab: tabId})
+      //const route = Routing.generate('api_get_desktop_home_tab_widgets', {homeTab: tabId})
+      const route = Routing.generate('claro_desktop_home_widgets_display', {homeTab: tabId})
       this.$http.get(route).then(datas => {
-
         if (datas['status'] === 200) {
           this.options['canEdit'] = isEditionEnabled && !datas['data']['isLockedHomeTab']
           this.widgets.splice(0, this.widgets.length)
@@ -128,12 +116,46 @@ export default class WidgetService {
           this.generateWidgetsDisplayOptions()
           this.checkDesktopWidgetsDisplayOptions()
           this.updateGristerEdition()
+          this.secureWidgetsContents()
         }
       })
     }
   }
 
-  generateWidgetsDisplayOptions() {
+  updateUserWidget (data) {
+    const index = this.widgets.findIndex(w => w['instanceId'] === data['instanceId'])
+
+    if (index > -1) {
+      this.widgets[index]['instanceName'] = data['instanceName']
+      this.widgets[index]['color'] = data['color']
+      this.widgets[index]['textTitleColor'] = data['textTitleColor']
+    }
+  }
+
+  secureWidgetsContents () {
+    this.widgets.forEach(w => {
+      w['content'] = this.$sce.trustAsHtml(w['content'])
+    })
+  }
+
+  secureDatas (datas) {
+    return this.$sce.trustAsHtml(datas)
+  }
+
+  loadWidgetContent (widgetInstanceId) {
+    const index = this.widgets.findIndex(w => w['instanceId'] === widgetInstanceId)
+
+    if (index > -1) {
+      const route = Routing.generate('claro_widget_instance_content', {widgetInstance: widgetInstanceId})
+      this.$http.get(route).then(d => {
+        if (d['status'] === 200) {
+          this.widgets[index]['content'] = this.secureDatas(d['data'])
+        }
+      })
+    }
+  }
+
+  generateWidgetsDisplayOptions () {
     this.widgets.forEach(w => {
       const displayId = w['displayId']
       this.widgetsDisplayOptions[displayId] = {
@@ -146,7 +168,7 @@ export default class WidgetService {
     })
   }
 
-  checkDesktopWidgetsDisplayOptions() {
+  checkDesktopWidgetsDisplayOptions () {
     let modifiedWidgets = []
 
     this.widgets.forEach(w => {
@@ -169,7 +191,6 @@ export default class WidgetService {
     })
 
     if (modifiedWidgets.length > 0) {
-      console.log(modifiedWidgets)
       const json = JSON.stringify(modifiedWidgets)
       const route = Routing.generate('api_put_desktop_widget_display_update', {datas: json})
       this.$http.put(route).then(
@@ -195,14 +216,13 @@ export default class WidgetService {
     }
   }
 
-  updateGristerEdition() {
+  updateGristerEdition () {
     const editable = this.options['canEdit']
     this.gridsterOptions['resizable']['enabled'] = editable
     this.gridsterOptions['draggable']['enabled'] = editable
   }
 
-  createUserWidget(tabConfigId) {
-
+  createUserWidget (tabConfigId) {
     if (!this.isHomeTabLocked) {
       const modal = this.$uibModal.open({
         templateUrl: Routing.generate(
@@ -218,7 +238,6 @@ export default class WidgetService {
       })
 
       modal.result.then(result => {
-
         if (!result) {
           return
         } else {
@@ -228,8 +247,7 @@ export default class WidgetService {
     }
   }
 
-  editUserWidget(widgetDisplayId) {
-
+  editUserWidget (widgetInstanceId, widgetDisplayId, configurable) {
     if (!this.isHomeTabLocked) {
       const modal = this.$uibModal.open({
         templateUrl: Routing.generate(
@@ -239,24 +257,16 @@ export default class WidgetService {
         controller: 'WidgetInstanceEditionModalCtrl',
         controllerAs: 'wfmc',
         resolve: {
+          widgetInstanceId: () => { return widgetInstanceId },
           widgetDisplayId: () => { return widgetDisplayId },
-          callback: () => { return this._updateUserWidgetCallback }
-        }
-      })
-
-      modal.result.then(result => {
-
-        if (!result) {
-            return
-        } else {
-            this._updateUserWidgetCallback(result)
+          configurable: () => { return configurable },
+          contentConfig: () => { return null }
         }
       })
     }
   }
 
-  deleteUserWidget(widgetHTCId) {
-
+  deleteUserWidget (widgetHTCId) {
     if (!this.isHomeTabLocked) {
       const url = Routing.generate(
         'api_delete_desktop_widget_home_tab_config',
@@ -272,8 +282,7 @@ export default class WidgetService {
     }
   }
 
-  hideAdminWidget(widgetHTCId) {
-
+  hideAdminWidget (widgetHTCId) {
     if (!this.isHomeTabLocked) {
       const url = Routing.generate(
         'api_put_desktop_widget_home_tab_config_visibility_change',

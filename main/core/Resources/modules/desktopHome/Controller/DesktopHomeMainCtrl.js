@@ -77,11 +77,11 @@ export default class DesktopHomeMainCtrl {
     }
   }
 
-  editUserWidget($event, widgetDisplayId) {
+  editUserWidget($event, widgetInstanceId, widgetDisplayId, configurable) {
     $event.stopPropagation()
 
     if (!this.isHomeLocked && this.editionMode) {
-      this.WidgetService.editUserWidget(widgetDisplayId)
+      this.WidgetService.editUserWidget(widgetInstanceId, widgetDisplayId, configurable)
     }
   }
 

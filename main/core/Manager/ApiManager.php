@@ -114,6 +114,10 @@ class ApiManager
     {
         $httpCode = isset($options['http_code']) ? $options['http_code'] : 200;
         $parameters = isset($options['form_view']) ? $options['form_view'] : array();
+
+        if (isset($options['extra_infos'])) {
+            $parameters['extraInfos'] = $options['extra_infos'];
+        }
         $serializerGroup = isset($options['serializer_group']) ? $options['serializer_group'] : 'api';
 
         return $form->isValid() ?

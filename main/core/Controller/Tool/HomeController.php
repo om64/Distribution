@@ -137,6 +137,184 @@ class HomeController extends Controller
 
     /**
      * @EXT\Route(
+     *     "/desktop/home/{homeTab}/widgets/display",
+     *     name="claro_desktop_home_widgets_display",
+     *     options = {"expose"=true}
+     * )
+     * @EXT\ParamConverter("user", options={"authenticatedUser" = true})
+     *
+     * Retrieves desktop widgets
+     *
+     * @return \Symfony\Component\HttpFoundation\Response
+     */
+    public function getDesktopHomeTabWidgetsAction(HomeTab $homeTab)
+    {
+        $user = $this->tokenStorage->getToken()->getUser();
+        $isVisibleHomeTab = $this->homeTabManager
+            ->checkHomeTabVisibilityForConfigByUser($homeTab, $user);
+        $isLockedHomeTab = $this->homeTabManager->checkHomeTabLock($homeTab);
+        $isHomeLocked = $this->roleManager->isHomeLocked($user);
+        $isWorkspace = false;
+        $configs = array();
+        $widgets = array();
+        $widgetsDatas = array(
+            'isLockedHomeTab' => $isLockedHomeTab,
+            'initWidgetsPosition' => false,
+            'widgets' => array()
+        );
+
+        if ($isVisibleHomeTab) {
+
+            if ($homeTab->getType() === 'admin_desktop') {
+                $adminConfigs = $this->homeTabManager->getAdminWidgetConfigs($homeTab);
+
+                if ($isLockedHomeTab || $isHomeLocked) {
+
+                    foreach ($adminConfigs as $adminConfig) {
+
+                        if ($adminConfig->isVisible()) {
+                            $configs[] = $adminConfig;
+                        }
+                    }
+                } else {
+                    $userWidgetsConfigs = $this->homeTabManager
+                        ->getWidgetConfigsByUser($homeTab, $user);
+
+                    foreach ($adminConfigs as $adminConfig) {
+
+                        if ($adminConfig->isLocked()) {
+                            if ($adminConfig->isVisible()) {
+                                $configs[] = $adminConfig;
+                            }
+                        } else {
+                            $existingWidgetConfig = $this->homeTabManager
+                                ->getUserAdminWidgetHomeTabConfig(
+                                    $homeTab,
+                                    $adminConfig->getWidgetInstance(),
+                                    $user
+                                );
+                            if (is_null($existingWidgetConfig) && $adminConfig->isVisible()) {
+                                $newWHTC = new WidgetHomeTabConfig();
+                                $newWHTC->setHomeTab($homeTab);
+                                $newWHTC->setWidgetInstance($adminConfig->getWidgetInstance());
+                                $newWHTC->setUser($user);
+                                $newWHTC->setWidgetOrder($adminConfig->getWidgetOrder());
+                                $newWHTC->setVisible($adminConfig->isVisible());
+                                $newWHTC->setLocked(false);
+                                $newWHTC->setType('admin_desktop');
+                                $this->homeTabManager->insertWidgetHomeTabConfig($newWHTC);
+                                $configs[] = $newWHTC;
+                            } else if ($existingWidgetConfig->isVisible()){
+                                $configs[] = $existingWidgetConfig;
+                            }
+                        }
+                    }
+
+                    foreach ($userWidgetsConfigs as $userWidgetsConfig) {
+                        $configs[] = $userWidgetsConfig;
+                    }
+                }
+            } elseif ($homeTab->getType() === 'desktop') {
+                $configs = $this->homeTabManager->getWidgetConfigsByUser($homeTab, $user);
+            } elseif ($homeTab->getType() === 'workspace') {
+                $workspace = $homeTab->getWorkspace();
+                $widgetsDatas['isLockedHomeTab'] = true;
+                $isWorkspace = true;
+                $configs = $this->homeTabManager->getWidgetConfigsByWorkspace(
+                    $homeTab,
+                    $workspace
+                );
+            }
+
+            if ($isWorkspace) {
+                $wdcs = $this->widgetManager->generateWidgetDisplayConfigsForWorkspace(
+                    $workspace,
+                    $configs
+                );
+            } else if ($isLockedHomeTab || $isHomeLocked) {
+                $wdcs = $this->widgetManager->getAdminWidgetDisplayConfigsByWHTCs($configs);
+            } else {
+                $wdcs = $this->widgetManager->generateWidgetDisplayConfigsForUser(
+                    $user,
+                    $configs
+                );
+            }
+
+            foreach ($wdcs as $wdc) {
+
+                if ($wdc->getRow() === -1 || $wdc->getColumn() === -1) {
+                    $widgetsDatas['initWidgetsPosition'] = true;
+                    break;
+                }
+            }
+
+            foreach ($configs as $config) {
+                $widgetDatas = array();
+                $widgetInstance = $config->getWidgetInstance();
+                $widget = $widgetInstance->getWidget();
+                $widgetInstanceId = $widgetInstance->getId();
+                $widgetDatas['widgetId'] = $widget->getId();
+                $widgetDatas['widgetName'] = $widget->getName();
+                $widgetDatas['configId'] = $config->getId();
+                $event = $this->eventDispatcher->dispatch(
+                    "widget_{$config->getWidgetInstance()->getWidget()->getName()}",
+                    'DisplayWidget',
+                    array($config->getWidgetInstance())
+                );
+                $widgetDatas['content'] = $event->getContent();
+                $widgetDatas['configurable'] = $config->isLocked() !== true
+                    && $config->getWidgetInstance()->getWidget()->isConfigurable();
+                $widgetDatas['locked'] = $config->isLocked();
+                $widgetDatas['type'] = $config->getType();
+                $widgetDatas['instanceId'] = $widgetInstanceId;
+                $widgetDatas['instanceName'] = $widgetInstance->getName();
+                $widgetDatas['instanceIcon'] = $widgetInstance->getIcon();
+                $widgetDatas['displayId'] = $wdcs[$widgetInstanceId]->getId();
+                $row = $wdcs[$widgetInstanceId]->getRow();
+                $column = $wdcs[$widgetInstanceId]->getColumn();
+                $widgetDatas['row'] = $row >= 0 ? $row : null;
+                $widgetDatas['col'] = $column >= 0 ? $column : null;
+                $widgetDatas['sizeY'] = $wdcs[$widgetInstanceId]->getHeight();
+                $widgetDatas['sizeX'] = $wdcs[$widgetInstanceId]->getWidth();
+                $widgetDatas['color'] = $wdcs[$widgetInstanceId]->getColor();
+                $details = $wdcs[$widgetInstanceId]->getDetails();
+                $widgetDatas['textTitleColor'] = isset($details['textTitleColor']) ?
+                    $details['textTitleColor'] :
+                    null;
+                $widgets[] = $widgetDatas;
+            }
+            $widgetsDatas['widgets'] = $widgets;
+        }
+
+        return new JsonResponse($widgetsDatas, 200);
+    }
+
+    /**
+     * @EXT\Route(
+     *     "/widget/instance/{widgetInstance}/content",
+     *     name="claro_widget_instance_content",
+     *     options={"expose"=true}
+     * )
+     *
+     * Get a widget instance content.
+     *
+     * @param WidgetInstance $widgetInstance
+     *
+     * @return JsonResponse
+     */
+    public function getWidgetInstanceContentAction(WidgetInstance $widgetInstance)
+    {
+        $event = $this->eventDispatcher->dispatch(
+            "widget_{$widgetInstance->getWidget()->getName()}",
+            'DisplayWidget',
+            array($widgetInstance)
+        );
+
+        return new JsonResponse($event->getContent());
+    }
+
+    /**
+     * @EXT\Route(
      *     "/desktop/tab/{tabId}",
      *     name="claro_display_desktop_home_tab",
      *     options = {"expose"=true}

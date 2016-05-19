@@ -26,7 +26,6 @@ use Claroline\CoreBundle\Event\Log\LogWidgetAdminHideEvent;
 use Claroline\CoreBundle\Event\Log\LogWidgetUserCreateEvent;
 use Claroline\CoreBundle\Event\Log\LogWidgetUserDeleteEvent;
 use Claroline\CoreBundle\Event\Log\LogWidgetUserEditEvent;
-use Claroline\CoreBundle\Event\StrictDispatcher;
 use Claroline\CoreBundle\Form\HomeTabType;
 use Claroline\CoreBundle\Form\WidgetInstanceConfigType;
 use Claroline\CoreBundle\Library\Security\Utilities;
@@ -55,7 +54,6 @@ class DesktopHomeController extends FOSRestController
     private $apiManager;
     private $authorization;
     private $eventDispatcher;
-    private $eventStrictDispatcher;
     private $homeTabManager;
     private $request;
     private $roleManager;
@@ -69,7 +67,6 @@ class DesktopHomeController extends FOSRestController
      *     "apiManager"            = @DI\Inject("claroline.manager.api_manager"),
      *     "authorization"         = @DI\Inject("security.authorization_checker"),
      *     "eventDispatcher"       = @DI\Inject("event_dispatcher"),
-     *     "eventStrictDispatcher" = @DI\Inject("claroline.event.event_dispatcher"),
      *     "homeTabManager"        = @DI\Inject("claroline.manager.home_tab_manager"),
      *     "request"               = @DI\Inject("request"),
      *     "roleManager"           = @DI\Inject("claroline.manager.role_manager"),
@@ -83,7 +80,6 @@ class DesktopHomeController extends FOSRestController
         ApiManager $apiManager,
         AuthorizationCheckerInterface $authorization,
         EventDispatcherInterface $eventDispatcher,
-        StrictDispatcher $eventStrictDispatcher,
         HomeTabManager $homeTabManager,
         Request $request,
         RoleManager $roleManager,
@@ -96,7 +92,6 @@ class DesktopHomeController extends FOSRestController
         $this->apiManager = $apiManager;
         $this->authorization = $authorization;
         $this->eventDispatcher = $eventDispatcher;
-        $this->eventStrictDispatcher = $eventStrictDispatcher;
         $this->homeTabManager = $homeTabManager;
         $this->request = $request;
         $this->roleManager = $roleManager;
@@ -230,166 +225,6 @@ class DesktopHomeController extends FOSRestController
 
             return $desktopHomeDatas;
         }
-    }
-
-    /**
-     * @View(serializerGroups={"api_home_tab"})
-     * @ApiDoc(
-     *     description="Returns list of widgets of a home tab",
-     *     views = {"desktop_home"}
-     * )
-     */
-    public function getDesktopHomeTabWidgetsAction(HomeTab $homeTab)
-    {
-        $user = $this->tokenStorage->getToken()->getUser();
-        $isVisibleHomeTab = $this->homeTabManager
-            ->checkHomeTabVisibilityForConfigByUser($homeTab, $user);
-        $isLockedHomeTab = $this->homeTabManager->checkHomeTabLock($homeTab);
-        $isHomeLocked = $this->roleManager->isHomeLocked($user);
-        $isWorkspace = false;
-        $configs = array();
-        $widgets = array();
-        $widgetsDatas = array(
-            'isLockedHomeTab' => $isLockedHomeTab,
-            'initWidgetsPosition' => false,
-            'widgets' => array()
-        );
-
-        if ($isVisibleHomeTab) {
-
-            if ($homeTab->getType() === 'admin_desktop') {
-                $adminConfigs = $this->homeTabManager->getAdminWidgetConfigs($homeTab);
-
-                if ($isLockedHomeTab || $isHomeLocked) {
-
-                    foreach ($adminConfigs as $adminConfig) {
-
-                        if ($adminConfig->isVisible()) {
-                            $configs[] = $adminConfig;
-                        }
-                    }
-                } else {
-                    $userWidgetsConfigs = $this->homeTabManager
-                        ->getWidgetConfigsByUser($homeTab, $user);
-
-                    foreach ($adminConfigs as $adminConfig) {
-
-                        if ($adminConfig->isLocked()) {
-                            if ($adminConfig->isVisible()) {
-                                $configs[] = $adminConfig;
-                            }
-                        } else {
-                            $existingWidgetConfig = $this->homeTabManager
-                                ->getUserAdminWidgetHomeTabConfig(
-                                    $homeTab,
-                                    $adminConfig->getWidgetInstance(),
-                                    $user
-                                );
-                            if (is_null($existingWidgetConfig) && $adminConfig->isVisible()) {
-                                $newWHTC = new WidgetHomeTabConfig();
-                                $newWHTC->setHomeTab($homeTab);
-                                $newWHTC->setWidgetInstance($adminConfig->getWidgetInstance());
-                                $newWHTC->setUser($user);
-                                $newWHTC->setWidgetOrder($adminConfig->getWidgetOrder());
-                                $newWHTC->setVisible($adminConfig->isVisible());
-                                $newWHTC->setLocked(false);
-                                $newWHTC->setType('admin_desktop');
-                                $this->homeTabManager->insertWidgetHomeTabConfig($newWHTC);
-                                $configs[] = $newWHTC;
-                            } else if ($existingWidgetConfig->isVisible()){
-                                $configs[] = $existingWidgetConfig;
-                            }
-                        }
-                    }
-
-                    foreach ($userWidgetsConfigs as $userWidgetsConfig) {
-                        $configs[] = $userWidgetsConfig;
-                    }
-                }
-            } elseif ($homeTab->getType() === 'desktop') {
-                $configs = $this->homeTabManager->getWidgetConfigsByUser($homeTab, $user);
-            } elseif ($homeTab->getType() === 'workspace') {
-                $workspace = $homeTab->getWorkspace();
-                $widgetsDatas['isLockedHomeTab'] = true;
-                $isWorkspace = true;
-                $configs = $this->homeTabManager->getWidgetConfigsByWorkspace(
-                    $homeTab,
-                    $workspace
-                );
-            }
-
-            if ($isWorkspace) {
-                $wdcs = $this->widgetManager->generateWidgetDisplayConfigsForWorkspace(
-                    $workspace,
-                    $configs
-                );
-            } else if ($isLockedHomeTab || $isHomeLocked) {
-                $wdcs = $this->widgetManager->getAdminWidgetDisplayConfigsByWHTCs($configs);
-            } else {
-                $wdcs = $this->widgetManager->generateWidgetDisplayConfigsForUser(
-                    $user,
-                    $configs
-                );
-            }
-
-            foreach ($wdcs as $wdc) {
-
-                if ($wdc->getRow() === -1 || $wdc->getColumn() === -1) {
-                    $widgetsDatas['initWidgetsPosition'] = true;
-                    break;
-                }
-            }
-
-            foreach ($configs as $config) {
-                $widgetDatas = array();
-                $widgetInstance = $config->getWidgetInstance();
-                $widget = $widgetInstance->getWidget();
-                $widgetInstanceId = $widgetInstance->getId();
-                $widgetDatas['widgetId'] = $widget->getId();
-                $widgetDatas['widgetName'] = $widget->getName();
-                $widgetDatas['configId'] = $config->getId();
-
-                // TODO
-                // Retrieve widget content
-
-//                $eventName = 'widget_' . $config->getWidgetInstance()->getWidget()->getName();
-//                $event = $this->eventDispatcher->dispatch(
-//                    $eventName,
-//                    new \Claroline\CoreBundle\Event\DisplayWidgetEvent($widgetInstance)
-//                );
-
-//                $event = $this->eventStrictDispatcher->dispatch(
-//                    "widget_{$config->getWidgetInstance()->getWidget()->getName()}",
-//                    'DisplayWidget',
-//                    array($config->getWidgetInstance())
-//                );
-
-//                $widgetDatas['content'] = $event->getContent();
-                $widgetDatas['configurable'] = $config->isLocked() !== true
-                    && $config->getWidgetInstance()->getWidget()->isConfigurable();
-                $widgetDatas['locked'] = $config->isLocked();
-                $widgetDatas['type'] = $config->getType();
-                $widgetDatas['instanceId'] = $widgetInstanceId;
-                $widgetDatas['instanceName'] = $widgetInstance->getName();
-                $widgetDatas['instanceIcon'] = $widgetInstance->getIcon();
-                $widgetDatas['displayId'] = $wdcs[$widgetInstanceId]->getId();
-                $row = $wdcs[$widgetInstanceId]->getRow();
-                $column = $wdcs[$widgetInstanceId]->getColumn();
-                $widgetDatas['row'] = $row >= 0 ? $row : null;
-                $widgetDatas['col'] = $column >= 0 ? $column : null;
-                $widgetDatas['sizeY'] = $wdcs[$widgetInstanceId]->getHeight();
-                $widgetDatas['sizeX'] = $wdcs[$widgetInstanceId]->getWidth();
-                $widgetDatas['color'] = $wdcs[$widgetInstanceId]->getColor();
-                $details = $wdcs[$widgetInstanceId]->getDetails();
-                $widgetDatas['textTitleColor'] = isset($details['textTitleColor']) ?
-                    $details['textTitleColor'] :
-                    null;
-                $widgets[] = $widgetDatas;
-            }
-            $widgetsDatas['widgets'] = $widgets;
-        }
-
-        return new JsonResponse($widgetsDatas, 200);
     }
 
     /**
@@ -748,6 +583,7 @@ class DesktopHomeController extends FOSRestController
     {
         $this->checkWidgetDisplayConfigEdition($wdc);
         $widgetInstance = $wdc->getWidgetInstance();
+        $widget = $widgetInstance->getWidget();
         $this->checkWidgetInstanceEdition($widgetInstance);
         $color = $wdc->getColor();
         $details = $wdc->getDetails();
@@ -756,23 +592,36 @@ class DesktopHomeController extends FOSRestController
         $formType->enableApi();
         $form = $this->createForm($formType, $widgetInstance);
 
-//        $widget = $widgetInstance->getWidget();
-//
-//        if ($widget->isConfigurable()) {
-//            $event = $this->get('claroline.event.event_dispatcher')->dispatch(
-//                "widget_{$widgetInstance->getWidget()->getName()}_configuration",
-//                'ConfigureWidget',
-//                array($widgetInstance)
-//            );
-//            $content = $event->getContent();
-//        } else {
-//            $content = array();
-//        }
-
         return $this->apiManager->handleFormView(
             'ClarolineCoreBundle:API:Widget\widgetInstanceEditForm.html.twig',
-            $form
+            $form,
+            array('extra_infos' => $widget->isConfigurable())
         );
+    }
+
+    /**
+     * @View(serializerGroups={"api_home_tab"})
+     * @ApiDoc(
+     *     description="Returns the widget instance content configuration form",
+     *     views = {"desktop_home"}
+     * )
+     */
+    public function getWidgetInstanceContentConfigurationFormAction(WidgetInstance $widgetInstance)
+    {
+        $widget = $widgetInstance->getWidget();
+
+        if ($widget->isConfigurable()) {
+            $event = $this->get('claroline.event.event_dispatcher')->dispatch(
+                "widget_{$widgetInstance->getWidget()->getName()}_configuration",
+                'ConfigureWidget',
+                array($widgetInstance)
+            );
+            $content = $event->getContent();
+        } else {
+            $content = null;
+        }
+
+        return array('contentConfigForm' => $content);
     }
 
     /**
@@ -874,6 +723,7 @@ class DesktopHomeController extends FOSRestController
     {
         $this->checkWidgetDisplayConfigEdition($wdc);
         $widgetInstance = $wdc->getWidgetInstance();
+        $widget = $widgetInstance->getWidget();
         $this->checkWidgetInstanceEdition($widgetInstance);
         $color = $wdc->getColor();
         $details = $wdc->getDetails();
@@ -901,7 +751,6 @@ class DesktopHomeController extends FOSRestController
             $this->widgetManager->persistWidgetConfigs($widgetInstance, null, $wdc);
             $event = new LogWidgetUserEditEvent($widgetInstance, null, $wdc);
             $this->eventDispatcher->dispatch('log', $event);
-            $widget = $widgetInstance->getWidget();
 
             $widgetDatas = array(
                 'widgetId' => $widget->getId(),
@@ -923,7 +772,8 @@ class DesktopHomeController extends FOSRestController
             $options = array(
                 'http_code' => 400,
                 'extra_parameters' => null,
-                'serializer_group' => 'api_widget'
+                'serializer_group' => 'api_widget',
+                'extra_infos' => $widget->isConfigurable()
             );
 
             return $this->apiManager->handleFormView(

@@ -17,10 +17,9 @@
                             <span class="close">&nbsp;</span>
                             <i class="fa fa-pencil close"
                                ng-if="widget['type'] === 'desktop'"
-                               ng-click="dhmc.editUserWidget($event, widget['displayId'])"
+                               ng-click="dhmc.editUserWidget($event, widget['instanceId'], widget['displayId'], widget['configurable'])"
                             >
                             </i>
-                            <span class="close">&nbsp;</span>
                         </span>
                         <i class="fa fa-times close"
                            ng-if="widget['type'] !== 'desktop'"

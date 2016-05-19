@@ -8,56 +8,118 @@
  */
 
 export default class WidgetInstanceEditionModalCtrl {
-    constructor($http, $uibModal, $uibModalInstance, ClarolineAPIService, widgetDisplayId, callback) {
-        this.$http = $http
-        this.$uibModal = $uibModal
-        this.$uibModalInstance = $uibModalInstance
-        this.ClarolineAPIService = ClarolineAPIService
-        this.widgetDisplayId = widgetDisplayId
-        this.callback = callback
-        this.widgetInstance = {}
+  constructor($http, $sce, $uibModal, $uibModalInstance, $httpParamSerializer, ClarolineAPIService, WidgetService, widgetInstanceId, widgetDisplayId, configurable, contentConfig) {
+    this.$http = $http
+    this.$sce = $sce
+    this.$uibModal = $uibModal
+    this.$uibModalInstance = $uibModalInstance
+    this.$httpParamSerializer = $httpParamSerializer
+    this.ClarolineAPIService = ClarolineAPIService
+    this.WidgetService = WidgetService
+    this.widgetInstanceId = widgetInstanceId
+    this.widgetDisplayId = widgetDisplayId
+    this.configurable = configurable
+    this.widgetInstance = {}
+    this.contentConfig = this.secureHtml(contentConfig)
+    this.initializeContentConfigForm()
+  }
+
+  initializeContentConfigForm () {
+    if (this.contentConfig === null) {
+      const route = Routing.generate('api_get_widget_instance_content_configuration_form', {widgetInstance: this.widgetInstanceId})
+      this.$http.get(route).then(d => {
+        if (d['status'] === 200) {
+          this.contentConfig = this.secureHtml(d['data']['contentConfigForm'])
+        }
+      })
     }
+  }
 
-    submit() {
-        let data = this.ClarolineAPIService.formSerialize(
-            'widget_instance_config_form',
-            this.widgetInstance
-        )
-        const route = Routing.generate(
-            'api_put_widget_instance_edition',
-            {'_format': 'html', wdc: this.widgetDisplayId}
-        )
-        const headers = {headers: {'Content-Type': 'application/x-www-form-urlencoded'}}
+  secureHtml (html) {
+    return this.$sce.trustAsHtml(html)
+  }
 
-        this.$http.put(route, data, headers).then(
-            d => {
-                this.$uibModalInstance.close(d.data)
-            },
-            d => {
-                if (d.status === 400) {
-                    this.$uibModalInstance.close()
-                    const instance = this.$uibModal.open({
-                        template: d.data,
-                        controller: 'WidgetInstanceEditionModalCtrl',
-                        controllerAs: 'wfmc',
-                        bindToController: true,
-                        resolve: {
-                            widgetDisplayId: () => { return this.widgetDisplayId },
-                            callback: () => { return this.callback },
-                            widgetInstance: () => { return this.widgetInstance }
-                        }
-                    })
+  submit() {
+    if (this.configurable) {
+      this.submitContentConfiguration().then(result => {
+        if (result === null) {
+          this.submitMainForm()
+        } else if (result) {
+          this.submitMainForm(result)
+        }
+      })
+    } else {
+      this.submitMainForm()
+    }
+  }
 
-                    instance.result.then(result => {
+  submitMainForm (widgetContentConfigResult = null) {
+    let data = this.ClarolineAPIService.formSerialize(
+      'widget_instance_config_form',
+      this.widgetInstance
+    )
+    const route = Routing.generate(
+      'api_put_widget_instance_edition',
+      {'_format': 'html', wdc: this.widgetDisplayId}
+    )
+    const headers = {headers: {'Content-Type': 'application/x-www-form-urlencoded'}}
+    this.$http.put(route, data, headers).then(
+      d => {
+        this.WidgetService.updateUserWidget(d.data)
 
-                        if (!result) {
-                            return
-                        } else {
-                            this.callback(result)
-                        }
-                    })
-                }
+        if (widgetContentConfigResult) {
+          this.contentConfig = this.secureHtml(widgetContentConfigResult)
+        } else {
+          this.$uibModalInstance.close()
+        }
+      },
+      d => {
+        if (d.status === 400) {
+          this.$uibModalInstance.close()
+          const instance = this.$uibModal.open({
+            template: d.data,
+            controller: 'WidgetInstanceEditionModalCtrl',
+            controllerAs: 'wfmc',
+            bindToController: true,
+            resolve: {
+              widgetInstanceId: () => { return this.widgetInstanceId },
+              widgetDisplayId: () => { return this.widgetDisplayId },
+              configurable: () => { return this.configurable },
+              contentConfig: () => { return widgetContentConfigResult },
+              widgetInstance: () => { return this.widgetInstance }
             }
-        )
+          })
+        }
+      }
+    )
+  }
+
+  submitContentConfiguration (mode = 0) {
+    const forms = angular.element('.widget-content-config-form')
+
+    if (forms.length > 0) {
+      const action = forms[0].action
+      const formDatas = angular.element(forms[0]).serializeArray()
+      let datas = {}
+      formDatas.forEach(d => {
+        datas[d['name']] = d['value']
+      })
+
+      return this.$http.post(
+        action,
+        this.$httpParamSerializer(datas),
+        {headers: {'Content-Type': 'application/x-www-form-urlencoded'}}
+      ).then(d => {
+        if (d['status'] === 204) {
+          this.WidgetService.loadWidgetContent(this.widgetInstanceId)
+
+          return null
+        } else if (d['status'] === 200) {
+          return d['data']
+        }
+      })
+    } else {
+      return null
     }
+  }
 }

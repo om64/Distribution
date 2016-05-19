@@ -472,29 +472,6 @@ class HomeTabManager
 
     public function deleteWidgetHomeTabConfig(WidgetHomeTabConfig $widgetHomeTabConfig)
     {
-        $widgetOrder = $widgetHomeTabConfig->getWidgetOrder();
-        $homeTab = $widgetHomeTabConfig->getHomeTab();
-        $user = $widgetHomeTabConfig->getUser();
-        $workspace = $widgetHomeTabConfig->getWorkspace();
-
-        if (is_null($user) && is_null($workspace)) {
-            $this->widgetHomeTabConfigRepo->updateAdminWidgetHomeTabConfig(
-                $homeTab,
-                $widgetOrder
-            );
-        } elseif (is_null($workspace)) {
-            $this->widgetHomeTabConfigRepo->updateWidgetHomeTabConfigByUser(
-                $homeTab,
-                $widgetOrder,
-                $user
-            );
-        } else {
-            $this->widgetHomeTabConfigRepo->updateWidgetHomeTabConfigByWorkspace(
-                $homeTab,
-                $widgetOrder,
-                $workspace
-            );
-        }
         $this->om->remove($widgetHomeTabConfig);
         $this->om->flush();
     }
