@@ -21,15 +21,27 @@
     {% endstylesheets %}
 {% endblock %}
 
-
-
 {% block content %}
-
     <div class="media-resource-content-container">
-        <div class="panel panel-default">
-            {% block media_resource_content %}
-            {% endblock %}
-        </div>
+      <div class="alert-messages">
+          {% for successMessage in app.session.flashbag.get('success') %}
+              <div class="alert alert-dismissable alert-success">
+                <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
+                {{ successMessage }}
+              </div>
+          {% endfor %}
+
+          {% for errorMessage in app.session.flashbag.get('error') %}
+              <div class="alert alert-dismissable alert-danger">
+                <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
+                {{ errorMessage }}
+              </div>
+          {% endfor %}
+      </div>
+      <div class="panel panel-default">
+          {% block media_resource_content %}
+          {% endblock %}
+      </div>
     </div>
 {% endblock %}
 

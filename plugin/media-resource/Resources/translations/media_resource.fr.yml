@@ -5,7 +5,7 @@ accent_primary: Accent primaire
 accent_secondary: Accent secondaire
 accent_weak_vowel: Voyelle faible
 accent_no_accent: Texte normal
-alert_only_one_region_left: Il n'y a qu'un seul segment. Vous ne pouvez pas le supprimer!
+alert_only_one_region_left: Il n'y a qu'une seule region. Vous ne pouvez pas la supprimer!
 
 # b
 back: Quitter
@@ -17,23 +17,24 @@ btn_exercise_view: Vue Exercice
 
 # c
 close: Fermer
-creation_error_wrong_file_format: Le format du fichier fournit n'est pas autorisé (mp3 / ogg / wav)
-current_segment: Segment courant
+creation_error_wrong_file_format: Le format du fichier fournit n'est pas autorisé (mp3 / wav)
+current_segment: Région courante
 confirm: Confirmer
+config_update_success: Les options pour la ressource ont bien été mises à jour.
+config_update_error: Une erreur s'est produite lors de la mise à jour des options pour la ressource.
 
 # d
 delete_media_resource: Supprimer la ressource
-dialog_region_configure: Configurer le segment
-
+dialog_region_configure: Configurer la région
 
 # e
 error_while_uploading: Erreur lors de l'upload du fichier.
 error_while_encoding: Erreur lors de la conversion du fichier.
 
 # h
-help_modal_intro: <h4>Il est possible que vous ayez raté le bon segment.</h4><h5>Ici vous pouvez choisir entre le segment courant et le précédent (si il existe).</h5><h5>Vous verrez l'aide correspondante (si elle existe) sur l'autre onglet.</h5>
-help_modal_choice_tab_label: Choix du segment
-help_modal_help_tab_label: Aide disponible pour le segment
+help_modal_intro: <h4>Il est possible que vous ayez raté la bonne région.</h4><h5>Ici vous pouvez choisir entre la région courante et la précédente (si elle existe).</h5><h5>Vous verrez l'aide correspondante (si elle existe) sur l'autre onglet.</h5>
+help_modal_choice_tab_label: Choix de la région
+help_modal_help_tab_label: Aide disponible pour la région
 
 # i
 innova_media_resource: Ressource média
@@ -41,6 +42,8 @@ innova_media_resource: Ressource média
 #m
 move_backward: Aller au marqueur précédent
 move_forward: Aller au marqueur suivant
+media_resource_save_regions: Sauvegarder les regions et leur configuration pour le ressource
+media_resource_options_explain: Au moins un type de vue doit être actif.
 
 #n
 none: Aucune
@@ -48,38 +51,29 @@ no_media_resource: Aucune resource trouvée.
 
 #p
 play_pause: PLay / Pause
-previous_segment: Segment précédent
-playlists_manage: Gérer les playlistes pour ce média
-playlists_title: Playlists
-playlist_none: Aucune playliste n'existe pour cette ressource!
-playlist_add: Créer une playliste
-playlist_save_success: La playliste a bien été enregistrée.
-playlist_save_error: Une erreur est survenue lors de l'enregistrement de la playliste.
-playlist_deletion_success: La playliste a bien été supprimée.
-playlist_deletion_error: Une erreur est survenue lors de la suppression de la playliste.
-playlist_deletion_confirm: Etes vous sur de vouloir supprimer cette playliste ?
+previous_segment: Région précédente
 
 #r
 region_help: Aide sur un segment
-region_config: Configurer le segment
-region_delete: Supprimer le segment
+region_config: Configurer la région
+region_delete: Supprimer la région
 region_config_allow_rate: Autoriser le changement de vitesse de lecture
 region_config_allow_bwb: Autoriser la lecture en backward building
 region_config_allow_loop: Autoriser la lecture en boucle
 region_config_help_text: Texte d'aide
-region_config_help_region_title: Segment d'aide
-region_delete_confirm_base: Etes vous sur de vouloir supprimer le segment?
+region_config_help_region_title: Région d'aide
+region_delete_confirm_base: Etes vous sur de vouloir supprimer la région?
 region_delete_confirm_sub: Cette région est affectée à une ou plusieurs aides.<br/> Ces aides seront supprimées automatiquement.
-resource_update_success: La ressource à bien été mise à jour.
-resource_update_error: Une erreur est survenue lors de la mise à jour de la ressource.
+resource_update_success: Les régions de la ressource ont bien été sauvegardées.
+resource_update_error: Une erreur est survenue lors de la sauvegarde des régions de la ressource.
 region_help_help_text_label: Voir l'élément textuel
-region_help_segment_playback_label: Lecture du segment
-region_help_segment_playback: Jouer le segment
-region_help_segment_playback_backward: Lire le segment en backward building
-region_help_segment_playback_loop: Lire le segment en boucle
-region_help_segment_playback_rate: Lire le segment plus lentement
-region_help_related_segment_playback: Lire le segment connexe
-region_help_no_help_available: Aucune aide disponible pour le segment.
+region_help_segment_playback_label: Lecture de la région
+region_help_segment_playback: Jouer la région
+region_help_segment_playback_backward: Lire la région en backward building
+region_help_segment_playback_loop: Lire la région en boucle
+region_help_segment_playback_rate: Lire la région plus lentement
+region_help_related_segment_playback: Lire la région connexe
+region_help_no_help_available: Aucune aide disponible pour la région.
 
 #s
 save: Sauvegarder

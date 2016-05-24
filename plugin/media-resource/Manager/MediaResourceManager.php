@@ -7,6 +7,7 @@ use Symfony\Component\Translation\TranslatorInterface;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Innova\MediaResourceBundle\Entity\MediaResource;
 use Innova\MediaResourceBundle\Entity\Media;
+use Innova\MediaResourceBundle\Entity\Options;
 use JMS\DiExtraBundle\Annotation as DI;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\File\File;
@@ -45,7 +46,6 @@ class MediaResourceManager
         $this->translator = $translator;
         $this->container = $container;
         $this->fileDir = $fileDir;
-        //$this->tokenStorage = $container->get('security.token_storage');
         $this->claroUtils = $container->get('claroline.utilities.misc');
         $this->workspaceManager = $container->get('claroline.manager.workspace_manager');
     }
@@ -73,6 +73,26 @@ class MediaResourceManager
         $this->em->flush();
 
         return $this;
+    }
+
+    /**
+     * Create default options for newly created MediaResource.
+     **/
+    public function createMediaResourceDefaultOptions(MediaResource $mr)
+    {
+        $options = new Options();
+        $mr->setOptions($options);
+    }
+
+    /**
+     * Create default options for newly created MediaResource.
+     **/
+    public function persist(MediaResource $mr)
+    {
+        $this->em->persist($mr);
+        $this->em->flush();
+
+        return $mr;
     }
 
     /**
@@ -110,9 +130,7 @@ class MediaResourceManager
             $media->setType('audio');
             $media->setUrl('WORKSPACE_'.$workspace->getId().DIRECTORY_SEPARATOR.$uniqueBaseName.'.'.$ext);
             $mr->addMedia($media);
-            $this->em->persist($mr);
             $media->setMediaResource($mr);
-            $this->em->flush();
             unset($file);
         } else {
             $message = $this->translator->trans('error_while_uploading', array(), 'media_resource');
