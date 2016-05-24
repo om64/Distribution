@@ -106,7 +106,25 @@ export default class WidgetService {
     if (tabId === 0) {
       this.widgets.splice(0, this.widgets.length)
     } else {
-      //const route = Routing.generate('api_get_desktop_home_tab_widgets', {homeTab: tabId})
+      const route = Routing.generate('claro_desktop_home_widgets_display', {homeTab: tabId})
+      this.$http.get(route).then(datas => {
+        if (datas['status'] === 200) {
+          this.options['canEdit'] = isEditionEnabled && !datas['data']['isLockedHomeTab']
+          this.widgets.splice(0, this.widgets.length)
+          angular.merge(this.widgets, datas['data']['widgets'])
+          this.generateWidgetsDisplayOptions()
+          this.checkDesktopWidgetsDisplayOptions()
+          this.updateGristerEdition()
+          this.secureWidgetsContents()
+        }
+      })
+    }
+  }
+
+  loadAdminWidgets (tabId) {
+    if (tabId === 0) {
+      this.widgets.splice(0, this.widgets.length)
+    } else {
       const route = Routing.generate('claro_desktop_home_widgets_display', {homeTab: tabId})
       this.$http.get(route).then(datas => {
         if (datas['status'] === 200) {
@@ -227,7 +245,7 @@ export default class WidgetService {
       const modal = this.$uibModal.open({
         templateUrl: Routing.generate(
           'api_get_widget_instance_creation_form',
-          {'_format': 'html', htc: tabConfigId}
+          {htc: tabConfigId}
         ),
         controller: 'DesktopWidgetInstanceCreationModalCtrl',
         controllerAs: 'wfmc',
@@ -252,7 +270,7 @@ export default class WidgetService {
       const modal = this.$uibModal.open({
         templateUrl: Routing.generate(
           'api_get_widget_instance_edition_form',
-          {'_format': 'html', wdc: widgetDisplayId}
+          {wdc: widgetDisplayId}
         ) + '?bust=' + Math.random().toString(36).slice(2),
         controller: 'WidgetInstanceEditionModalCtrl',
         controllerAs: 'wfmc',

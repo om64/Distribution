@@ -78,28 +78,11 @@ class HomeTabController extends Controller
 
     /**
      * @EXT\Route(
-     *     "/home_tabs/configuration/menu",
-     *     name="claro_admin_home_tabs_configuration_menu",
+     *     "/home_tabs/{homeTabId}/type/{homeTabType}/configuration2",
+     *     name="claro_admin_home_tabs_configuration2",
      *     options = {"expose"=true}
      * )
-     * @EXT\Template("ClarolineCoreBundle:Administration\HomeTab:adminHomeTabsConfigMenu.html.twig")
-     *
-     * Displays the homeTabs configuration menu.
-     *
-     * @return Response
-     */
-    public function adminHomeTabsConfigMenuAction()
-    {
-        return array();
-    }
-
-    /**
-     * @EXT\Route(
-     *     "/home_tabs/{homeTabId}/type/{homeTabType}/configuration",
-     *     name="claro_admin_home_tabs_configuration",
-     *     options = {"expose"=true}
-     * )
-     * @EXT\Template("ClarolineCoreBundle:Administration\HomeTab:adminHomeTabsConfig.html.twig")
+     * @EXT\Template("ClarolineCoreBundle:Administration\HomeTab:adminHomeTabsConfig2.html.twig")
      *
      * Displays the admin homeTabs configuration page.
      *
@@ -107,7 +90,7 @@ class HomeTabController extends Controller
      *
      * @return array
      */
-    public function adminHomeTabsConfigAction($homeTabType, $homeTabId = -1)
+    public function adminHomeTabsConfig2Action($homeTabType, $homeTabId = -1)
     {
         $homeTabConfigs = ($homeTabType === 'desktop') ?
             $this->homeTabManager->getAdminDesktopHomeTabConfigs() :
@@ -169,6 +152,114 @@ class HomeTabController extends Controller
             'widgetsDatas' => $widgets,
             'initWidgetsPosition' => $initWidgetsPosition,
         );
+    }
+
+    /**
+     * @EXT\Route(
+     *     "/desktop/hometabs/configuration",
+     *     name="claro_admin_home_tabs_configuration",
+     *     options = {"expose"=true}
+     * )
+     * @EXT\Template("ClarolineCoreBundle:Administration\HomeTab:adminHomeTabsConfig.html.twig")
+     *
+     * Displays the admin homeTabs configuration page.
+     *
+     * @return array
+     */
+    public function adminHomeTabsConfigAction()
+    {
+//        $homeTabConfigs = ($homeTabType === 'desktop') ?
+//            $this->homeTabManager->getAdminDesktopHomeTabConfigs() :
+//            $this->homeTabManager->getAdminWorkspaceHomeTabConfigs();
+//        $tabId = intval($homeTabId);
+//        $widgets = array();
+//        $firstElement = true;
+//        $initWidgetsPosition = false;
+//
+//        if ($tabId !== -1) {
+//            foreach ($homeTabConfigs as $homeTabConfig) {
+//                if ($tabId === $homeTabConfig->getHomeTab()->getId()) {
+//                    $firstElement = false;
+//                    break;
+//                }
+//            }
+//        }
+//
+//        if ($firstElement) {
+//            $firstHomeTabConfig = reset($homeTabConfigs);
+//
+//            if ($firstHomeTabConfig) {
+//                $tabId = $firstHomeTabConfig->getHomeTab()->getId();
+//            }
+//        }
+//        $homeTab = $this->homeTabManager->getAdminHomeTabByIdAndType($tabId, $homeTabType);
+//        $widgetHomeTabConfigs = is_null($homeTab) ?
+//            array() :
+//            $this->homeTabManager->getAdminWidgetConfigs($homeTab);
+//        $wdcs = $this->widgetManager->generateWidgetDisplayConfigsForAdmin($widgetHomeTabConfigs);
+//
+//        foreach ($wdcs as $wdc) {
+//            if ($wdc->getRow() === -1 || $wdc->getColumn() === -1) {
+//                $initWidgetsPosition = true;
+//                break;
+//            }
+//        }
+//
+//        foreach ($widgetHomeTabConfigs as $widgetHomeTabConfig) {
+//            $widgetInstance = $widgetHomeTabConfig->getWidgetInstance();
+//
+//            $event = $this->eventDispatcher->dispatch(
+//                "widget_{$widgetInstance->getWidget()->getName()}",
+//                'DisplayWidget',
+//                array($widgetInstance)
+//            );
+//
+//            $widget['config'] = $widgetHomeTabConfig;
+//            $widget['content'] = $event->getContent();
+//            $widgetInstanceId = $widgetHomeTabConfig->getWidgetInstance()->getId();
+//            $widget['widgetDisplayConfig'] = $wdcs[$widgetInstanceId];
+//            $widgets[] = $widget;
+//        }
+//
+        return array();
+    }
+
+    /**
+     * @EXT\Route(
+     *     "/api/admin/home/tabs",
+     *     name="api_get_admin_home_tabs",
+     *     options = {"expose"=true}
+     * )
+     * @EXT\ParamConverter("user", options={"authenticatedUser" = true})
+     *
+     * Returns list of admin home tabs
+     *
+     * @return \Symfony\Component\HttpFoundation\JsonResponse
+     */
+    public function getAdminHomeTabsAction()
+    {
+        $datas = [];
+        $hometabConfigs = $this->homeTabManager->getAdminDesktopHomeTabConfigs();
+
+        foreach ($hometabConfigs as $htc) {
+            $tab = $htc->getHomeTab();
+            $details = $htc->getDetails();
+            $color = isset($details['color']) ? $details['color'] : null;
+            $datas[] = [
+                'configId' => $htc->getId(),
+                'locked' => $htc->isLocked(),
+                'tabOrder' => $htc->getTabOrder(),
+                'type' => $htc->getType(),
+                'visible' => $htc->isVisible(),
+                'tabId' => $tab->getId(),
+                'tabName' => $tab->getName(),
+                'tabType' => $tab->getType(),
+                'tabIcon' => $tab->getIcon(),
+                'color' => $color
+            ];
+        }
+
+        return new JsonResponse($datas, 200);
     }
 
     /**

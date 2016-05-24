@@ -107,8 +107,8 @@ export default class HomeTabService {
 
   loadDesktopHomeTabs() {
     const route = Routing.generate('api_get_desktop_home_tabs')
-    return this.$http.get(route).then(datas => {
 
+    return this.$http.get(route).then(datas => {
       if (datas['status'] === 200) {
         this.adminHomeTabs.splice(0, this.adminHomeTabs.length)
         this.userHomeTabs.splice(0, this.userHomeTabs.length)
@@ -119,6 +119,29 @@ export default class HomeTabService {
         this.selectDefaultHomeTab()
       }
     })
+  }
+
+  loadAdminHomeTabs() {
+    const route = Routing.generate('api_get_admin_home_tabs')
+
+    return this.$http.get(route).then(datas => {
+      if (datas['status'] === 200) {
+        this.adminHomeTabs.splice(0, this.adminHomeTabs.length)
+        angular.merge(this.adminHomeTabs, datas['data'])
+        this.selectDefaultAdminHomeTab()
+      }
+    })
+  }
+
+  selectDefaultAdminHomeTab() {
+    this.options['selectedTabId'] = 0
+    this.options['selectedTabConfigId'] = 0
+
+    if (this.adminHomeTabs.length > 0) {
+      this.options['selectedTabId'] = this.adminHomeTabs[0]['tabId']
+      this.options['selectedTabConfigId'] = this.adminHomeTabs[0]['configId']
+    }
+    //this.WidgetService.loadAdminWidgets(this.options['selectedTabId'])
   }
 
   selectDefaultHomeTab() {
@@ -143,13 +166,9 @@ export default class HomeTabService {
   }
 
   createUserHomeTab() {
-
     if (this.options['canEdit']) {
       const modal = this.$uibModal.open({
-        templateUrl: Routing.generate(
-          'api_get_home_tab_creation_form',
-          {'_format': 'html'}
-        ),
+        templateUrl: Routing.generate('api_get_home_tab_creation_form'),
         controller: 'DesktopHomeTabCreationModalCtrl',
         controllerAs: 'htfmc',
         resolve: {
@@ -158,7 +177,6 @@ export default class HomeTabService {
       })
 
       modal.result.then(result => {
-
         if (!result) {
           return
         } else {
@@ -169,13 +187,12 @@ export default class HomeTabService {
   }
 
   editUserHomeTab(tabId) {
-
     if (this.options['canEdit']) {
 
       const modal = this.$uibModal.open({
         templateUrl: Routing.generate(
           'api_get_home_tab_edition_form',
-          {'_format': 'html', homeTab: tabId}
+          {homeTab: tabId}
         ) + '?bust=' + Math.random().toString(36).slice(2),
         controller: 'HomeTabEditionModalCtrl',
         controllerAs: 'htfmc',
@@ -186,7 +203,6 @@ export default class HomeTabService {
       })
 
       modal.result.then(result => {
-
         if (!result) {
           return
         } else {
@@ -197,7 +213,6 @@ export default class HomeTabService {
   }
 
   hideAmdinHomeTab(tabConfigId) {
-
     if (this.options['canEdit']) {
       const url = Routing.generate('api_put_admin_home_tab_visibility_toggle', {htc: tabConfigId})
 
@@ -211,7 +226,6 @@ export default class HomeTabService {
   }
 
   deleteUserHomeTab(tabConfigId) {
-
     if (this.options['canEdit']) {
       const url = Routing.generate('api_delete_user_home_tab', {htc: tabConfigId})
 

@@ -24,12 +24,38 @@ export default class DesktopHomeMainCtrl {
     this.isHomeLocked = true
     this.gridsterOptions = WidgetService.getGridsterOptions()
     this.initialize()
+    this.initializeDragAndDrop()
+  }
+
+  initializeDragAndDrop () {
+    angular.element('#desktop-home-tabs-list').sortable({
+      items: '.movable-home-tab',
+      cursor: 'move'
+    })
+
+    angular.element('#desktop-home-tabs-list').on('sortupdate', (event, ui) => {
+      //console.log(ui.item)
+      //console.log($(ui.item).data('hometab-config-id'))
+      const hcId = $(ui.item).data('hometab-config-id')
+      //console.log(hcId)
+      let nextHcId = -1
+      const nextElement = $(ui.item).next()
+
+      if (nextElement !== undefined && nextElement.hasClass('movable-home-tab')) {
+        nextHcId = nextElement.data('hometab-config-id')
+      }
+      console.log(`${hcId} - ${nextHcId}`)
+      const route = Routing.generate(
+        'claro_desktop_home_tab_config_reorder',
+        {homeTabConfig: hcId, nextHomeTabConfigId: nextHcId}
+      )
+      this.$http.post(route)
+    })
   }
 
   toggleEditionMode() {
     const route = Routing.generate('api_put_desktop_home_edition_mode_toggle')
     this.$http.put(route).then(datas => {
-
       if (datas['status'] === 200) {
         this.editionMode = datas['data']
         this.homeTabsOptions['canEdit'] = !this.isHomeLocked && this.editionMode
@@ -104,7 +130,6 @@ export default class DesktopHomeMainCtrl {
   initialize() {
     const route = Routing.generate('api_get_desktop_options')
     this.$http.get(route).then(datas => {
-
       if (datas['status'] === 200) {
         this.isHomeLocked = datas['data']['isHomeLocked']
         this.editionMode = datas['data']['editionMode']

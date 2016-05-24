@@ -29,7 +29,7 @@ export default class WidgetInstanceEditionModalCtrl {
       const route = Routing.generate('api_get_widget_instance_content_configuration_form', {widgetInstance: this.widgetInstanceId})
       this.$http.get(route).then(d => {
         if (d['status'] === 200) {
-          this.contentConfig = this.secureHtml(d['data']['contentConfigForm'])
+          this.contentConfig = this.secureHtml(d['data'])
         }
       })
     }

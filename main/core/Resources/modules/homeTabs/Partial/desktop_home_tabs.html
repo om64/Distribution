@@ -1,5 +1,5 @@
 <div class="home-tabs-panel home-tabpanel" role="tabpanel">
-    <ul class="nav nav-tabs" role="tablist">
+    <ul class="nav nav-tabs" role="tablist" id="desktop-home-tabs-list">
         <li ng-repeat="tab in dhmc.adminHomeTabs"
             class="home-tab"
             ng-class="(tab['tabId'] === dhmc.homeTabsOptions['selectedTabId']) ? 'active' : ''"
@@ -22,8 +22,9 @@
             </a>
         </li>
         <li ng-repeat="tab in dhmc.userHomeTabs"
-            class="home-tab"
+            class="home-tab movable-home-tab"
             ng-class="(tab['tabId'] === dhmc.homeTabsOptions['selectedTabId']) ? 'active' : ''"
+            data-hometab-config-id="{{ tab['configId'] }}"
         >
             <a href="#" ng-click="dhmc.showTab(tab['tabId'], tab['configId'], false)">
                 <span class="icon-bg" style="background-color: {{  tab['color']}}">

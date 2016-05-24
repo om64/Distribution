@@ -403,8 +403,4 @@ claro_admin_widget:
 
 claro_desktop_home_api:
     resource: "@ClarolineCoreBundle/Controller/API/Desktop/DesktopHomeController.php"
-    type: rest
-    prefix: api
-    defaults: {_format: json}
-    options:
-        expose: true
+    type: annotation

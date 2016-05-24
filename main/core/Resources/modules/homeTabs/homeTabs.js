@@ -19,6 +19,7 @@ import DesktopHomeTabCreationModalCtrl from './Controller/DesktopHomeTabCreation
 import HomeTabEditionModalCtrl from './Controller/HomeTabEditionModalCtrl'
 import HomeTabService from './Service/HomeTabService'
 import DesktopHomeTabsDirective from './Directive/DesktopHomeTabsDirective'
+import AdminHomeTabsDirective from './Directive/AdminHomeTabsDirective'
 
 //import Interceptors from '../interceptorsDefault'
 //import HtmlTruster from '../html-truster/module'
@@ -35,4 +36,5 @@ angular.module('HomeTabsModule', [
 .controller('DesktopHomeTabCreationModalCtrl', DesktopHomeTabCreationModalCtrl)
 .controller('HomeTabEditionModalCtrl', HomeTabEditionModalCtrl)
 .service('HomeTabService', HomeTabService)
-.directive('homeTabs', () => new DesktopHomeTabsDirective)
+.directive('desktopHomeTabs', () => new DesktopHomeTabsDirective)
+.directive('adminHomeTabs', () => new AdminHomeTabsDirective)

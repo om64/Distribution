@@ -34,11 +34,9 @@ use Claroline\CoreBundle\Manager\HomeTabManager;
 use Claroline\CoreBundle\Manager\RoleManager;
 use Claroline\CoreBundle\Manager\UserManager;
 use Claroline\CoreBundle\Manager\WidgetManager;
-use FOS\RestBundle\Controller\Annotations\NamePrefix;
-use FOS\RestBundle\Controller\Annotations\View;
-use FOS\RestBundle\Controller\FOSRestController;
 use JMS\DiExtraBundle\Annotation as DI;
-use Nelmio\ApiDocBundle\Annotation\ApiDoc;
+use Sensio\Bundle\FrameworkExtraBundle\Configuration as EXT;
+use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -46,10 +44,7 @@ use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInt
 use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
 use Symfony\Component\Security\Core\Exception\AccessDeniedException;
 
-/**
- * @NamePrefix("api_")
- */
-class DesktopHomeController extends FOSRestController
+class DesktopHomeController extends Controller
 {
     private $apiManager;
     private $authorization;
@@ -102,161 +97,159 @@ class DesktopHomeController extends FOSRestController
     }
 
     /**
-     * @View(serializerGroups={"api_home_tab"})
-     * @ApiDoc(
-     *     description="Returns desktop options",
-     *     views = {"desktop_home"}
+     * @EXT\Route(
+     *     "/api/desktop/home/options",
+     *     name="api_get_desktop_options",
+     *     options = {"expose"=true}
      * )
+     * @EXT\ParamConverter("user", options={"authenticatedUser" = true})
+     *
+     * Returns desktop options
+     *
+     * @return \Symfony\Component\HttpFoundation\JsonResponse
      */
-    public function getDesktopOptionsAction()
+    public function getDesktopOptionsAction(User $user)
     {
-        $token = $this->tokenStorage->getToken();
-        $user = $token->getUser();
+        $options = $this->userManager->getUserOptions($user);
+        $desktopOptions = array();
+        $desktopOptions['editionMode'] = $options->getDesktopMode() === 1;
+        $desktopOptions['isHomeLocked'] = $this->roleManager->isHomeLocked($user);
 
-        if ($user === '.anon') {
-
-            throw new AccessDeniedException();
-        } else {
-            $options = $this->userManager->getUserOptions($user);
-            $desktopOptions = array();
-            $desktopOptions['editionMode'] = $options->getDesktopMode() === 1;
-            $desktopOptions['isHomeLocked'] = $this->roleManager->isHomeLocked($user);
-
-            return $desktopOptions;
-        }
+        return new JsonResponse($desktopOptions, 200);
     }
 
     /**
-     * @View(serializerGroups={"api_home_tab"})
-     * @ApiDoc(
-     *     description="Returns list of desktop home tabs",
-     *     views = {"desktop_home"}
+     * @EXT\Route(
+     *     "/api/desktop/home/tabs",
+     *     name="api_get_desktop_home_tabs",
+     *     options = {"expose"=true}
      * )
+     * @EXT\ParamConverter("user", options={"authenticatedUser" = true})
+     *
+     * Returns list of desktop home tabs
+     *
+     * @return \Symfony\Component\HttpFoundation\JsonResponse
      */
-    public function getDesktopHomeTabsAction()
+    public function getDesktopHomeTabsAction(User $user)
     {
-        $token = $this->tokenStorage->getToken();
-        $user = $token->getUser();
+        $options = $this->userManager->getUserOptions($user);
+        $desktopHomeDatas = array(
+            'tabsAdmin' => array(),
+            'tabsUser' => array(),
+            'tabsWorkspace' => array()
+        );
+        $desktopHomeDatas['editionMode'] = $options->getDesktopMode() === 1;
+        $desktopHomeDatas['isHomeLocked'] = $this->roleManager->isHomeLocked($user);
+        $userHomeTabConfigs = array();
+        $roleNames = $this->utils->getRoles($this->tokenStorage->getToken());
 
-        if ($user === '.anon') {
-
-            throw new AccessDeniedException();
+        if ($desktopHomeDatas['isHomeLocked']) {
+            $visibleAdminHomeTabConfigs = $this->homeTabManager
+                ->getVisibleAdminDesktopHomeTabConfigsByRoles($roleNames);
+            $workspaceUserHTCs = $this->homeTabManager
+                ->getVisibleWorkspaceUserHTCsByUser($user);
         } else {
-            $options = $this->userManager->getUserOptions($user);
-            $desktopHomeDatas = array(
-                'tabsAdmin' => array(),
-                'tabsUser' => array(),
-                'tabsWorkspace' => array()
+            $adminHomeTabConfigs = $this->homeTabManager
+                ->generateAdminHomeTabConfigsByUser($user, $roleNames);
+            $visibleAdminHomeTabConfigs = $this->homeTabManager
+                ->filterVisibleHomeTabConfigs($adminHomeTabConfigs);
+            $userHomeTabConfigs = $this->homeTabManager
+                ->getVisibleDesktopHomeTabConfigsByUser($user);
+            $workspaceUserHTCs = $this->homeTabManager
+                ->getVisibleWorkspaceUserHTCsByUser($user);
+        }
+
+        foreach ($visibleAdminHomeTabConfigs as $htc) {
+            $tab = $htc->getHomeTab();
+            $details = $htc->getDetails();
+            $color = isset($details['color']) ? $details['color'] : null;
+            $desktopHomeDatas['tabsAdmin'][] = array(
+                'configId' => $htc->getId(),
+                'locked' => $htc->isLocked(),
+                'tabOrder' => $htc->getTabOrder(),
+                'type' => $htc->getType(),
+                'visible' => $htc->isVisible(),
+                'tabId' => $tab->getId(),
+                'tabName' => $tab->getName(),
+                'tabType' => $tab->getType(),
+                'tabIcon' => $tab->getIcon(),
+                'color' => $color
             );
-            $desktopHomeDatas['editionMode'] = $options->getDesktopMode() === 1;
-            $desktopHomeDatas['isHomeLocked'] = $this->roleManager->isHomeLocked($user);
-            $userHomeTabConfigs = array();
-            $roleNames = $this->utils->getRoles($token);
-
-            if ($desktopHomeDatas['isHomeLocked']) {
-                $visibleAdminHomeTabConfigs = $this->homeTabManager
-                    ->getVisibleAdminDesktopHomeTabConfigsByRoles($roleNames);
-                $workspaceUserHTCs = $this->homeTabManager
-                    ->getVisibleWorkspaceUserHTCsByUser($user);
-            } else {
-                $adminHomeTabConfigs = $this->homeTabManager
-                    ->generateAdminHomeTabConfigsByUser($user, $roleNames);
-                $visibleAdminHomeTabConfigs = $this->homeTabManager
-                    ->filterVisibleHomeTabConfigs($adminHomeTabConfigs);
-                $userHomeTabConfigs = $this->homeTabManager
-                    ->getVisibleDesktopHomeTabConfigsByUser($user);
-                $workspaceUserHTCs = $this->homeTabManager
-                    ->getVisibleWorkspaceUserHTCsByUser($user);
-            }
-
-            foreach ($visibleAdminHomeTabConfigs as $htc) {
-                $tab = $htc->getHomeTab();
-                $details = $htc->getDetails();
-                $color = isset($details['color']) ? $details['color'] : null;
-                $desktopHomeDatas['tabsAdmin'][] = array(
-                    'configId' => $htc->getId(),
-                    'locked' => $htc->isLocked(),
-                    'tabOrder' => $htc->getTabOrder(),
-                    'type' => $htc->getType(),
-                    'visible' => $htc->isVisible(),
-                    'tabId' => $tab->getId(),
-                    'tabName' => $tab->getName(),
-                    'tabType' => $tab->getType(),
-                    'tabIcon' => $tab->getIcon(),
-                    'color' => $color
-                );
-            }
-
-            foreach ($userHomeTabConfigs as $htc) {
-                $tab = $htc->getHomeTab();
-                $details = $htc->getDetails();
-                $color = isset($details['color']) ? $details['color'] : null;
-                $desktopHomeDatas['tabsUser'][] = array(
-                    'configId' => $htc->getId(),
-                    'locked' => $htc->isLocked(),
-                    'tabOrder' => $htc->getTabOrder(),
-                    'type' => $htc->getType(),
-                    'visible' => $htc->isVisible(),
-                    'tabId' => $tab->getId(),
-                    'tabName' => $tab->getName(),
-                    'tabType' => $tab->getType(),
-                    'tabIcon' => $tab->getIcon(),
-                    'color' => $color
-                );
-            }
-
-            foreach ($workspaceUserHTCs as $htc) {
-                $tab = $htc->getHomeTab();
-                $details = $htc->getDetails();
-                $color = isset($details['color']) ? $details['color'] : null;
-                $desktopHomeDatas['tabsWorkspace'][] = array(
-                    'configId' => $htc->getId(),
-                    'locked' => $htc->isLocked(),
-                    'tabOrder' => $htc->getTabOrder(),
-                    'type' => $htc->getType(),
-                    'visible' => $htc->isVisible(),
-                    'tabId' => $tab->getId(),
-                    'tabName' => $tab->getName(),
-                    'tabType' => $tab->getType(),
-                    'tabIcon' => $tab->getIcon(),
-                    'color' => $color
-                );
-            }
-
-            return $desktopHomeDatas;
         }
+
+        foreach ($userHomeTabConfigs as $htc) {
+            $tab = $htc->getHomeTab();
+            $details = $htc->getDetails();
+            $color = isset($details['color']) ? $details['color'] : null;
+            $desktopHomeDatas['tabsUser'][] = array(
+                'configId' => $htc->getId(),
+                'locked' => $htc->isLocked(),
+                'tabOrder' => $htc->getTabOrder(),
+                'type' => $htc->getType(),
+                'visible' => $htc->isVisible(),
+                'tabId' => $tab->getId(),
+                'tabName' => $tab->getName(),
+                'tabType' => $tab->getType(),
+                'tabIcon' => $tab->getIcon(),
+                'color' => $color
+            );
+        }
+
+        foreach ($workspaceUserHTCs as $htc) {
+            $tab = $htc->getHomeTab();
+            $details = $htc->getDetails();
+            $color = isset($details['color']) ? $details['color'] : null;
+            $desktopHomeDatas['tabsWorkspace'][] = array(
+                'configId' => $htc->getId(),
+                'locked' => $htc->isLocked(),
+                'tabOrder' => $htc->getTabOrder(),
+                'type' => $htc->getType(),
+                'visible' => $htc->isVisible(),
+                'tabId' => $tab->getId(),
+                'tabName' => $tab->getName(),
+                'tabType' => $tab->getType(),
+                'tabIcon' => $tab->getIcon(),
+                'color' => $color
+            );
+        }
+
+        return new JsonResponse($desktopHomeDatas, 200);
     }
 
     /**
-     * @View(serializerGroups={"api_home_tab"})
-     * @ApiDoc(
-     *     description="Switch desktop home edition mode",
-     *     views = {"desktop_home"}
+     * @EXT\Route(
+     *     "/api/desktop/home/edition/mode/toggle",
+     *     name="api_put_desktop_home_edition_mode_toggle",
+     *     options = {"expose"=true}
      * )
+     * @EXT\ParamConverter("user", options={"authenticatedUser" = true})
+     *
+     * Switch desktop home edition mode
+     *
+     * @return \Symfony\Component\HttpFoundation\JsonResponse
      */
-    public function putDesktopHomeEditionModeToggleAction()
+    public function putDesktopHomeEditionModeToggleAction(User $user)
     {
-        $user = $this->tokenStorage->getToken()->getUser();
-
-        if ($user === '.anon') {
-
-            throw new AccessDeniedException();
-        }
         $options = $this->userManager->switchDesktopMode($user);
 
         return new JsonResponse($options->getDesktopMode(), 200);
     }
-    
+
     /**
-     * @View(serializerGroups={"api_home_tab"})
-     * @ApiDoc(
-     *     description="Toggle visibility for admin home tab",
-     *     views = {"desktop_home"}
+     * @EXT\Route(
+     *     "/api/desktop/admin/home/tab/{htc}/visibility/toggle",
+     *     name="api_put_admin_home_tab_visibility_toggle",
+     *     options = {"expose"=true}
      * )
+     * @EXT\ParamConverter("user", options={"authenticatedUser" = true})
+     *
+     * Toggle visibility for admin home tab
+     *
+     * @return \Symfony\Component\HttpFoundation\JsonResponse
      */
-    public function putAdminHomeTabVisibilityToggleAction(HomeTabConfig $htc)
+    public function putAdminHomeTabVisibilityToggleAction(User $user, HomeTabConfig $htc)
     {
-        $this->checkHomeTabConfig($htc, 'admin_desktop');
+        $this->checkHomeTabConfig($user, $htc, 'admin_desktop');
         $htc->setVisible(!$htc->isVisible());
         $this->homeTabManager->insertHomeTabConfig($htc);
         $tab = $htc->getHomeTab();
@@ -282,11 +275,14 @@ class DesktopHomeController extends FOSRestController
     }
 
     /**
-     * @View(serializerGroups={"api_home_tab"})
-     * @ApiDoc(
-     *     description="Returns the home tab creation form",
-     *     views = {"desktop_home"}
+     * @EXT\Route(
+     *     "/api/desktop/home/tab/create/form",
+     *     name="api_get_home_tab_creation_form",
+     *     options = {"expose"=true}
      * )
+     * @EXT\ParamConverter("user", options={"authenticatedUser" = true})
+     *
+     * Returns the home tab creation form
      */
     public function getHomeTabCreationFormAction()
     {
@@ -302,17 +298,20 @@ class DesktopHomeController extends FOSRestController
     }
 
     /**
-     * @View()
-     * @ApiDoc(
-     *     description="Creates a desktop home tab",
-     *     views = {"desktop_home"},
-     *     input="Claroline\CoreBundle\Form\HomeTabType"
+     * @EXT\Route(
+     *     "/api/desktop/home/tab/create",
+     *     name="api_post_desktop_home_tab_creation",
+     *     options = {"expose"=true}
      * )
+     * @EXT\ParamConverter("user", options={"authenticatedUser" = true})
+     *
+     * Creates a desktop home tab
+     *
+     * @return \Symfony\Component\HttpFoundation\JsonResponse
      */
-    public function postDesktopHomeTabCreationAction()
+    public function postDesktopHomeTabCreationAction(User $user)
     {
         $this->checkHomeLocked();
-        $user = $this->tokenStorage->getToken()->getUser();
         $formType = new HomeTabType();
         $formType->enableApi();
         $form = $this->createForm($formType);
@@ -376,16 +375,20 @@ class DesktopHomeController extends FOSRestController
     }
 
     /**
-     * @View(serializerGroups={"api_home_tab"})
-     * @ApiDoc(
-     *     description="Returns the home tab edition form",
-     *     views = {"desktop_home"}
+     * @EXT\Route(
+     *     "/api/desktop/home/tab/{homeTab}/edit/form",
+     *     name="api_get_home_tab_edition_form",
+     *     options = {"expose"=true}
      * )
+     * @EXT\ParamConverter("user", options={"authenticatedUser" = true})
+     *
+     * Returns the home tab edition form
+     *
+     * @return \Symfony\Component\HttpFoundation\JsonResponse
      */
-    public function getHomeTabEditionFormAction(HomeTab $homeTab)
+    public function getHomeTabEditionFormAction(User $user, HomeTab $homeTab)
     {
         $this->checkHomeLocked();
-        $user = $this->tokenStorage->getToken()->getUser();
         $this->checkHomeTabEdition($homeTab, $user);
 
         $homeTabConfig = $this->homeTabManager->getHomeTabConfigByHomeTabAndUser($homeTab, $user);
@@ -403,17 +406,20 @@ class DesktopHomeController extends FOSRestController
     }
 
     /**
-     * @View()
-     * @ApiDoc(
-     *     description="Edits a home tab",
-     *     views = {"desktop_home"},
-     *     input="Claroline\CoreBundle\Form\HomeTabType"
+     * @EXT\Route(
+     *     "/api/desktop/home/tab/{homeTab}/edit",
+     *     name="api_put_home_tab_edition",
+     *     options = {"expose"=true}
      * )
+     * @EXT\ParamConverter("user", options={"authenticatedUser" = true})
+     *
+     * Edits a home tab
+     *
+     * @return \Symfony\Component\HttpFoundation\JsonResponse
      */
-    public function putHomeTabEditionAction(HomeTab $homeTab)
+    public function putHomeTabEditionAction(User $user, HomeTab $homeTab)
     {
         $this->checkHomeLocked();
-        $user = $this->tokenStorage->getToken()->getUser();
         $this->checkHomeTabEdition($homeTab, $user);
 
         $formType = new HomeTabType();
@@ -481,17 +487,22 @@ class DesktopHomeController extends FOSRestController
             );
         }
     }
-    
+
     /**
-     * @View(serializerGroups={"api_home_tab"})
-     * @ApiDoc(
-     *     description="Delete user home tab",
-     *     views = {"desktop_home"}
+     * @EXT\Route(
+     *     "/api/desktop/home/tab/{htc}/delete",
+     *     name="api_delete_user_home_tab",
+     *     options = {"expose"=true}
      * )
+     * @EXT\ParamConverter("user", options={"authenticatedUser" = true})
+     *
+     * Deletes user home tab
+     *
+     * @return \Symfony\Component\HttpFoundation\JsonResponse
      */
-    public function deleteUserHomeTabAction(HomeTabConfig $htc)
+    public function deleteUserHomeTabAction(User $user, HomeTabConfig $htc)
     {
-        $this->checkHomeTabConfig($htc, 'desktop');
+        $this->checkHomeTabConfig($user, $htc, 'desktop');
         $tab = $htc->getHomeTab();
         $details = $htc->getDetails();
         $color = isset($details['color']) ? $details['color'] : null;
@@ -517,16 +528,20 @@ class DesktopHomeController extends FOSRestController
     }
 
     /**
-     * @View(serializerGroups={"api_home_tab"})
-     * @ApiDoc(
-     *     description="Delete pinned workspace home tab",
-     *     views = {"desktop_home"}
+     * @EXT\Route(
+     *     "/api/desktop/pinned/home/tab/{htc}/delete",
+     *     name="api_delete_pinned_workspace_home_tab",
+     *     options = {"expose"=true}
      * )
+     * @EXT\ParamConverter("user", options={"authenticatedUser" = true})
+     *
+     * Delete pinned workspace home tab
+     *
+     * @return \Symfony\Component\HttpFoundation\JsonResponse
      */
-    public function deletePinnedWorkspaceHomeTabAction(HomeTabConfig $htc)
+    public function deletePinnedWorkspaceHomeTabAction(User $user, HomeTabConfig $htc)
     {
-        $this->checkHomeTabConfig($htc, 'workspace_user');
-        $user = $htc->getUser();
+        $this->checkHomeTabConfig($user, $htc, 'workspace_user');
         $workspace = $htc->getWorkspace();
         $tab = $htc->getHomeTab();
         $details = $htc->getDetails();
@@ -552,16 +567,18 @@ class DesktopHomeController extends FOSRestController
     }
 
     /**
-     * @View(serializerGroups={"api_home_tab"})
-     * @ApiDoc(
-     *     description="Returns the widget instance creation form",
-     *     views = {"desktop_home"}
+     * @EXT\Route(
+     *     "/api/home/tab/{htc}/widget/create/form",
+     *     name="api_get_widget_instance_creation_form",
+     *     options = {"expose"=true}
      * )
+     * @EXT\ParamConverter("user", options={"authenticatedUser" = true})
+     *
+     * Returns the widget instance creation form
      */
-    public function getWidgetInstanceCreationFormAction(HomeTabConfig $htc)
+    public function getWidgetInstanceCreationFormAction(User $user, HomeTabConfig $htc)
     {
-        $this->checkWidgetCreation($htc);
-        $user = $this->tokenStorage->getToken()->getUser();
+        $this->checkWidgetCreation($user, $htc);
         $formType = new WidgetInstanceConfigType(true, true, $user->getEntityRoles());
         $formType->enableApi();
         $form = $this->createForm($formType);
@@ -573,18 +590,21 @@ class DesktopHomeController extends FOSRestController
     }
 
     /**
-     * @View(serializerGroups={"api_home_tab"})
-     * @ApiDoc(
-     *     description="Returns the widget instance edition form",
-     *     views = {"desktop_home"}
+     * @EXT\Route(
+     *     "/api/home/tab/widget/{wdc}/edit/form",
+     *     name="api_get_widget_instance_edition_form",
+     *     options = {"expose"=true}
      * )
+     * @EXT\ParamConverter("user", options={"authenticatedUser" = true})
+     *
+     * Returns the widget instance edition form
      */
-    public function getWidgetInstanceEditionFormAction(WidgetDisplayConfig $wdc)
+    public function getWidgetInstanceEditionFormAction(User $user, WidgetDisplayConfig $wdc)
     {
-        $this->checkWidgetDisplayConfigEdition($wdc);
+        $this->checkWidgetDisplayConfigEdition($user, $wdc);
         $widgetInstance = $wdc->getWidgetInstance();
         $widget = $widgetInstance->getWidget();
-        $this->checkWidgetInstanceEdition($widgetInstance);
+        $this->checkWidgetInstanceEdition($user, $widgetInstance);
         $color = $wdc->getColor();
         $details = $wdc->getDetails();
         $textTitleColor = isset($details['textTitleColor']) ? $details['textTitleColor'] : null;
@@ -600,11 +620,14 @@ class DesktopHomeController extends FOSRestController
     }
 
     /**
-     * @View(serializerGroups={"api_home_tab"})
-     * @ApiDoc(
-     *     description="Returns the widget instance content configuration form",
-     *     views = {"desktop_home"}
+     * @EXT\Route(
+     *     "/api/home/tab/widget/{widgetInstance}/content/configure/form",
+     *     name="api_get_widget_instance_content_configuration_form",
+     *     options = {"expose"=true}
      * )
+     * @EXT\ParamConverter("user", options={"authenticatedUser" = true})
+     *
+     * Returns the widget instance content configuration form
      */
     public function getWidgetInstanceContentConfigurationFormAction(WidgetInstance $widgetInstance)
     {
@@ -621,20 +644,22 @@ class DesktopHomeController extends FOSRestController
             $content = null;
         }
 
-        return array('contentConfigForm' => $content);
+        return new JsonResponse($content);
     }
 
     /**
-     * @View(serializerGroups={"api_home_tab"})
-     * @ApiDoc(
-     *     description="Creates a new widget instance",
-     *     views = {"desktop_home"}
+     * @EXT\Route(
+     *     "/api/home/tab/{htc}/widget/create",
+     *     name="api_post_desktop_widget_instance_creation",
+     *     options = {"expose"=true}
      * )
+     * @EXT\ParamConverter("user", options={"authenticatedUser" = true})
+     *
+     * Creates a new widget instance
      */
-    public function postDesktopWidgetInstanceCreationAction(HomeTabConfig $htc)
+    public function postDesktopWidgetInstanceCreationAction(User $user, HomeTabConfig $htc)
     {
-        $this->checkWidgetCreation($htc);
-        $user = $this->tokenStorage->getToken()->getUser();
+        $this->checkWidgetCreation($user, $htc);
         $formType = new WidgetInstanceConfigType(true, true, $user->getEntityRoles());
         $formType->enableApi();
         $form = $this->createForm($formType);
@@ -713,18 +738,21 @@ class DesktopHomeController extends FOSRestController
     }
 
     /**
-     * @View(serializerGroups={"api_home_tab"})
-     * @ApiDoc(
-     *     description="Edit widget instance config",
-     *     views = {"desktop_home"}
+     * @EXT\Route(
+     *     "/api/home/tab/widget/{wdc}/edit",
+     *     name="api_put_widget_instance_edition",
+     *     options = {"expose"=true}
      * )
+     * @EXT\ParamConverter("user", options={"authenticatedUser" = true})
+     *
+     * Edits widget instance config
      */
-    public function putWidgetInstanceEditionAction(WidgetDisplayConfig $wdc)
+    public function putWidgetInstanceEditionAction(User $user, WidgetDisplayConfig $wdc)
     {
-        $this->checkWidgetDisplayConfigEdition($wdc);
+        $this->checkWidgetDisplayConfigEdition($user, $wdc);
         $widgetInstance = $wdc->getWidgetInstance();
         $widget = $widgetInstance->getWidget();
-        $this->checkWidgetInstanceEdition($widgetInstance);
+        $this->checkWidgetInstanceEdition($user, $widgetInstance);
         $color = $wdc->getColor();
         $details = $wdc->getDetails();
         $textTitleColor = isset($details['textTitleColor']) ? $details['textTitleColor'] : null;
@@ -785,17 +813,20 @@ class DesktopHomeController extends FOSRestController
     }
 
     /**
-     * @View(serializerGroups={"api_home_tab"})
-     * @ApiDoc(
-     *     description="Change visibility of a widget",
-     *     views = {"desktop_home"}
+     * @EXT\Route(
+     *     "/api/desktop/home/tab/widget/{widgetHomeTabConfig}/visibility/change",
+     *     name="api_put_desktop_widget_home_tab_config_visibility_change",
+     *     options = {"expose"=true}
      * )
+     * @EXT\ParamConverter("user", options={"authenticatedUser" = true})
+     *
+     * Changes visibility of a widget
+     *
+     * @return \Symfony\Component\HttpFoundation\JsonResponse
      */
-    public function putDesktopWidgetHomeTabConfigVisibilityChangeAction(
-        WidgetHomeTabConfig $widgetHomeTabConfig
-    )
+    public function putDesktopWidgetHomeTabConfigVisibilityChangeAction(User $user, WidgetHomeTabConfig $widgetHomeTabConfig)
     {
-        $this->checkWidgetHomeTabConfigEdition($widgetHomeTabConfig);
+        $this->checkWidgetHomeTabConfigEdition($user, $widgetHomeTabConfig);
         $this->homeTabManager->changeVisibilityWidgetHomeTabConfig($widgetHomeTabConfig, false);
         $homeTab = $widgetHomeTabConfig->getHomeTab();
         $event = new LogWidgetAdminHideEvent($homeTab, $widgetHomeTabConfig);
@@ -826,15 +857,20 @@ class DesktopHomeController extends FOSRestController
     }
 
     /**
-     * @View(serializerGroups={"api_home_tab"})
-     * @ApiDoc(
-     *     description="Delete a widget",
-     *     views = {"desktop_home"}
+     * @EXT\Route(
+     *     "/api/desktop/home/tab/widget/{widgetHomeTabConfig}/delete",
+     *     name="api_delete_desktop_widget_home_tab_config",
+     *     options = {"expose"=true}
      * )
+     * @EXT\ParamConverter("user", options={"authenticatedUser" = true})
+     *
+     * Deletes a widget
+     *
+     * @return \Symfony\Component\HttpFoundation\JsonResponse
      */
-    public function deleteDesktopWidgetHomeTabConfigAction(WidgetHomeTabConfig $widgetHomeTabConfig)
+    public function deleteDesktopWidgetHomeTabConfigAction(User $user, WidgetHomeTabConfig $widgetHomeTabConfig)
     {
-        $this->checkWidgetHomeTabConfigEdition($widgetHomeTabConfig);
+        $this->checkWidgetHomeTabConfigEdition($user, $widgetHomeTabConfig);
         $homeTab = $widgetHomeTabConfig->getHomeTab();
         $widgetInstance = $widgetHomeTabConfig->getWidgetInstance();
         $widget = $widgetInstance->getWidget();
@@ -862,7 +898,7 @@ class DesktopHomeController extends FOSRestController
         );
         $this->homeTabManager->deleteWidgetHomeTabConfig($widgetHomeTabConfig);
 
-        if ($this->hasUserAccessToWidgetInstance($widgetInstance)) {
+        if ($this->hasUserAccessToWidgetInstance($user, $widgetInstance)) {
             $this->widgetManager->removeInstance($widgetInstance);
         }
         $event = new LogWidgetUserDeleteEvent($datas);
@@ -872,13 +908,18 @@ class DesktopHomeController extends FOSRestController
     }
 
     /**
-     * @View(serializerGroups={"api_home_tab"})
-     * @ApiDoc(
-     *     description="Update widgets display",
-     *     views = {"desktop_home"}
+     * @EXT\Route(
+     *     "/api/desktop/widget/display/{datas}/update",
+     *     name="api_put_desktop_widget_display_update",
+     *     options = {"expose"=true}
      * )
+     * @EXT\ParamConverter("user", options={"authenticatedUser" = true})
+     *
+     * Updates widgets display
+     *
+     * @return \Symfony\Component\HttpFoundation\JsonResponse
      */
-    public function putDesktopWidgetDisplayUpdateAction($datas)
+    public function putDesktopWidgetDisplayUpdateAction(User $user, $datas)
     {
         $jsonDatas = json_decode($datas, true);
         $displayConfigs = array();
@@ -887,7 +928,7 @@ class DesktopHomeController extends FOSRestController
             $displayConfig = $this->widgetManager->getWidgetDisplayConfigById($data['id']);
 
             if (!is_null($displayConfig)) {
-                $this->checkWidgetDisplayConfigEdition($displayConfig);
+                $this->checkWidgetDisplayConfigEdition($user, $displayConfig);
                 $displayConfig->setRow($data['row']);
                 $displayConfig->setColumn($data['col']);
                 $displayConfig->setWidth($data['sizeX']);
@@ -910,9 +951,8 @@ class DesktopHomeController extends FOSRestController
         }
     }
 
-    private function checkHomeTabConfig(HomeTabConfig $htc, $homeTabType)
+    private function checkHomeTabConfig(User $authenticatedUser, HomeTabConfig $htc, $homeTabType)
     {
-        $authenticatedUser = $this->tokenStorage->getToken()->getUser();
         $user = $htc->getUser();
         $type = $htc->getType();
 
@@ -933,9 +973,8 @@ class DesktopHomeController extends FOSRestController
         }
     }
 
-    private function checkWidgetHomeTabConfigEdition(WidgetHomeTabConfig $whtc)
+    private function checkWidgetHomeTabConfigEdition(User $authenticatedUser, WidgetHomeTabConfig $whtc)
     {
-        $authenticatedUser = $this->tokenStorage->getToken()->getUser();
         $user = $whtc->getUser();
 
         if ($authenticatedUser !== $user) {
@@ -944,9 +983,8 @@ class DesktopHomeController extends FOSRestController
         }
     }
 
-    private function checkWidgetDisplayConfigEdition(WidgetDisplayConfig $wdc)
+    private function checkWidgetDisplayConfigEdition(User $authenticatedUser, WidgetDisplayConfig $wdc)
     {
-        $authenticatedUser = $this->tokenStorage->getToken()->getUser();
         $user = $wdc->getUser();
 
         if ($authenticatedUser !== $user) {
@@ -955,9 +993,8 @@ class DesktopHomeController extends FOSRestController
         }
     }
 
-    private function checkWidgetInstanceEdition(WidgetInstance $widgetInstance)
+    private function checkWidgetInstanceEdition(User $authenticatedUser, WidgetInstance $widgetInstance)
     {
-        $authenticatedUser = $this->tokenStorage->getToken()->getUser();
         $user = $widgetInstance->getUser();
 
         if ($authenticatedUser !== $user) {
@@ -966,9 +1003,8 @@ class DesktopHomeController extends FOSRestController
         }
     }
 
-    private function checkWidgetCreation(HomeTabConfig $htc)
+    private function checkWidgetCreation(User $user, HomeTabConfig $htc)
     {
-        $user = $this->tokenStorage->getToken()->getUser();
         $homeTab = $htc->getHomeTab();
         $homeTabUser = $homeTab->getUser();
         $type = $homeTab->getType();
@@ -984,9 +1020,8 @@ class DesktopHomeController extends FOSRestController
         }
     }
 
-    private function hasUserAccessToWidgetInstance(WidgetInstance $widgetInstance)
+    private function hasUserAccessToWidgetInstance(User $authenticatedUser, WidgetInstance $widgetInstance)
     {
-        $authenticatedUser = $this->tokenStorage->getToken()->getUser();
         $user = $widgetInstance->getUser();
 
         return $authenticatedUser === $user;

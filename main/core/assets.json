@@ -4,7 +4,8 @@
       "user-management": "modules/users/module",
       "organization-management": "modules/organization/module",
       "plugin-management": "modules/plugins/module",
-      "desktop-home": "modules/desktopHome/desktopHome"
+      "desktop-home": "modules/desktopHome/desktopHome",
+      "admin-home-tabs-config": "modules/adminHomeTabsConfig/adminHomeTabsConfig"
     }
   }
 }
