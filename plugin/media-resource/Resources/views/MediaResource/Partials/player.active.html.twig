@@ -1,0 +1,70 @@
+<div class="row media-container">
+    <div class="col-md-12">
+        <div id="audio-player">
+            <div id="wave-timeline"></div>
+            <div id="waveform">
+                <div class="progress progress-striped active" id="progress-bar">
+                    <div class="progress-bar progress-bar-info"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<hr/>
+<!-- media controls -->
+<div class="row">
+    <div class="col-md-12 text-center">
+
+        <button type="button" class="btn btn-default" data-action="play" title="{{'play_pause' | trans({}, 'media_resource')}}">
+            <i class="fa fa-play"></i>
+            /
+            <i class="fa fa-pause"></i>
+        </button>
+        <button type="button" class="btn btn-default fa fa-question" data-action="help" title="{{'region_help' | trans({}, 'media_resource')}}"></button>
+    </div>
+</div>
+<hr/>
+
+<!-- segments -->
+<div class="row" style="display:none;">
+    <div class="col-md-12 text-center regions-container">
+        {% if regions | length > 0 %}
+            {% for region in regions %}
+                <div class="row form-row region" id="{{region.uuid}}" data-uuid="{{region.uuid}}">
+                    <div class="col-xs-1">
+                        <div class="time-text start">{{ region.start | hmsTime }}</div>
+                    </div>
+                    <div class="col-xs-1">
+                        <div class="time-text end">{{ region.end | hmsTime }}</div>
+                    </div>
+
+                    <div class="col-xs-10">
+                        <div class="text-left note">{{ region.note | raw }}</div>
+                    </div>
+
+                    <input type="hidden" class="hidden-start" name="start[]" value="{{ region.start }}" required="required">
+                    <input type="hidden" class="hidden-end" name="end[]" value="{{ region.end }}" required="required">
+                    <input type="hidden" class="hidden-note" name="note[]" value="{{ region.note }}">
+                    <input type="hidden" class="hidden-region-id" name="region-id[]" value="{{ region.id }}">
+                    <input type="hidden" class="hidden-region-uuid" name="region-uuid[]" value="{{ region.uuid }}">
+                    <!-- Region config  -->
+                    <input type="hidden" class="hidden-config-help-region-uuid" name="help-region-uuid[]" value="{{ region.regionConfig.helpRegionUuid ? region.regionConfig.helpRegionUuid : '' }}">
+                    <input type="hidden" class="hidden-config-loop" name="loop[]" value="{{ region.regionConfig.hasLoop ? '1' : '0' }}">
+                    <input type="hidden" class="hidden-config-backward" name="backward[]" value="{{ region.regionConfig.hasBackward ? '1' : '0' }}">
+                    <input type="hidden" class="hidden-config-rate" name="rate[]" value="{{ region.regionConfig.hasRate ? '1' : '0' }}">
+                    <input type="hidden" class="hidden-config-text" name="text[]" value="{{ region.regionConfig.helpText ? region.regionConfig.helpText : '' }}">
+                </div>
+            {% endfor %}
+        {% endif %}
+    </div>
+</div>
+
+{% block javascripts %}
+
+{% javascripts
+'@InnovaMediaResourceBundle/Resources/public/js/play.active.js'
+ %}
+
+<script src="{{ asset_url }}"></script>
+{% endjavascripts %}
+{% endblock %}

@@ -1,0 +1,11 @@
+<div class="btn-group">
+    {% if mr.options.getShowAutoPauseView %}
+      <a class="btn btn-default {% if mode == 'pause' %} active {% endif %}" href="{{path('media_resource_change_view', {'workspaceId': workspace.id ,'id':_resource.id, 'mode':'pause'})}}">{{'btn_auto_pause' | trans({}, 'media_resource')}}</a>
+    {% endif %}
+    {% if mr.options.getShowLiveView %}
+      <a class="btn btn-default {% if mode == 'live' %} active {% endif %}" href="{{path('media_resource_change_view', {'workspaceId': workspace.id ,'id':_resource.id, 'mode':'live'})}}">{{'btn_live_listening' | trans({}, 'media_resource')}}</a>
+    {% endif %}
+    {% if mr.options.getShowActiveView %}
+      <a class="btn btn-default {% if mode == 'active' %} active {% endif %}" href="{{path('media_resource_change_view', {'workspaceId': workspace.id ,'id':_resource.id, 'mode':'active'})}}">{{'btn_active_listening' | trans({}, 'media_resource')}}</a>
+    {% endif %}
+</div>

@@ -87,7 +87,7 @@ class MediaResourceListener extends ContainerAware
             $mediaResource = $form->getData();
             $file = $form['file']->getData();
             $workspace = $event->getParent()->getWorkspace();
-
+            $this->container->get('innova_media_resource.manager.media_resource')->createMediaResourceDefaultOptions($mediaResource);
             $this->container->get('innova_media_resource.manager.media_resource')->handleMediaResourceMedia($file, $mediaResource, $workspace);
             // Send new MediaResource to dispatcher through event object
             $event->setResources(array($mediaResource));

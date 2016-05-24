@@ -3,18 +3,17 @@
 namespace Innova\MediaResourceBundle\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
-use Innova\MediaResourceBundle\Entity\Region;
 
 /**
- * RegionConfig
+ * RegionConfig.
  *
- * @ORM\Table(name="innova_media_resource_region_config")
+ * @ORM\Table(name="media_resource_region_config")
  * @ORM\Entity
  */
-class RegionConfig {
-
+class RegionConfig
+{
     /**
-     * @var integer
+     * @var int
      *
      * @ORM\Column(name="id", type="integer")
      * @ORM\Id
@@ -59,86 +58,109 @@ class RegionConfig {
 
     /**
      * @var related region for help
-     * User can be helped by another region content
+     *              User can be helped by another region content
      * @ORM\Column(name="help_region_uuid", type="string", length=255)
      */
     private $helpRegionUuid;
-    
-    public function setId($id) {
+
+    public function setId($id)
+    {
         $this->id = $id;
+
         return $this;
     }
 
     /**
-     * Get id
+     * Get id.
      *
-     * @return integer 
+     * @return int
      */
-    public function getId() {
+    public function getId()
+    {
         return $this->id;
     }
 
-    public function setHasLoop($hasLoop) {
+    public function setHasLoop($hasLoop)
+    {
         $this->hasLoop = $hasLoop;
+
         return $this;
     }
 
-    public function getHasLoop() {
+    public function getHasLoop()
+    {
         return $this->hasLoop;
     }
 
-    public function setHasBackward($hasBackward) {
+    public function setHasBackward($hasBackward)
+    {
         $this->hasBackward = $hasBackward;
+
         return $this;
     }
 
-    public function getHasBackward() {
+    public function getHasBackward()
+    {
         return $this->hasBackward;
     }
 
-    public function setHasRate($hasRate) {
+    public function setHasRate($hasRate)
+    {
         $this->hasRate = $hasRate;
+
         return $this;
     }
 
-    public function getHasRate() {
+    public function getHasRate()
+    {
         return $this->hasRate;
     }
 
-    public function setHelpText($helpText) {
+    public function setHelpText($helpText)
+    {
         $this->helpText = $helpText;
+
         return $this;
     }
 
-    public function getHelpText() {
+    public function getHelpText()
+    {
         return $this->helpText;
     }
 
-    public function setRegion(Region $region) {
+    public function setRegion(Region $region)
+    {
         $this->region = $region;
+
         return $this;
     }
 
-    public function getRegion() {
+    public function getRegion()
+    {
         return $this->region;
     }
 
-    public function setHelpRegion(Region $helpRegion) {
+    public function setHelpRegion(Region $helpRegion)
+    {
         $this->helpRegion = $helpRegion;
+
         return $this;
     }
 
-    public function getHelpRegion() {
+    public function getHelpRegion()
+    {
         return $this->helpRegion;
     }
-    
-    public function getHelpRegionUuid() {
+
+    public function getHelpRegionUuid()
+    {
         return $this->helpRegionUuid;
     }
 
-    public function setHelpRegionUuid($helpRegionUuid) {
+    public function setHelpRegionUuid($helpRegionUuid)
+    {
         $this->helpRegionUuid = $helpRegionUuid;
+
         return $this;
     }
-
 }

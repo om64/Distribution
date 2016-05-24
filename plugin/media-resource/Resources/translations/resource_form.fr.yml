@@ -1,15 +1,15 @@
-#m
-media_resource_playlist_name : Nom
-media_resource_playlist_playlistRegions: Segments
-media_resource_playlist_playlistRegions_region: Segment
-media_resource_playlist_playlistRegions_order: Ordre
-media_resource_playlist_add_element: Ajouter un élément
-media_resource_playlist_title_field_label: Titre
 
-#p
-playlist_create_title: Nouvelle playliste
-playlist_edit_title: Editer la playliste
-playlist_return_to_list: Revenir à la liste des playlistes de %s
-playlist_no_segment: Aucun segment pour cette media ressource. Vous ne pouvez pas créer de playliste!
-playlist_save: Sauvegarde de la playliste
-playlist_preview: Préécoute de la playliste
+# o
+options_form_modal_title: Options pour la ressource
+options_form_auto_pause_view: Activer la vue pause automatique
+options_form_live_view: Activer la vue live
+options_form_active_view: Activer la vue active
+options_form_exercise_view: Activer la vue exercise
+options_form_enable_text_transcription: Visualiser la transcription textuelle
+options_form_tts_language: Langue pour le text to speech
+options_form_tts_choices_en_US: Anglais (US)
+options_form_tts_choices_en_GB: Anglais (GB)
+options_form_tts_choices_de_DE: Allemand
+options_form_tts_choices_es_ES: Espagnol
+options_form_tts_choices_fr_FR: Français
+options_form_tts_choices_it_IT: Italien

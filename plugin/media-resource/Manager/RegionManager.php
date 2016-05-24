@@ -3,7 +3,6 @@
 namespace Innova\MediaResourceBundle\Manager;
 
 use Doctrine\ORM\EntityManager;
-use Symfony\Component\Translation\TranslatorInterface;
 use Innova\MediaResourceBundle\Entity\MediaResource;
 use Innova\MediaResourceBundle\Entity\Region;
 use Innova\MediaResourceBundle\Entity\RegionConfig;
@@ -15,25 +14,17 @@ use JMS\DiExtraBundle\Annotation as DI;
 class RegionManager
 {
     protected $em;
-    protected $translator;
-    protected $playlistRegionManager;
 
     /**
      * @DI\InjectParams({
-     *      "em"            = @DI\Inject("doctrine.orm.entity_manager"),
-     *      "translator"    = @DI\Inject("translator"),
-     *      "plRManager"     = @DI\Inject("innova_media_resource.manager.playlist_region")
+     *      "em"            = @DI\Inject("doctrine.orm.entity_manager")
      * })
      *
-     * @param EntityManager       $em
-     * @param TranslatorInterface $translator
-     * @param PlaylistManager     $plManager
+     * @param EntityManager $em
      */
-    public function __construct(EntityManager $em, TranslatorInterface $translator, PlaylistRegionManager $plRManager)
+    public function __construct(EntityManager $em)
     {
         $this->em = $em;
-        $this->translator = $translator;
-        $this->playlistRegionManager = $plRManager;
     }
 
     public function save(Region $region)
@@ -46,18 +37,8 @@ class RegionManager
 
     public function delete(Region $region)
     {
-
-        // before deleting the region get the playlistRegions list
-        $playlistRegions = $region->getPlaylistRegions();
-
-        // delete region (this will also delete all related playlist region entries)
         $this->em->remove($region);
         $this->em->flush();
-
-        // reorder each related playlist
-        if (count($playlistRegions) > 0) {
-            $this->playlistRegionManager->reorder($playlistRegions);
-        }
 
         return $this;
     }

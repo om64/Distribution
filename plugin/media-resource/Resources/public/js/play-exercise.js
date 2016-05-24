@@ -16,6 +16,8 @@ var regions = [];
 var helpButton;
 var domUtils;
 var helpIsPlaying = false;
+var utterance; // webspeech utterance
+var strUtils;
 
 var wavesurferOptions = {
     container: '#waveform',
@@ -28,17 +30,21 @@ var wavesurferOptions = {
     minimap: true
 };
 
+
+
+// ======================================================================================================== //
+// ACTIONS BOUND WHEN DOM READY END
+// ======================================================================================================== //
+
 $(document).ready(function() {
     // get some hidden inputs usefull values
     currentExerciseType = 'audio';
-
+    // js helpers
     domUtils = Object.create(DomUtils);
+    strUtils = Object.create(StringUtils);
     wId = $('input[name="wId"]').val();
     mrId = $('input[name="mrId"]').val();
 
-    createRegions();
-    currentRegion = regions[0];
-    $('.help-text').html(currentRegion.note);
     /* WAVESURFER */
     wavesurfer = Object.create(WaveSurfer);
 
@@ -61,14 +67,6 @@ $(document).ready(function() {
 
     wavesurfer.init(wavesurferOptions);
 
-    /* Minimap plugin */
-    /*wavesurfer.initMinimap({
-        height: 30,
-        waveColor: '#ddd',
-        progressColor: '#999',
-        cursorColor: '#999'
-    });*/
-
     audioUrl = Routing.generate('innova_get_mediaresource_resource_file', {
         workspaceId: wId,
         id: mrId
@@ -76,6 +74,12 @@ $(document).ready(function() {
     helpAudioPlayer = document.getElementById('html-audio');
     helpAudioPlayer.src = audioUrl;
     wavesurfer.load(audioUrl);
+
+    createRegions();
+    if (regions.length > 0) {
+        currentRegion = regions[0];
+        $('.help-text').html(currentRegion.note);
+    }
 
     wavesurfer.on('ready', function() {
         var timeline = Object.create(WaveSurfer.Timeline);
@@ -96,14 +100,14 @@ $(document).ready(function() {
         }
         $('#btn-play').removeClass('fa-pause').addClass('fa-play');
         var current = getRegionFromCurrentTime();
-        if (current && current.id != currentRegion.id) {
+        if (current && currentRegion && current.id != currentRegion.id) {
             // update current region
             currentRegion = current;
             // show help text
             $('.help-text').html(currentRegion.note);
         }
 
-        if (helpRegion && current.id != helpRegion.id) {
+        if (helpRegion && current && current.id != helpRegion.id) {
             console.log('hide help items');
             $('.region-highlight').remove();
             $('.help-container').hide();
@@ -113,7 +117,7 @@ $(document).ready(function() {
     wavesurfer.on('audioprocess', function() {
         // check regions and display text
         var current = getRegionFromCurrentTime();
-        if (current && current.id != currentRegion.id) {
+        if (current && currentRegion && current.id != currentRegion.id) {
             // update current region
             currentRegion = current;
             // show help text
@@ -238,9 +242,70 @@ function playSlowly() {
     }
 }
 
+function playBackward() {
+    // is playing for real audio (ie not for TTS)
+    if (helpIsPlaying && helpAudioPlayer) {
+        // stop audio playback before playing TTS
+        helpAudioPlayer.pause();
+        helpIsPlaying = false;
+    }
+    if (window.SpeechSynthesisUtterance === undefined) {
+        console.log('not supported!');
+    } else {
+        var text = strUtils.removeHtml(currentRegion.note);
+        var array = text.split(' ');
+        var start = array.length - 1;
+        // check if utterance is already speaking before playing (multiple click on backward button)
+        if (!window.speechSynthesis.speaking) {
+            handleUtterancePlayback(start, array);
+        }
+    }
+}
+
+function sayIt(text, callback) {
+    var utterance = new SpeechSynthesisUtterance();
+    utterance.text = text;
+    var lang = $('input[name=tts]').val();
+    var voices = window.speechSynthesis.getVoices();
+    if(voices.length === 0){
+      // chrome hack...
+      window.setTimeout(function(){
+        voices = window.speechSynthesis.getVoices();
+        continueToSay(utterance, voices, lang, callback);
+      },200);
+    } else {
+      continueToSay(utterance, voices, lang, callback);
+    }
+}
+
+function continueToSay(utterance, voices, lang, callback){
+  for(var i = 0; i < voices.length ; i++) {
+    if(voices[i].lang == lang){
+      utterance.voice = voices[i];
+    }
+  }
+  window.speechSynthesis.speak(utterance);
+  utterance.onend = function(event) {
+      return callback();
+  };
+}
+
+function handleUtterancePlayback(index, textArray) {
+    var toSay = '';
+    var length = textArray.length;
+    for (var j = index; j < length; j++) {
+        toSay += textArray[j] + ' ';
+    }
+    if (index >= 0) {
+        sayIt(toSay, function() {
+            index = index - 1;
+            handleUtterancePlayback(index, textArray);
+        });
+    }
+}
+
 
 function showHelp() {
-    console.log('show me the help please');
     var current = getRegionFromCurrentTime();
     var $root = $('.help-container');
     $root.empty();
@@ -261,10 +326,10 @@ function showHelp() {
         if (current.texts.length > 0) {
             console.log(current.texts);
             for (var i = 0; i < current.texts.length; i++) {
-              if(current.texts[i] !== ''){
-                  html += '<button class="btn btn-default fa fa-file-text-o help-item" title="' + current.texts[i] + '">';
-                  html += '</button>';
-              }
+                if (current.texts[i] !== '') {
+                    html += '<button class="btn btn-default fa fa-file-text-o help-item" title="' + current.texts[i] + '">';
+                    html += '</button>';
+                }
             }
         }
     } else {
@@ -286,7 +351,6 @@ function getRegionFromCurrentTime() {
 }
 
 function createRegions() {
-
     $(".region").each(function() {
         var start = $(this).find('input.hidden-start').val();
         var end = $(this).find('input.hidden-end').val();
@@ -297,7 +361,7 @@ function createRegions() {
         var loop = $(this).find('input.hidden-config-loop').val() === '1';
         var backward = $(this).find('input.hidden-config-backward').val() === '1';
         var rate = $(this).find('input.hidden-config-rate').val() === '1';
-        var texts = $(this).find('input.hidden-config-text').val() !== '' ? $(this).find('input.hidden-config-text').val().split(';'):false;
+        var texts = $(this).find('input.hidden-config-text').val() !== '' ? $(this).find('input.hidden-config-text').val().split(';') : false;
         var hasHelp = rate || backward || (texts && texts.length > 0) || loop || helpUuid !== '';
         var region = {
             id: id,
@@ -314,5 +378,21 @@ function createRegions() {
         };
         regions.push(region);
     });
+    if (regions.length === 0) {
+        var region = {
+            id: 0,
+            uuid: '',
+            start: 0,
+            end: wavesurfer.getDuration(),
+            note: '',
+            hasHelp: false,
+            helpUuid: '',
+            loop: false,
+            backward: false,
+            rate: false,
+            texts: false
+        };
+        regions.push(region);
+    }
     return true;
 }

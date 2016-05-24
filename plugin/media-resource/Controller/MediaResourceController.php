@@ -9,7 +9,10 @@ use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\ParamConverter;
 use Innova\MediaResourceBundle\Entity\MediaResource;
 use Claroline\CoreBundle\Entity\Workspace\Workspace;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
+use Innova\MediaResourceBundle\Form\Type\OptionsType;
+use Innova\MediaResourceBundle\Entity\Options;
 
 /**
  * Class MediaResourceController.
@@ -33,21 +36,45 @@ class MediaResourceController extends Controller
         }
         // use of specific method to order regions correctly
         $regions = $this->get('innova_media_resource.manager.media_resource_region')->findByAndOrder($mr);
-        // default view is AutoPause !
-        return $this->render('InnovaMediaResourceBundle:MediaResource:player.pause.html.twig', array(
-                    '_resource' => $mr,
-                    'regions' => $regions,
-                    'workspace' => $workspace,
-                        )
-        );
+        // get options
+        $options = $mr->getOptions();
+        // if set to exercise view all the other parameters are ignored
+        if ($options->getShowExerciseView()) {
+            return $this->render('InnovaMediaResourceBundle:MediaResource:player.exercise.html.twig', array(
+                        '_resource' => $mr,
+                        'regions' => $regions,
+                        'workspace' => $workspace,
+                            )
+            );
+        } else {
+            $modes = [];
+            // at least one mode is enabled
+            if ($options->getShowAutoPauseView) {
+                array_push($modes, 'pause');
+            }
+            if ($options->getShowActiveView) {
+                array_push($modes, 'active');
+            }
+            if ($options->getShowLiveView) {
+                array_push($modes, 'live');
+            }
+
+            return $this->render('InnovaMediaResourceBundle:MediaResource:player.wrapper.html.twig', array(
+                      '_resource' => $mr,
+                      'regions' => $regions,
+                      'workspace' => $workspace,
+                      'mode' => $modes[0],
+                  )
+          );
+        }
     }
 
     /**
      * Media resource player other views.
      *
-     * @Route("/mode/{id}", requirements={"id" = "\d+"}, name="media_resource_change_view")
+     * @Route("/mr/{id}/mode/{mode}", requirements={"id" = "\d+"}, name="media_resource_change_view")
      * @ParamConverter("MediaResource", class="InnovaMediaResourceBundle:MediaResource")
-     * @Method("POST")
+     * @Method("GET")
      */
     public function changeViewAction(Workspace $workspace, MediaResource $mr)
     {
@@ -57,38 +84,15 @@ class MediaResourceController extends Controller
 
         // use a specific method to order regions correctly
         $regions = $this->get('innova_media_resource.manager.media_resource_region')->findByAndOrder($mr);
+        $mode = $this->getRequest()->get('mode');
 
-        $active = $this->getRequest()->get('active');
-        $live = $this->getRequest()->get('live');
-        $exercise = $this->getRequest()->get('exercise');
-
-        if ($active) {
-            return $this->render('InnovaMediaResourceBundle:MediaResource:details.html.twig', array(
-                            '_resource' => $mr,
-                            'edit' => false,
-                            'regions' => $regions,
-                            'workspace' => $workspace,
-                                )
-                );
-        } elseif ($live) {
-            return $this->render('InnovaMediaResourceBundle:MediaResource:player.live.html.twig', array(
-                            '_resource' => $mr,
-                            'regions' => $regions,
-                            'workspace' => $workspace,
-                                )
-                );
-        } elseif ($exercise) {
-            return $this->render('InnovaMediaResourceBundle:MediaResource:player.exercise.html.twig', array(
-                          '_resource' => $mr,
-                          'regions' => $regions,
-                          'workspace' => $workspace,
-                              )
-              );
-        } else {
-            $url = $this->generateUrl('innova_media_resource_open', array('id' => $mr->getId(), 'workspaceId' => $workspace->getId()));
-
-            return $this->redirect($url);
-        }
+        return $this->render('InnovaMediaResourceBundle:MediaResource:player.wrapper.html.twig', array(
+                  '_resource' => $mr,
+                  'regions' => $regions,
+                  'workspace' => $workspace,
+                  'mode' => $mode,
+                      )
+                    );
     }
 
     /**
@@ -106,20 +110,50 @@ class MediaResourceController extends Controller
 
         // use of specific method to order regions correctly
         $regions = $this->get('innova_media_resource.manager.media_resource_region')->findByAndOrder($mr);
+        $options = $mr->getOptions();
+        // MediaResource Options form
+        $form = $this->container->get('form.factory')->create(new OptionsType(), $options);
 
-        return $this->render('InnovaMediaResourceBundle:MediaResource:details.html.twig', array(
+        return $this->render('InnovaMediaResourceBundle:MediaResource:administrate.html.twig', array(
                     '_resource' => $mr,
-                    'edit' => true,
                     'regions' => $regions,
                     'workspace' => $workspace,
-                    'playMode' => 'active',
-                        )
+                    'form' => $form->createView(),
+          )
         );
     }
 
     /**
+     * AJAX administrate media resource options.
+     *
+     * @Route("/mr/{id}/options/edit", requirements={"id" = "\d+"}, name="media_resource_save_options")
+     * @Method("POST")
+     * @ParamConverter("MediaResource", class="InnovaMediaResourceBundle:MediaResource")
+     */
+    public function saveOptionsAction(MediaResource $mr)
+    {
+        $form = $this->container->get('form.factory')->create(new OptionsType(), $mr->getOptions());
+        // Try to process form
+        $request = $this->container->get('request');
+        $form->handleRequest($request);
+        $msg = '';
+        $code = 200;
+        if ($form->isValid()) {
+            $options = $form->getData();
+            $mr->setOptions($options);
+            $mr = $this->get('innova_media_resource.manager.media_resource')->persist($mr);
+            $msg = $this->get('translator')->trans('config_update_success', array(), 'media_resource');
+        } else {
+            $msg = $this->get('translator')->trans('config_update_error', array(), 'media_resource');
+            $code = 500;
+        }
+
+        return new JsonResponse($msg, $code);
+    }
+
+    /**
      * AJAX
-     * save a media resource after editing (adding and/or configuring regions).
+     * save media resource regions.
      *
      * @Route("/save/{id}", requirements={"id" = "\d+"}, name="media_resource_save")
      * @ParamConverter("MediaResource", class="InnovaMediaResourceBundle:MediaResource")
@@ -135,11 +169,11 @@ class MediaResourceController extends Controller
             if ($mediaResource) {
                 $msg = $this->get('translator')->trans('resource_update_success', array(), 'media_resource');
 
-                return new \Symfony\Component\HttpFoundation\Response($msg, 200);
+                return new JsonResponse($msg, 200);
             } else {
                 $msg = $this->get('translator')->trans('resource_update_error', array(), 'media_resource');
 
-                return new \Symfony\Component\HttpFoundation\Response($msg, 500);
+                return new JsonResponse($msg, 500);
             }
         }
     }

@@ -9,7 +9,7 @@ var DomUtils = {
      * @returns bootbox modal object
      */
     openRegionHelpModal: function (current, previous, audioData) {
-        var html = '<div id="help-tab-panel" class="row" role="tabpanel">';
+        var html = '<div id="help-tab-panel" role="tabpanel">';
         html += '       <ul class="nav nav-tabs" role="tablist">';
         html += '           <li role="presentation" class="active">';
         html += '               <a href="#help-region-choice" aria-controls="help-region-choice" role="tab" data-toggle="tab">' + Translator.trans('help_modal_choice_tab_label', {}, 'media_resource') + '</a>';

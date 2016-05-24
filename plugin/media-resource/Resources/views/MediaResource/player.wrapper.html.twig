@@ -1,0 +1,42 @@
+{% extends "InnovaMediaResourceBundle::layout.html.twig" %}
+
+{% block media_resource_content %}
+    <!-- PANEL HEADER -->
+    <div class="panel-heading">
+
+        {% include "InnovaMediaResourceBundle:MediaResource/Partials:toggle-view.html.twig" with {'mode': mode, 'mr': _resource, 'wid': workspace.id} %}
+    </div>
+
+    <div class="panel-body">
+        {% if mode == "active" %}
+            {% include "InnovaMediaResourceBundle:MediaResource/Partials:player.active.html.twig" with {'_resource': _resource, 'workspace': workspace, 'regions': regions} %}
+        {% elseif mode == "live" %}
+            {% include "InnovaMediaResourceBundle:MediaResource/Partials:player.live.html.twig" with {'_resource': _resource, 'workspace': workspace, 'regions': regions} %}
+        {% else %}
+            {% include "InnovaMediaResourceBundle:MediaResource/Partials:player.pause.html.twig" with {'_resource': _resource, 'workspace': workspace, 'regions': regions} %}
+        {% endif %}
+    </div>
+
+    <!-- hidden fields -->
+    <input type="hidden" name="type" value="audio">
+    <input type="hidden" name="wId" value="{{workspace.id}}">
+    <input type="hidden" name="mrId" value="{{_resource.id}}">
+    <input type="hidden" name="tts" value="{{_resource.options.getTtsLanguage}}">
+
+{% endblock %}
+
+{% block javascripts %}
+    {{parent()}}
+    {% javascripts
+    '@InnovaMediaResourceBundle/Resources/public/js/libs/wavesurfer/wavesurfer.js'
+    '@InnovaMediaResourceBundle/Resources/public/js/libs/wavesurfer/webaudio.js'
+    '@InnovaMediaResourceBundle/Resources/public/js/libs/wavesurfer/drawer.js'
+    '@InnovaMediaResourceBundle/Resources/public/js/libs/wavesurfer/drawer.canvas.js'
+    '@InnovaMediaResourceBundle/Resources/public/js/libs/wavesurfer/plugins/wavesurfer.timeline.js'
+    '@InnovaMediaResourceBundle/Resources/public/js/libs/wavesurfer/plugins/wavesurfer.regions.js'
+    '@InnovaMediaResourceBundle/Resources/public/js/libs/wavesurfer/plugins/wavesurfer.minimap.js'
+    %}
+
+    <script src="{{ asset_url }}"></script>
+    {% endjavascripts %}
+{% endblock %}
