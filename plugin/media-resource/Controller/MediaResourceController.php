@@ -48,7 +48,7 @@ class MediaResourceController extends Controller
             );
         } else {
             $modes = [];
-            // at least one mode is enabled
+            // at least one mode is enabled ...
             if ($options->getShowAutoPauseView) {
                 array_push($modes, 'pause');
             }
@@ -63,7 +63,7 @@ class MediaResourceController extends Controller
                       '_resource' => $mr,
                       'regions' => $regions,
                       'workspace' => $workspace,
-                      'mode' => $modes[0],
+                      'mode' => $modes[0], // so... choose the first mode that we encounter...
                   )
           );
         }
@@ -98,7 +98,7 @@ class MediaResourceController extends Controller
     /**
      * administrate a media resource.
      *
-     * @Route("/edit/{id}", requirements={"id" = "\d+"}, name="innova_media_resource_administrate")
+     * @Route("/mr/edit/{id}", requirements={"id" = "\d+"}, name="innova_media_resource_administrate")
      * @Method("GET")
      * @ParamConverter("MediaResource", class="InnovaMediaResourceBundle:MediaResource")
      */
@@ -114,7 +114,7 @@ class MediaResourceController extends Controller
         // MediaResource Options form
         $form = $this->container->get('form.factory')->create(new OptionsType(), $options);
 
-        return $this->render('InnovaMediaResourceBundle:MediaResource:administrate.html.twig', array(
+        return $this->render('InnovaMediaResourceBundle:MediaResource:administrate-2.html.twig', array(
                     '_resource' => $mr,
                     'regions' => $regions,
                     'workspace' => $workspace,
@@ -201,26 +201,5 @@ class MediaResourceController extends Controller
         $response->headers->set('Content-Type', $type);
 
         return $response;
-    }
-
-    /**
-     * get media resource media url.
-     *
-     * @Route(
-     *     "/get/media/{id}/url",
-     *     name="innova_get_mediaresource_resource_file_url",
-     *     options={"expose"=true}
-     * )
-     * @ParamConverter("MediaResource", class="InnovaMediaResourceBundle:MediaResource")
-     * @Method({"GET"})
-     */
-    public function getMediaResourceMediaUrl(MediaResource $mr)
-    {
-        $fileUrl = $this->get('innova_media_resource.manager.media_resource_media')->getAudioMediaUrlForAjax($mr);
-        $path = $this->container->getParameter('claroline.param.files_directory')
-            .DIRECTORY_SEPARATOR
-            .$fileUrl;
-
-        return $path;
     }
 }

@@ -47,10 +47,9 @@
 
 {% block javascripts %}
     {{parent()}}
-    <script type="text/javascript" src="{{ url('bazinga_jstranslation_js', { 'domain':'media_resource' }) }}"></script>
-
-    <script type="text/javascript" src="{{ asset('bundles/frontend/jquery-ui/ui/minified/draggable.min.js') }}"> </script>
-    <script type="text/javascript" src="{{ asset('bundles/frontend/jquery-ui/ui/minified/droppable.min.js') }}"> </script>
+    <script type="text/javascript" src="{{ url('bazinga_jstranslation_js', { 'domain':'media_resource' }) }}"></script>  
+    <script type="text/javascript" src="{{ asset('packages/jquery-ui/ui/minified/draggable.min.js') }}"> </script>
+    <script type="text/javascript" src="{{ asset('packages/jquery-ui/ui/minified/droppable.min.js') }}"> </script>
 
     {% javascripts
         '@InnovaMediaResourceBundle/Resources/public/js/libs/bootstrap-switch.js'
