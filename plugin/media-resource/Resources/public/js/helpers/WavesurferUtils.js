@@ -3,7 +3,7 @@
 var WavesurferUtils = {
     /**
      * get region for a given time
-     * @param time current time 
+     * @param time current time
      * @param wavesurfer wavesurfer instance
      * @returns a wavesurfer.region or null
      */
@@ -19,7 +19,7 @@ var WavesurferUtils = {
     },
     /**
      * Get the closest next wavesurfer region
-     * @param time current time 
+     * @param time current time
      * @param wavesurfer wavesurfer instance
      * @returns a wavesurfer.region or null
      */
@@ -37,7 +37,7 @@ var WavesurferUtils = {
     },
     /**
      * Get the closest previous wavesurfer region
-     * @param time current time 
+     * @param time current time
      * @param wavesurfer wavesurfer instance
      * @returns a wavesurfer.region or null
      */
@@ -54,44 +54,8 @@ var WavesurferUtils = {
         return result;
     },
     /**
-     * format decimal time into human readable time
-     * @param d decimal
-     * @returns formated time
-     */
-    secondsToHms: function (d) {
-        d = Number(d);
-        if (d > 0) {
-
-            var hours = Math.floor(d / 3600);
-            var minutes = Math.floor(d % 3600 / 60);
-            var seconds = Math.floor(d % 3600 % 60);
-
-            // ms
-            var str = d.toString();
-            var substr = str.split('.');
-            var ms = substr[1].substring(0, 2);
-
-            if (hours < 10) {
-                hours = "0" + hours;
-            }
-            if (minutes < 10) {
-                minutes = "0" + minutes;
-            }
-            if (seconds < 10) {
-                seconds = "0" + seconds;
-            }
-           // var time = hours + ':' + minutes + ':' + seconds + ':' + ms;
-            var time = minutes + ':' + seconds + ':' + ms;
-            return time;
-        }
-        else {
-
-            return "00:00:00";
-        }
-    },
-    /**
      * Random RGBA color.
-     * @param alpha 
+     * @param alpha
      */
     randomColor: function (alpha) {
         return 'rgba(' + [
@@ -108,7 +72,7 @@ var WavesurferUtils = {
      wavesurfer.backend.getPeaks(512),
      wavesurfer.getDuration()
      );
-     *      
+     *
      */
     extractRegions: function (peaks, duration) {
 // Silence params

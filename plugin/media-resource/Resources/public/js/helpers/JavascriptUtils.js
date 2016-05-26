@@ -13,6 +13,7 @@ var JavascriptUtils = {
         }
         return txt;
     },
+  
     /**
      * format decimal time into human readable time
      * @param d decimal

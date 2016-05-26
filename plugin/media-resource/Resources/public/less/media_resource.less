@@ -211,4 +211,32 @@
       font-size:2em;
     }
 
+    /*do not show wavesurfer regions nore regions handlers*/
+    .wavesurfer-region{
+      background-color: rgba(0,0,0,0);
+    }
+    .wavesurfer-handle{
+      width:0px;
+    }
+
+    .divide-marker-start{
+        width:0px;
+    }
+
+    .divide-marker{
+      background-color: rgba(0,161,229,1);
+      position:absolute;
+      top:0;
+      z-index: 2;
+      height:100%;
+    }
+
+    .marker-drag-handler {
+        position: absolute;
+        border-radius: 50%;
+        background-color: rgba(0,161,229,1);
+        cursor:pointer;
+        border:1px solid white;
+    }
+
 }

@@ -68,9 +68,10 @@ var DomUtils = {
         html += '           </div>';
         html += '       </div>';
         html += '   </div>';
+        /*
         html += '   <audio id="help-audio-player" style="display:none;" src="' + audioData + '">'; // will not show as no controls are defined
         html += '   </audio>';
-
+*/
 
         var modal = bootbox.dialog({
             title: Translator.trans('region_help', {}, 'media_resource'), //"Aide sur la région:",
@@ -92,7 +93,7 @@ var DomUtils = {
      * Allow author to set witch help will be available for the region
      * @param {type} elem current clicked config button
      */
-    openConfigRegionModal: function (elem, w, wutils) {
+    openConfigRegionModal: function (elem) {
         // get wavesurfer regions
         var rRows = [];
         $('.region').each(function () {
@@ -111,7 +112,7 @@ var DomUtils = {
         var currentStart = $(elem).closest('div.region').find('.time-text.start').text();
         // find region config hidden inputs
         //help-region-id -> problem is that the id might not exist (for newly created regions) -> need to select a region by time ?
-        var helpRegionId = $(elem).closest('div.region').find('.hidden-config-help-region-uuid');
+        var helpRegionUuid = $(elem).closest('div.region').find('.hidden-config-help-region-uuid');
         //loop elem
         var loop = $(elem).closest('div.region').find('.hidden-config-loop');
         //backward
@@ -166,12 +167,13 @@ var DomUtils = {
         html += '                   <option value="-1">' + Translator.trans('none', {}, 'media_resource') + '</option>';
         // loop
         for (var i = 0; i < rRows.length; i++) {
+            // we do not want the current region to appear in this list
             if (currentStart !== rRows[i].hstart) {
                 var selected = '';
-                if (helpRegionId.val() === rRows[i].uid) {
+                if (helpRegionUuid.val() === rRows[i].uid) {
                     selected = 'selected';
-                    var time = parseFloat(rRows[i].start) + 0.1;
-                    currentHelpRelatedRegion = wutils.getCurrentRegion(w, time);
+                    var time = Number(rRows[i].start) + 0.1;
+                    //currentHelpRelatedRegion = wutils.getCurrentRegion(w, time);
                 }
                 html += '           <option value="' + rRows[i].uid + '" ' + selected + '>' + rRows[i].hstart + ' - ' + rRows[i].hend + '</option>';
             }
@@ -208,9 +210,9 @@ var DomUtils = {
                         backward.val(hasBackward ? '1' : '0');
                         loop.val(hasLoop ? '1' : '0');
                         if (helpId != -1)
-                            helpRegionId.val(helpId);
+                            helpRegionUuid.val(helpId);
                         else {
-                            helpRegionId.val('');
+                            helpRegionUuid.val('');
                         }
                     }
                 }
@@ -218,7 +220,7 @@ var DomUtils = {
         });
         return modal;
     },
-    getRegionRowHelpConfig: function (row) {
+    /*getRegionRowHelpConfig: function (row) {
         // loop available ?
         var loop = $(row).find('.hidden-config-loop').val() === '1' ? true : false;
         // backward available ?
@@ -239,8 +241,8 @@ var DomUtils = {
         };
 
         return config;
-    },
-    appendHelpModalConfig: function (modal, config, region) {
+    },*/
+  /*  appendHelpModalConfig: function (modal, config, region) {
         var root = $(modal).find('#region-help-available');
         $(root).empty();
         var html = '<hr/>';
@@ -318,12 +320,91 @@ var DomUtils = {
             currentLevel++;
             $('#help-modal-help-text').show();
         });
+    },*/
+    appendHelpModalConfig2: function (modal, region) {
+        var root = $(modal).find('#region-help-available');
+        $(root).empty();
+        var html = '<hr/>';
+        if (region.hasHelp) {
+            if (region.loop) {
+                html += '<div class="row">';
+                html += '   <div class="col-md-12">';
+                html += '       <button class="btn btn-default" title="' + Translator.trans('region_help_segment_playback_loop', {}, 'media_resource') + '"  onclick="playHelp(' + region.start + ', ' + region.end + ', ' + true + ',' + false + ')" style="margin:5px;">';
+                html += '           <i class="fa fa-retweet"></i> ';
+                html += '       </button>';
+                html += '       <label>' + Translator.trans('region_help_segment_playback_loop', {}, 'media_resource') + '</label>';
+                html += '   </div>';
+                html += '</div>';
+            }
+            if (region.backward) {
+                html += '<hr/>';
+                html += '<div class="row">';
+                html += '   <div class="col-md-12">';
+                html += '       <button class="btn btn-default" title="' + Translator.trans('region_help_segment_playback_backward', {}, 'media_resource') + '" onclick="playBackward();" style="margin:5px;">';
+                html += '           <i class="fa fa-exchange"></i> ';
+                html += '       </button>';
+                html += '       <label>' + Translator.trans('region_help_segment_playback_backward', {}, 'media_resource') + '</label>';
+                html += '   </div>';
+                html += '</div>';
+            }
+            if (region.rate) {
+                html += '<hr/>';
+                html += '<div class="row">';
+                html += '   <div class="col-md-12">';
+                html += '       <button class="btn btn-default" title="' + Translator.trans('region_help_segment_playback_rate', {}, 'media_resource') + '"  onclick="playHelp(' + region.start + ', ' + region.end + ', ' + false + ',' + true + ')">x0.8</button>';
+                html += '       <label>' + Translator.trans('region_help_segment_playback_rate', {}, 'media_resource') + '</label>';
+                html += '   </div>';
+                html += '</div>';
+            }
+            if (region.texts.length > 0) {
+                html += '<hr/>';
+                html += '<div class="row">';
+                html += '   <div class="col-md-12">';
+                html += '       <button id="btn-show-help-text" class="btn btn-default" title="' + Translator.trans('region_help_related_segment_playback', {}, 'media_resource') + '" style="margin:5px;">';
+                html += Translator.trans('region_help_help_text_label', {}, 'media_resource');
+                html += '       </button>';
+                html += '       <label id="help-modal-help-text" style="margin:5px;display:none;"></label>';
+                html += '   </div>';
+                html += '</div>';
+            }
+            if (region.relatedRegionUuid) {
+                var helpRegionStart = this.getHelpRelatedRegionStart(region.relatedRegionUuid);
+                html += '<hr/>';
+                html += '<div class="row">';
+                html += '   <div class="col-md-12">';
+                html += '       <button class="btn btn-default" title="' + Translator.trans('region_help_related_segment_playback', {}, 'media_resource') + '" onclick="playHelpRelatedRegion( ' + helpRegionStart + ');" style="margin:5px;">';
+                html += '           <i class="fa fa-play"></i> ';
+                html += '           / ';
+                html += '           <i class="fa fa-pause"></i>';
+                html += '       </button>';
+                html += '       <label>' + Translator.trans('region_help_related_segment_playback', {}, 'media_resource') + '</label>';
+                html += '   </div>';
+                html += '</div>';
+            }
+
+        }
+        else {
+            html += '<div class="row">';
+            html += '   <div class="col-md-12">';
+            html += '       <h4>' + Translator.trans('region_help_no_help_available', {}, 'media_resource') + '</h4>';
+            html += '   </div>';
+            html += '</div>';
+        }
+        $(html).appendTo(root);
+        var currentLevel = 0;
+        $("#btn-show-help-text").on('click', function(){
+            $('#help-modal-help-text').hide();
+            currentLevel = currentLevel === region.text.split(';').length ? 0:currentLevel;
+            $('#help-modal-help-text').text(region.text.split(';')[currentLevel]);
+            currentLevel++;
+            $('#help-modal-help-text').show();
+        });
     },
     /**
      * Add the region to the DOM at the right place
-     * @param region wavesurfer.region
+     * @param region
      */
-    addRegionToDom: function (wavesurfer, wavesurferUtils, region, uuid) {
+    /*addRegionToDom: function (wavesurfer, wavesurferUtils, region, uuid) {
         var my = this;
         var container = $('.regions-container');
         // HTML to append
@@ -375,25 +456,79 @@ var DomUtils = {
         else {
             $(container).append(html);
         }
+    },*/
+    addRegionToDom2: function (region, javascriptUtils) {
+        var my = this;
+        var container = $('.regions-container');
+        // HTML to append
+        var html = '';
+        html += '<div class="row form-row region" id="' + region.uuid + '" data-uuid="' + region.uuid + '">';
+        // start input
+        html += '       <div class="col-xs-1">';
+        html += '           <div class="time-text start">' + javascriptUtils.secondsToHms(region.start) + '</div>';
+        html += '       </div>';
+        // end input
+        html += '       <div class="col-xs-1">';
+        html += '           <div class="time-text end">' + javascriptUtils.secondsToHms(region.end) + '</div>';
+        html += '       </div>';
+        // text input
+        html += '       <div class="col-xs-8">';
+        html += '           <div contenteditable="true" class="text-left note">' + region.note + '</div>';
+        html += '       </div>';
+        // delete button
+        html += '       <div class="col-xs-2">';
+        html += '           <div class="btn-group" role="group">';
+        html += '               <button type="button" class="btn btn-default fa fa-play" title="' + Translator.trans('play_pause', {}, 'media_resource') + '" onclick="playRegion(this);">';
+        html += '               <button role="button" type="button" class="btn btn-default fa fa-cog" title="' + Translator.trans('region_config', {}, 'media_resource') + '" onclick="configRegion(this);"> </button>';
+        html += '               <button type="button" name="del-region-btn" class="btn btn-danger fa fa-trash-o" data-uuid="' + region.uuid + '" title="' + Translator.trans('region_delete', {}, 'media_resource') + '" onclick="deleteRegion(this)"></button>';
+        html += '           </div>';
+        html += '       </div>';
+        // Hidden fields
+        html += '       <input type="hidden" class="hidden-start" name="start[]" value="' + region.start + '" required="required">';
+        html += '       <input type="hidden" class="hidden-end" name="end[]" value="' + region.end + '" required="required">';
+        html += '       <input type="hidden" class="hidden-note" name="note[]" value="' + region.note + '">';
+        html += '       <input type="hidden" class="hidden-region-id" name="region-id[]" value="" >';
+        html += '       <input type="hidden" class="hidden-region-uuid" name="region-uuid[]" value="' + region.uuid + '" >';
+
+        html += '       <input type="hidden" class="hidden-config-help-region-uuid" name="help-region-uuid[]" value="" >';
+        html += '       <input type="hidden" class="hidden-config-loop" name="loop[]" value="0" >';
+        html += '       <input type="hidden" class="hidden-config-backward" name="backward[]" value="0" >';
+        html += '       <input type="hidden" class="hidden-config-rate" name="rate[]" value="0" >';
+        html += '       <input type="hidden" class="hidden-config-text" name="text[]" value="" >';
+        html += '</div>';
+
+        // find the previous row in order to happend the new one in the good place
+        // @TODO say if we need to check the length of the collection regarding the behaviour when no regions exists
+        if (regions.length > 1) {
+            var previous = my.findPreviousRegionRow(region.start);
+            if (previous) {
+                $(html).insertAfter(previous);
+            }
+            else {
+                console.log('previous not found');
+            }
+        }
+        else {
+            $(container).append(html);
+        }
     },
     /**
      * get regions that are using the given regionUuid as help region
-     * @param {type} regionUuid the deleted region uuid
-     * @returns {Array| jQuery hidden input concerned objects}
+     * @param {type} uuid the region uuid
+     * @returns {Array of jQuery hidden input objects}
      */
-    getRegionsUsedInHelp: function (regionUuid) {
-        var result = [];
+    getRegionsUsedInHelp: function (uuid) {
+        var results = [];
         // for each region row
         $('.region').each(function () {
             // if one or more region have the hidden input setted the deleted region is used in help
-            var elem = $(this).find('input.hidden-config-help-region-uuid');
-            var current_help_id = $(elem).val();
-            if (current_help_id == regionUuid) {
+            var searched = $(this).find('input.hidden-config-help-region-uuid').val();
+            if (searched == uuid) {
                 // push the input in result array
-                result.push($(elem));
+                results.push($(elem));
             }
         });
-        return result;
+        return results;
     },
     /**
      * For a given region uuid, find the dom row, find the region start info
@@ -401,7 +536,7 @@ var DomUtils = {
      * @returns region start value
      */
     getHelpRelatedRegionStart: function (rowUuid) {
-        return parseFloat($('#' + rowUuid).find('.hidden-start').val());
+        return Number($('#' + rowUuid).find('.hidden-start').val());
     },
     /**
      * Find the row after which we have to insert the new one
@@ -411,7 +546,7 @@ var DomUtils = {
     findPreviousRegionRow: function (start) {
         var elem = null;
         $('.region').each(function () {
-            if (parseFloat($(this).find('input.hidden-end').val()) === parseFloat(start)) {
+            if (Number($(this).find('input.hidden-end').val()) === Number(start)) {
                 elem = $(this);
             }
         });
@@ -429,13 +564,13 @@ var DomUtils = {
             var temp = $(this);
             var sinput = $(this).find("input.hidden-start");
             var einput = $(this).find("input.hidden-end");
-            if (start && end && parseFloat(sinput.val()) <= parseFloat(start) && parseFloat(einput.val()) >= parseFloat(end)) {
+            if (start && end && Number(sinput.val()) <= Number(start) && Number(einput.val()) >= Number(end)) {
                 row = temp;
             }
-            else if (!end && start && parseFloat(sinput.val()) === parseFloat(start)) {
+            else if (!end && start && Number(sinput.val()) === Number(start)) {
                 row = temp;
             }
-            else if (!start && end && parseFloat(einput.val()) === parseFloat(end)) {
+            else if (!start && end && Number(einput.val()) === Number(end)) {
                 row = temp;
             }
         });
@@ -443,7 +578,7 @@ var DomUtils = {
     },
     /**
      * Highlight a row
-     * @param region wavesurfer.region
+     * @param region
      */
     highlightRegionRow: function (region) {
         var row = this.getRegionRow(region.start + 0.1, region.end - 0.1);
