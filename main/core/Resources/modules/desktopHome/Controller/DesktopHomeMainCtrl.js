@@ -27,6 +27,18 @@ export default class DesktopHomeMainCtrl {
     this.initializeDragAndDrop()
   }
 
+  initialize() {
+    const route = Routing.generate('api_get_desktop_options')
+    this.$http.get(route).then(datas => {
+      if (datas['status'] === 200) {
+        this.isHomeLocked = datas['data']['isHomeLocked']
+        this.editionMode = datas['data']['editionMode']
+        this.homeTabsOptions['canEdit'] = !this.isHomeLocked && this.editionMode
+        this.HomeTabService.loadDesktopHomeTabs()
+      }
+    })
+  }
+
   initializeDragAndDrop () {
     angular.element('#desktop-home-tabs-list').sortable({
       items: '.movable-home-tab',
@@ -34,19 +46,15 @@ export default class DesktopHomeMainCtrl {
     })
 
     angular.element('#desktop-home-tabs-list').on('sortupdate', (event, ui) => {
-      //console.log(ui.item)
-      //console.log($(ui.item).data('hometab-config-id'))
       const hcId = $(ui.item).data('hometab-config-id')
-      //console.log(hcId)
       let nextHcId = -1
       const nextElement = $(ui.item).next()
 
       if (nextElement !== undefined && nextElement.hasClass('movable-home-tab')) {
         nextHcId = nextElement.data('hometab-config-id')
       }
-      console.log(`${hcId} - ${nextHcId}`)
       const route = Routing.generate(
-        'claro_desktop_home_tab_config_reorder',
+        'api_post_desktop_home_tab_config_reorder',
         {homeTabConfig: hcId, nextHomeTabConfigId: nextHcId}
       )
       this.$http.post(route)
@@ -125,17 +133,5 @@ export default class DesktopHomeMainCtrl {
     if (!this.isHomeLocked && this.editionMode) {
       this.WidgetService.hideAdminWidget(widgetHTCId)
     }
-  }
-
-  initialize() {
-    const route = Routing.generate('api_get_desktop_options')
-    this.$http.get(route).then(datas => {
-      if (datas['status'] === 200) {
-        this.isHomeLocked = datas['data']['isHomeLocked']
-        this.editionMode = datas['data']['editionMode']
-        this.homeTabsOptions['canEdit'] = !this.isHomeLocked && this.editionMode
-        this.HomeTabService.loadDesktopHomeTabs()
-      }
-    })
   }
 }

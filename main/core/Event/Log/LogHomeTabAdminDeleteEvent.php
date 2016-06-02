@@ -11,8 +11,6 @@
 
 namespace Claroline\CoreBundle\Event\Log;
 
-use Claroline\CoreBundle\Entity\Home\HomeTabConfig;
-
 class LogHomeTabAdminDeleteEvent extends LogGenericEvent
 {
     const ACTION = 'admin-home-tab-delete';
@@ -20,25 +18,9 @@ class LogHomeTabAdminDeleteEvent extends LogGenericEvent
     /**
      * Constructor.
      */
-    public function __construct(HomeTabConfig $htc)
+    public function __construct($details = [])
     {
-        $homeTab = $htc->getHomeTab();
-        $details = array();
-        $details['tabId'] = $homeTab->getId();
-        $details['tabName'] = $homeTab->getName();
-        $details['tabType'] = $homeTab->getType();
-        $details['tabIcon'] = $homeTab->getIcon();
-        $details['configId'] = $htc->getId();
-        $details['type'] = $htc->getType();
-        $details['locked'] = $htc->isLocked();
-        $details['visible'] = $htc->isVisible();
-        $details['tabOrder'] = $htc->getTabOrder();
-        $details['details'] = $htc->getDetails();
-
-        parent::__construct(
-            self::ACTION,
-            $details
-        );
+        parent::__construct(self::ACTION, $details);
     }
 
     /**

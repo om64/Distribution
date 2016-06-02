@@ -3,17 +3,20 @@
         <li ng-repeat="tab in ahtcc.adminHomeTabs"
             class="home-tab"
             ng-class="(tab['tabId'] === ahtcc.homeTabsOptions['selectedTabId']) ? 'active' : ''"
+            data-hometab-config-id="{{ tab['configId'] }}"
         >
             <a href="#" ng-click="ahtcc.showTab(tab['tabId'], tab['configId'])">
                 <span class="icon-bg" style="background-color: {{ tab['color'] }}">
                 </span>
                 <span class="option-text">
                     <i class="fa fa-lock" ng-if="tab['locked']"></i>
-                    {{ tab['tabName'] }}
+                    <span ng-class="tab['visible'] ? '' : 'strike'">
+                        {{ tab['tabName'] }}
+                    </span>
                     &nbsp;
-                    <i class="fa fa-pencil pointer-hand text-muted" ng-click="ahtcc.editAmdinHomeTab($event, tab['configId'])"></i>
+                    <i class="fa fa-pencil pointer-hand text-muted" ng-click="ahtcc.editAdminHomeTab($event, tab['configId'])"></i>
                     &nbsp;
-                    <i class="fa fa-times pointer-hand text-muted" ng-click="ahtcc.deleteAmdinHomeTab($event, tab['configId'])"></i>
+                    <i class="fa fa-times pointer-hand text-muted" ng-click="ahtcc.deleteAdminHomeTab($event, tab['configId'])"></i>
                 </span>
             </a>
         </li>

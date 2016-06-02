@@ -18,12 +18,9 @@ class LogHomeTabUserDeleteEvent extends LogGenericEvent
     /**
      * Constructor.
      */
-    public function __construct($details = array())
+    public function __construct($details = [])
     {
-        parent::__construct(
-            self::ACTION,
-            $details
-        );
+        parent::__construct(self::ACTION, $details);
     }
 
     /**

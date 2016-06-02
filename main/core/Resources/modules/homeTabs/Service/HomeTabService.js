@@ -23,7 +23,9 @@ export default class HomeTabService {
       selectedTabIsLocked: true
     }
     this._addUserHomeTabCallback = this._addUserHomeTabCallback.bind(this)
+    this._addAdminHomeTabCallback = this._addAdminHomeTabCallback.bind(this)
     this._updateUserHomeTabCallback = this._updateUserHomeTabCallback.bind(this)
+    this._updateAdminHomeTabCallback = this._updateAdminHomeTabCallback.bind(this)
     this._removeAdminHomeTabCallback = this._removeAdminHomeTabCallback.bind(this)
     this._removeUserHomeTabCallback = this._removeUserHomeTabCallback.bind(this)
     this._removeWorkspaceHomeTabCallback = this._removeWorkspaceHomeTabCallback.bind(this)
@@ -33,6 +35,10 @@ export default class HomeTabService {
     this.userHomeTabs.push(data)
   }
 
+  _addAdminHomeTabCallback(data) {
+    this.adminHomeTabs.push(data)
+  }
+
   _updateUserHomeTabCallback(data) {
     if (data['tabId']) {
       const index = this.userHomeTabs.findIndex(tab => data['tabId'] === tab['tabId'])
@@ -40,6 +46,20 @@ export default class HomeTabService {
       if (index > -1) {
         this.userHomeTabs[index]['tabName'] = data['tabName']
         this.userHomeTabs[index]['color'] = data['color']
+      }
+    }
+  }
+
+  _updateAdminHomeTabCallback(data) {
+    if (data['tabId']) {
+      const index = this.adminHomeTabs.findIndex(tab => data['tabId'] === tab['tabId'])
+
+      if (index > -1) {
+        this.adminHomeTabs[index]['tabName'] = data['tabName']
+        this.adminHomeTabs[index]['color'] = data['color']
+        this.adminHomeTabs[index]['locked'] = data['locked']
+        this.adminHomeTabs[index]['visible'] = data['visible']
+
       }
     }
   }
@@ -168,8 +188,8 @@ export default class HomeTabService {
   createUserHomeTab() {
     if (this.options['canEdit']) {
       const modal = this.$uibModal.open({
-        templateUrl: Routing.generate('api_get_home_tab_creation_form'),
-        controller: 'DesktopHomeTabCreationModalCtrl',
+        templateUrl: Routing.generate('api_get_user_home_tab_creation_form'),
+        controller: 'UserHomeTabCreationModalCtrl',
         controllerAs: 'htfmc',
         resolve: {
           callback: () => { return this._addUserHomeTabCallback }
@@ -188,13 +208,12 @@ export default class HomeTabService {
 
   editUserHomeTab(tabId) {
     if (this.options['canEdit']) {
-
       const modal = this.$uibModal.open({
         templateUrl: Routing.generate(
-          'api_get_home_tab_edition_form',
+          'api_get_user_home_tab_edition_form',
           {homeTab: tabId}
         ) + '?bust=' + Math.random().toString(36).slice(2),
-        controller: 'HomeTabEditionModalCtrl',
+        controller: 'UserHomeTabEditionModalCtrl',
         controllerAs: 'htfmc',
         resolve: {
           homeTabId: () => { return tabId },
@@ -246,6 +265,59 @@ export default class HomeTabService {
       this._removeWorkspaceHomeTabCallback,
       Translator.trans('home_tab_bookmark_delete_confirm_title', {}, 'platform'),
       Translator.trans('home_tab_bookmark_delete_confirm_message', {}, 'platform')
+    )
+  }
+
+  createAdminHomeTab() {
+    const modal = this.$uibModal.open({
+      templateUrl: Routing.generate('api_get_admin_home_tab_creation_form'),
+      controller: 'AdminHomeTabCreationModalCtrl',
+      controllerAs: 'htfmc',
+      resolve: {
+        callback: () => { return this._addAdminHomeTabCallback }
+      }
+    })
+
+    modal.result.then(result => {
+      if (!result) {
+        return
+      } else {
+        this._addAdminHomeTabCallback(result)
+      }
+    })
+  }
+
+  editAdminHomeTab(tabConfigId) {
+    const modal = this.$uibModal.open({
+      templateUrl: Routing.generate(
+        'api_get_admin_home_tab_edition_form',
+        {homeTabConfig: tabConfigId}
+      ) + '?bust=' + Math.random().toString(36).slice(2),
+      controller: 'AdminHomeTabEditionModalCtrl',
+      controllerAs: 'htfmc',
+      resolve: {
+        homeTabConfigId: () => { return tabConfigId },
+        callback: () => { return this._updateAdminHomeTabCallback }
+      }
+    })
+
+    modal.result.then(result => {
+      if (!result) {
+        return
+      } else {
+        this._updateAdminHomeTabCallback(result)
+      }
+    })
+  }
+
+  deleteAdminHomeTab(tabConfigId) {
+    const url = Routing.generate('api_delete_admin_home_tab', {homeTabConfig: tabConfigId})
+
+    this.ClarolineAPIService.confirm(
+      {url, method: 'DELETE'},
+      this._removeAdminHomeTabCallback,
+      Translator.trans('home_tab_delete_confirm_title', {}, 'platform'),
+      Translator.trans('home_tab_delete_confirm_message', {}, 'platform')
     )
   }
 }

@@ -24,7 +24,7 @@ export default class AdminHomeTabsConfigCtrl {
     //this.isHomeLocked = true
     this.gridsterOptions = WidgetService.getGridsterOptions()
     this.initialize()
-    //this.initializeDragAndDrop()
+    this.initializeDragAndDrop()
   }
 
   initialize() {
@@ -40,9 +40,45 @@ export default class AdminHomeTabsConfigCtrl {
     //})
   }
 
+  initializeDragAndDrop () {
+    angular.element('#admin-home-tabs-list').sortable({
+      items: '.home-tab',
+      cursor: 'move'
+    })
+
+    angular.element('#admin-home-tabs-list').on('sortupdate', (event, ui) => {
+      const hcId = $(ui.item).data('hometab-config-id')
+      let nextHcId = -1
+      const nextElement = $(ui.item).next()
+
+      if (nextElement !== undefined && nextElement.hasClass('home-tab')) {
+        nextHcId = nextElement.data('hometab-config-id')
+      }
+      const route = Routing.generate(
+        'api_post_admin_home_tab_config_reorder',
+        {homeTabConfig: hcId, nextHomeTabConfigId: nextHcId, homeTabType: 'desktop'}
+      )
+      this.$http.post(route)
+    })
+  }
+
   showTab(tabId, tabConfigId) {
     this.homeTabsOptions['selectedTabId'] = tabId
     this.homeTabsOptions['selectedTabConfigId'] = tabConfigId
     //this.WidgetService.loadAdminHomeTabs(tabId)
+  }
+
+  createAdminHomeTab() {
+    this.HomeTabService.createAdminHomeTab()
+  }
+
+  editAdminHomeTab($event, tabConfigId) {
+    $event.stopPropagation()
+    this.HomeTabService.editAdminHomeTab(tabConfigId)
+  }
+
+  deleteAdminHomeTab($event, tabConfigId) {
+    $event.stopPropagation()
+    this.HomeTabService.deleteAdminHomeTab(tabConfigId)
   }
 }

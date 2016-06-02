@@ -16,17 +16,22 @@ use Claroline\CoreBundle\Entity\Home\HomeTabConfig;
 use Claroline\CoreBundle\Entity\Widget\WidgetDisplayConfig;
 use Claroline\CoreBundle\Entity\Widget\WidgetHomeTabConfig;
 use Claroline\CoreBundle\Entity\Widget\WidgetInstance;
-use Claroline\CoreBundle\Event\StrictDispatcher;
+use Claroline\CoreBundle\Event\Log\LogHomeTabAdminCreateEvent;
+use Claroline\CoreBundle\Event\Log\LogHomeTabAdminDeleteEvent;
+use Claroline\CoreBundle\Event\Log\LogHomeTabAdminEditEvent;
+use Claroline\CoreBundle\Form\Administration\AdminHomeTabType;
 use Claroline\CoreBundle\Form\HomeTabType;
 use Claroline\CoreBundle\Form\HomeTabConfigType;
 use Claroline\CoreBundle\Form\WidgetDisplayType;
 use Claroline\CoreBundle\Form\WidgetDisplayConfigType;
 use Claroline\CoreBundle\Form\WidgetHomeTabConfigType;
 use Claroline\CoreBundle\Form\WidgetInstanceType;
+use Claroline\CoreBundle\Manager\ApiManager;
 use Claroline\CoreBundle\Manager\HomeTabManager;
 use Claroline\CoreBundle\Manager\WidgetManager;
 use Claroline\CoreBundle\Manager\PluginManager;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
+use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\Form\FormFactory;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -42,39 +47,396 @@ use JMS\SecurityExtraBundle\Annotation as SEC;
  */
 class HomeTabController extends Controller
 {
+    private $apiManager;
+    private $bundleManager;
     private $eventDispatcher;
     private $formFactory;
     private $homeTabManager;
     private $request;
     private $widgetManager;
-    private $bundleManager;
 
     /**
      * @DI\InjectParams({
-     *     "eventDispatcher" = @DI\Inject("claroline.event.event_dispatcher"),
+     *     "apiManager"      = @DI\Inject("claroline.manager.api_manager"),
+     *     "bundleManager"   = @DI\Inject("claroline.manager.plugin_manager"),
+     *     "eventDispatcher" = @DI\Inject("event_dispatcher"),
      *     "formFactory"     = @DI\Inject("form.factory"),
      *     "homeTabManager"  = @DI\Inject("claroline.manager.home_tab_manager"),
      *     "request"         = @DI\Inject("request"),
-     *     "widgetManager"   = @DI\Inject("claroline.manager.widget_manager"),
-     *     "bundleManager"   = @DI\Inject("claroline.manager.plugin_manager")
+     *     "widgetManager"   = @DI\Inject("claroline.manager.widget_manager")
      * })
      */
     public function __construct(
-        StrictDispatcher $eventDispatcher,
+        ApiManager $apiManager,
+        PluginManager $bundleManager,
+        EventDispatcherInterface $eventDispatcher,
         FormFactory $formFactory,
         HomeTabManager $homeTabManager,
         Request $request,
-        WidgetManager $widgetManager,
-        PluginManager $bundleManager
+        WidgetManager $widgetManager
     ) {
+        $this->apiManager = $apiManager;
+        $this->bundles = $bundleManager->getEnabled(true);
         $this->eventDispatcher = $eventDispatcher;
         $this->formFactory = $formFactory;
         $this->homeTabManager = $homeTabManager;
         $this->request = $request;
         $this->widgetManager = $widgetManager;
         $this->bundleManager = $bundleManager;
-        $this->bundles = $bundleManager->getEnabled(true);
     }
+
+    /**
+     * @EXT\Route(
+     *     "/desktop/hometabs/configuration",
+     *     name="claro_admin_home_tabs_configuration",
+     *     options = {"expose"=true}
+     * )
+     * @EXT\Template("ClarolineCoreBundle:Administration\HomeTab:adminHomeTabsConfig.html.twig")
+     *
+     * Displays the admin homeTabs configuration page.
+     *
+     * @return array
+     */
+    public function adminHomeTabsConfigAction()
+    {
+        return array();
+    }
+
+    /**
+     * @EXT\Route(
+     *     "/api/admin/home/tabs",
+     *     name="api_get_admin_home_tabs",
+     *     options = {"expose"=true}
+     * )
+     * @EXT\ParamConverter("user", options={"authenticatedUser" = true})
+     *
+     * Returns list of admin home tabs
+     *
+     * @return \Symfony\Component\HttpFoundation\JsonResponse
+     */
+    public function getAdminHomeTabsAction()
+    {
+        $datas = [];
+        $hometabConfigs = $this->homeTabManager->getAdminDesktopHomeTabConfigs();
+
+        foreach ($hometabConfigs as $htc) {
+            $tab = $htc->getHomeTab();
+            $details = $htc->getDetails();
+            $color = isset($details['color']) ? $details['color'] : null;
+            $datas[] = [
+                'configId' => $htc->getId(),
+                'locked' => $htc->isLocked(),
+                'tabOrder' => $htc->getTabOrder(),
+                'type' => $htc->getType(),
+                'visible' => $htc->isVisible(),
+                'tabId' => $tab->getId(),
+                'tabName' => $tab->getName(),
+                'tabType' => $tab->getType(),
+                'tabIcon' => $tab->getIcon(),
+                'color' => $color
+            ];
+        }
+
+        return new JsonResponse($datas, 200);
+    }
+
+    /**
+     * @EXT\Route(
+     *     "/api/admin/home/tab/type/create/form",
+     *     name="api_get_admin_home_tab_creation_form",
+     *     options = {"expose"=true}
+     * )
+     * @EXT\ParamConverter("user", options={"authenticatedUser" = true})
+     *
+     * Returns the home tab creation form
+     */
+    public function getAdminHomeTabCreationFormAction()
+    {
+        $formType = new AdminHomeTabType();
+        $formType->enableApi();
+        $form = $this->createForm($formType);
+
+        return $this->apiManager->handleFormView(
+            'ClarolineCoreBundle:API:HomeTab\adminHomeTabCreateForm.html.twig',
+            $form
+        );
+    }
+
+    /**
+     * @EXT\Route(
+     *     "/api/admin/home/tab/type/{homeTabType}/create",
+     *     name="api_post_admin_home_tab_creation",
+     *     options = {"expose"=true}
+     * )
+     * @EXT\ParamConverter("user", options={"authenticatedUser" = true})
+     *
+     * Creates a desktop home tab
+     *
+     * @return \Symfony\Component\HttpFoundation\JsonResponse
+     */
+    public function postAdminHomeTabCreationAction($homeTabType = 'desktop')
+    {
+        $isDesktop = ($homeTabType === 'desktop');
+        $type = $isDesktop ? 'admin_desktop' : 'admin_workspace';
+        $formType = new AdminHomeTabType();
+        $formType->enableApi();
+        $form = $this->createForm($formType);
+        $form->submit($this->request);
+
+        if ($form->isValid()) {
+            $formDatas = $form->getData();
+            $color = $form->get('color')->getData();
+            $locked = $form->get('locked')->getData();
+            $visible = $form->get('visible')->getData();
+            $roles = $formDatas['roles'];
+
+            $homeTab = new HomeTab();
+            $homeTab->setName($formDatas['name']);
+            $homeTab->setType($type);
+
+            foreach ($roles as $role) {
+                $homeTab->addRole($role);
+            }
+            $homeTabConfig = new HomeTabConfig();
+            $homeTabConfig->setHomeTab($homeTab);
+            $homeTabConfig->setType($type);
+            $homeTabConfig->setLocked($locked);
+            $homeTabConfig->setVisible($visible);
+            $homeTabConfig->setDetails(array('color' => $color));
+            $lastOrder = $isDesktop ?
+                $this->homeTabManager->getOrderOfLastAdminDesktopHomeTabConfig() :
+                $this->homeTabManager->getOrderOfLastAdminWorkspaceHomeTabConfig();
+
+            if (is_null($lastOrder['order_max'])) {
+                $homeTabConfig->setTabOrder(1);
+            } else {
+                $homeTabConfig->setTabOrder($lastOrder['order_max'] + 1);
+            }
+            $this->homeTabManager->persistHomeTabConfigs($homeTab, $homeTabConfig);
+            $event = new LogHomeTabAdminCreateEvent($homeTabConfig);
+            $this->eventDispatcher->dispatch('log', $event);
+
+            $homeTabDatas = array(
+                'configId' => $homeTabConfig->getId(),
+                'locked' => $homeTabConfig->isLocked(),
+                'tabOrder' => $homeTabConfig->getTabOrder(),
+                'type' => $homeTabConfig->getType(),
+                'visible' => $homeTabConfig->isVisible(),
+                'tabId' => $homeTab->getId(),
+                'tabName' => $homeTab->getName(),
+                'tabType' => $homeTab->getType(),
+                'tabIcon' => $homeTab->getIcon(),
+                'color' => $color
+            );
+
+            return new JsonResponse($homeTabDatas, 200);
+        } else {
+            $options = array(
+                'http_code' => 400,
+                'extra_parameters' => null,
+                'serializer_group' => 'api_home_tab'
+            );
+
+            return $this->apiManager->handleFormView(
+                'ClarolineCoreBundle:API:HomeTab\adminHomeTabCreateForm.html.twig',
+                $form,
+                $options
+            );
+        }
+    }
+
+    /**
+     * @EXT\Route(
+     *     "/api/admin/home/tab/{homeTabConfig}/type/{homeTabType}/edit/form",
+     *     name="api_get_admin_home_tab_edition_form",
+     *     options = {"expose"=true}
+     * )
+     * @EXT\ParamConverter("user", options={"authenticatedUser" = true})
+     *
+     * Returns the admin home tab edition form
+     *
+     * @return \Symfony\Component\HttpFoundation\JsonResponse
+     */
+    public function getAdminHomeTabEditionFormAction(HomeTabConfig $homeTabConfig, $homeTabType = 'desktop')
+    {
+        $homeTab = $homeTabConfig->getHomeTab();
+        $this->checkAdminHomeTab($homeTab, $homeTabType);
+        $this->checkAdminHomeTabConfig($homeTabConfig, $homeTabType);
+        $visible = $homeTabConfig->isVisible();
+        $locked = $homeTabConfig->isLocked();
+        $details = $homeTabConfig->getDetails();
+        $color = isset($details['color']) ? $details['color'] : null;
+        $formType = new AdminHomeTabType($color, $locked, $visible);
+        $formType->enableApi();
+        $form = $this->createForm($formType, $homeTab);
+
+        return $this->apiManager->handleFormView(
+            'ClarolineCoreBundle:API:HomeTab\adminHomeTabEditForm.html.twig',
+            $form
+        );
+    }
+
+    /**
+     * @EXT\Route(
+     *     "/api/admin/home/tab/{homeTabConfig}/type/{homeTabType}/edit",
+     *     name="api_put_admin_home_tab_edition",
+     *     options = {"expose"=true}
+     * )
+     * @EXT\ParamConverter("user", options={"authenticatedUser" = true})
+     *
+     * Edits an admin home tab
+     *
+     * @return \Symfony\Component\HttpFoundation\JsonResponse
+     */
+    public function putAdminHomeTabEditionAction(HomeTabConfig $homeTabConfig, $homeTabType = 'desktop')
+    {
+        $homeTab = $homeTabConfig->getHomeTab();
+        $this->checkAdminHomeTab($homeTab, $homeTabType);
+        $this->checkAdminHomeTabConfig($homeTabConfig, $homeTabType);
+        $formType = new AdminHomeTabType();
+        $formType->enableApi();
+        $form = $this->createForm($formType);
+        $form->submit($this->request);
+
+        if ($form->isValid()) {
+            $formDatas = $form->getData();
+            $color = $form->get('color')->getData();
+            $locked = $form->get('locked')->getData();
+            $visible = $form->get('visible')->getData();
+            $roles = $formDatas['roles'];
+            $homeTab->emptyRoles();
+
+            foreach ($roles as $role) {
+                $homeTab->addRole($role);
+            }
+            $homeTab->setName($formDatas['name']);
+            $homeTabConfig->setVisible($visible);
+            $homeTabConfig->setLocked($locked);
+            $details = $homeTabConfig->getDetails();
+
+            if (is_null($details)) {
+                $details = [];
+            }
+            $details['color'] = $color;
+            $homeTabConfig->setDetails($details);
+            $this->homeTabManager->persistHomeTabConfigs($homeTab, $homeTabConfig);
+            $event = new LogHomeTabAdminEditEvent($homeTabConfig);
+            $this->eventDispatcher->dispatch('log', $event);
+
+            $homeTabDatas = array(
+                'configId' => $homeTabConfig->getId(),
+                'locked' => $homeTabConfig->isLocked(),
+                'tabOrder' => $homeTabConfig->getTabOrder(),
+                'type' => $homeTabConfig->getType(),
+                'visible' => $homeTabConfig->isVisible(),
+                'tabId' => $homeTab->getId(),
+                'tabName' => $homeTab->getName(),
+                'tabType' => $homeTab->getType(),
+                'tabIcon' => $homeTab->getIcon(),
+                'color' => $color
+            );
+
+            return new JsonResponse($homeTabDatas, 200);
+        } else {
+            $options = array(
+                'http_code' => 400,
+                'extra_parameters' => null,
+                'serializer_group' => 'api_home_tab'
+            );
+
+            return $this->apiManager->handleFormView(
+                'ClarolineCoreBundle:API:HomeTab\adminHomeTabEditForm.html.twig',
+                $form,
+                $options
+            );
+        }
+    }
+
+    /**
+     * @EXT\Route(
+     *     "/api/admin/home/tab/{homeTabConfig}/type/{homeTabType}/delete",
+     *     name="api_delete_admin_home_tab",
+     *     options = {"expose"=true}
+     * )
+     * @EXT\ParamConverter("user", options={"authenticatedUser" = true})
+     *
+     * Deletes admin home tab
+     *
+     * @return \Symfony\Component\HttpFoundation\JsonResponse
+     */
+    public function deleteAdminHomeTabAction(HomeTabConfig $homeTabConfig, $homeTabType = 'desktop')
+    {
+        $homeTab = $homeTabConfig->getHomeTab();
+        $this->checkAdminHomeTab($homeTab, $homeTabType);
+        $this->checkAdminHomeTabConfig($homeTabConfig, $homeTabType);
+        $details = $homeTabConfig->getDetails();
+        $color = isset($details['color']) ? $details['color'] : null;
+        $htcDatas = array(
+            'configId' => $homeTabConfig->getId(),
+            'locked' => $homeTabConfig->isLocked(),
+            'tabOrder' => $homeTabConfig->getTabOrder(),
+            'type' => $homeTabConfig->getType(),
+            'visible' => $homeTabConfig->isVisible(),
+            'tabId' => $homeTab->getId(),
+            'tabName' => $homeTab->getName(),
+            'tabType' => $homeTab->getType(),
+            'tabIcon' => $homeTab->getIcon(),
+            'color' => $color,
+            'details' => $details
+        );
+        $this->homeTabManager->deleteHomeTabConfig($homeTabConfig);
+        $this->homeTabManager->deleteHomeTab($homeTab);
+        $event = new LogHomeTabAdminDeleteEvent($htcDatas);
+        $this->eventDispatcher->dispatch('log', $event);
+
+        return new JsonResponse($htcDatas, 200);
+    }
+
+    /**
+     * @EXT\Route(
+     *     "/api/admin/type/{homeTabType}/home/tab/{homeTabConfig}/next/{nextHomeTabConfigId}/reorder",
+     *     name="api_post_admin_home_tab_config_reorder",
+     *     options = {"expose"=true}
+     * )
+     * @EXT\Method("POST")
+     *
+     * Update workspace HomeTabConfig order
+     *
+     * @return \Symfony\Component\HttpFoundation\JsonResponse
+     */
+    public function postAdminHomeTabConfigReorderAction(
+        $homeTabType,
+        HomeTabConfig $homeTabConfig,
+        $nextHomeTabConfigId
+    ) {
+        $this->checkAdminHomeTabConfig($homeTabConfig, $homeTabType);
+        $homeTab = $homeTabConfig->getHomeTab();
+        $this->checkAdminHomeTab($homeTab, $homeTabType);
+
+        $this->homeTabManager->reorderAdminHomeTabConfigs(
+            $homeTabType,
+            $homeTabConfig,
+            $nextHomeTabConfigId
+        );
+
+        return new JsonResponse('success', 200);
+    }
+
+
+
+//###########################################################################################################################
+//
+//
+//
+//
+//
+//    OLD methods
+//
+//
+//
+//
+//############################################################################################################################
+
 
     /**
      * @EXT\Route(
@@ -152,114 +514,6 @@ class HomeTabController extends Controller
             'widgetsDatas' => $widgets,
             'initWidgetsPosition' => $initWidgetsPosition,
         );
-    }
-
-    /**
-     * @EXT\Route(
-     *     "/desktop/hometabs/configuration",
-     *     name="claro_admin_home_tabs_configuration",
-     *     options = {"expose"=true}
-     * )
-     * @EXT\Template("ClarolineCoreBundle:Administration\HomeTab:adminHomeTabsConfig.html.twig")
-     *
-     * Displays the admin homeTabs configuration page.
-     *
-     * @return array
-     */
-    public function adminHomeTabsConfigAction()
-    {
-//        $homeTabConfigs = ($homeTabType === 'desktop') ?
-//            $this->homeTabManager->getAdminDesktopHomeTabConfigs() :
-//            $this->homeTabManager->getAdminWorkspaceHomeTabConfigs();
-//        $tabId = intval($homeTabId);
-//        $widgets = array();
-//        $firstElement = true;
-//        $initWidgetsPosition = false;
-//
-//        if ($tabId !== -1) {
-//            foreach ($homeTabConfigs as $homeTabConfig) {
-//                if ($tabId === $homeTabConfig->getHomeTab()->getId()) {
-//                    $firstElement = false;
-//                    break;
-//                }
-//            }
-//        }
-//
-//        if ($firstElement) {
-//            $firstHomeTabConfig = reset($homeTabConfigs);
-//
-//            if ($firstHomeTabConfig) {
-//                $tabId = $firstHomeTabConfig->getHomeTab()->getId();
-//            }
-//        }
-//        $homeTab = $this->homeTabManager->getAdminHomeTabByIdAndType($tabId, $homeTabType);
-//        $widgetHomeTabConfigs = is_null($homeTab) ?
-//            array() :
-//            $this->homeTabManager->getAdminWidgetConfigs($homeTab);
-//        $wdcs = $this->widgetManager->generateWidgetDisplayConfigsForAdmin($widgetHomeTabConfigs);
-//
-//        foreach ($wdcs as $wdc) {
-//            if ($wdc->getRow() === -1 || $wdc->getColumn() === -1) {
-//                $initWidgetsPosition = true;
-//                break;
-//            }
-//        }
-//
-//        foreach ($widgetHomeTabConfigs as $widgetHomeTabConfig) {
-//            $widgetInstance = $widgetHomeTabConfig->getWidgetInstance();
-//
-//            $event = $this->eventDispatcher->dispatch(
-//                "widget_{$widgetInstance->getWidget()->getName()}",
-//                'DisplayWidget',
-//                array($widgetInstance)
-//            );
-//
-//            $widget['config'] = $widgetHomeTabConfig;
-//            $widget['content'] = $event->getContent();
-//            $widgetInstanceId = $widgetHomeTabConfig->getWidgetInstance()->getId();
-//            $widget['widgetDisplayConfig'] = $wdcs[$widgetInstanceId];
-//            $widgets[] = $widget;
-//        }
-//
-        return array();
-    }
-
-    /**
-     * @EXT\Route(
-     *     "/api/admin/home/tabs",
-     *     name="api_get_admin_home_tabs",
-     *     options = {"expose"=true}
-     * )
-     * @EXT\ParamConverter("user", options={"authenticatedUser" = true})
-     *
-     * Returns list of admin home tabs
-     *
-     * @return \Symfony\Component\HttpFoundation\JsonResponse
-     */
-    public function getAdminHomeTabsAction()
-    {
-        $datas = [];
-        $hometabConfigs = $this->homeTabManager->getAdminDesktopHomeTabConfigs();
-
-        foreach ($hometabConfigs as $htc) {
-            $tab = $htc->getHomeTab();
-            $details = $htc->getDetails();
-            $color = isset($details['color']) ? $details['color'] : null;
-            $datas[] = [
-                'configId' => $htc->getId(),
-                'locked' => $htc->isLocked(),
-                'tabOrder' => $htc->getTabOrder(),
-                'type' => $htc->getType(),
-                'visible' => $htc->isVisible(),
-                'tabId' => $tab->getId(),
-                'tabName' => $tab->getName(),
-                'tabType' => $tab->getType(),
-                'tabIcon' => $tab->getIcon(),
-                'color' => $color
-            ];
-        }
-
-        return new JsonResponse($datas, 200);
     }
 
     /**
@@ -496,36 +750,6 @@ class HomeTabController extends Controller
         $this->homeTabManager->deleteHomeTab($homeTab);
 
         return new Response('success', 204);
-    }
-
-    /**
-     * @EXT\Route(
-     *     "home_tab/type/{homeTabType}/config/{homeTabConfig}/reorder/next/{nextHomeTabConfigId}",
-     *     name="claro_admin_home_tab_config_reorder",
-     *     options = {"expose"=true}
-     * )
-     * @EXT\Method("POST")
-     *
-     * Update workspace HomeTabConfig order
-     *
-     * @return Response
-     */
-    public function adminHomeTabConfigReorderAction(
-        $homeTabType,
-        HomeTabConfig $homeTabConfig,
-        $nextHomeTabConfigId
-    ) {
-        $this->checkAdminHomeTabConfig($homeTabConfig, $homeTabType);
-        $homeTab = $homeTabConfig->getHomeTab();
-        $this->checkAdminHomeTab($homeTab, $homeTabType);
-
-        $this->homeTabManager->reorderAdminHomeTabConfigs(
-            $homeTabType,
-            $homeTabConfig,
-            $nextHomeTabConfigId
-        );
-
-        return new Response('success', 200);
     }
 
     /**
@@ -914,10 +1138,8 @@ class HomeTabController extends Controller
         }
     }
 
-    private function checkAdminHomeTabConfig(
-        HomeTabConfig $homeTabConfig,
-        $homeTabType
-    ) {
+    private function checkAdminHomeTabConfig(HomeTabConfig $homeTabConfig, $homeTabType)
+    {
         if (!is_null($homeTabConfig->getUser()) ||
             !is_null($homeTabConfig->getWorkspace()) ||
             $homeTabConfig->getType() !== 'admin_'.$homeTabType) {

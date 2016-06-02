@@ -7,7 +7,7 @@
  * file that was distributed with this source code.
  */
 
-export default class DesktopHomeTabCreationModalCtrl {
+export default class UserHomeTabCreationModalCtrl {
     constructor($http, $uibModal, $uibModalInstance, ClarolineAPIService, callback) {
         this.$http = $http
         this.$uibModal = $uibModal
@@ -19,7 +19,7 @@ export default class DesktopHomeTabCreationModalCtrl {
     
     submit() {
         let data = this.ClarolineAPIService.formSerialize('home_tab_form', this.homeTab)
-        const route = Routing.generate('api_post_desktop_home_tab_creation', {'_format': 'html'})
+        const route = Routing.generate('api_post_user_home_tab_creation', {'_format': 'html'})
         const headers = {headers: {'Content-Type': 'application/x-www-form-urlencoded'}}
 
         this.$http.post(route, data, headers).then(
@@ -31,7 +31,7 @@ export default class DesktopHomeTabCreationModalCtrl {
                     this.$uibModalInstance.close()
                     const instance = this.$uibModal.open({
                         template: d.data,
-                        controller: 'DesktopHomeTabCreationModalCtrl',
+                        controller: 'UserHomeTabCreationModalCtrl',
                         controllerAs: 'htfmc',
                         bindToController: true,
                         resolve: {

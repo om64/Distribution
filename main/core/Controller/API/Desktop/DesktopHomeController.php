@@ -277,14 +277,14 @@ class DesktopHomeController extends Controller
     /**
      * @EXT\Route(
      *     "/api/desktop/home/tab/create/form",
-     *     name="api_get_home_tab_creation_form",
+     *     name="api_get_user_home_tab_creation_form",
      *     options = {"expose"=true}
      * )
      * @EXT\ParamConverter("user", options={"authenticatedUser" = true})
      *
      * Returns the home tab creation form
      */
-    public function getHomeTabCreationFormAction()
+    public function getUserHomeTabCreationFormAction()
     {
         $this->checkHomeLocked();
         $formType = new HomeTabType();
@@ -292,7 +292,7 @@ class DesktopHomeController extends Controller
         $form = $this->createForm($formType);
 
         return $this->apiManager->handleFormView(
-            'ClarolineCoreBundle:API:Desktop\homeTabCreateForm.html.twig',
+            'ClarolineCoreBundle:API:HomeTab\userHomeTabCreateForm.html.twig',
             $form
         );
     }
@@ -300,7 +300,7 @@ class DesktopHomeController extends Controller
     /**
      * @EXT\Route(
      *     "/api/desktop/home/tab/create",
-     *     name="api_post_desktop_home_tab_creation",
+     *     name="api_post_user_home_tab_creation",
      *     options = {"expose"=true}
      * )
      * @EXT\ParamConverter("user", options={"authenticatedUser" = true})
@@ -309,7 +309,7 @@ class DesktopHomeController extends Controller
      *
      * @return \Symfony\Component\HttpFoundation\JsonResponse
      */
-    public function postDesktopHomeTabCreationAction(User $user)
+    public function postUserHomeTabCreationAction(User $user)
     {
         $this->checkHomeLocked();
         $formType = new HomeTabType();
@@ -367,7 +367,7 @@ class DesktopHomeController extends Controller
             );
 
             return $this->apiManager->handleFormView(
-                'ClarolineCoreBundle:API:Desktop\homeTabCreateForm.html.twig',
+                'ClarolineCoreBundle:API:HomeTab\userHomeTabCreateForm.html.twig',
                 $form,
                 $options
             );
@@ -377,7 +377,7 @@ class DesktopHomeController extends Controller
     /**
      * @EXT\Route(
      *     "/api/desktop/home/tab/{homeTab}/edit/form",
-     *     name="api_get_home_tab_edition_form",
+     *     name="api_get_user_home_tab_edition_form",
      *     options = {"expose"=true}
      * )
      * @EXT\ParamConverter("user", options={"authenticatedUser" = true})
@@ -386,7 +386,7 @@ class DesktopHomeController extends Controller
      *
      * @return \Symfony\Component\HttpFoundation\JsonResponse
      */
-    public function getHomeTabEditionFormAction(User $user, HomeTab $homeTab)
+    public function getUserHomeTabEditionFormAction(User $user, HomeTab $homeTab)
     {
         $this->checkHomeLocked();
         $this->checkHomeTabEdition($homeTab, $user);
@@ -400,7 +400,7 @@ class DesktopHomeController extends Controller
         $form = $this->createForm($formType, $homeTab);
 
         return $this->apiManager->handleFormView(
-            'ClarolineCoreBundle:API:Desktop\homeTabEditForm.html.twig',
+            'ClarolineCoreBundle:API:HomeTab\userHomeTabEditForm.html.twig',
             $form
         );
     }
@@ -408,7 +408,7 @@ class DesktopHomeController extends Controller
     /**
      * @EXT\Route(
      *     "/api/desktop/home/tab/{homeTab}/edit",
-     *     name="api_put_home_tab_edition",
+     *     name="api_put_user_home_tab_edition",
      *     options = {"expose"=true}
      * )
      * @EXT\ParamConverter("user", options={"authenticatedUser" = true})
@@ -417,7 +417,7 @@ class DesktopHomeController extends Controller
      *
      * @return \Symfony\Component\HttpFoundation\JsonResponse
      */
-    public function putHomeTabEditionAction(User $user, HomeTab $homeTab)
+    public function putUserHomeTabEditionAction(User $user, HomeTab $homeTab)
     {
         $this->checkHomeLocked();
         $this->checkHomeTabEdition($homeTab, $user);
@@ -481,7 +481,7 @@ class DesktopHomeController extends Controller
             );
 
             return $this->apiManager->handleFormView(
-                'ClarolineCoreBundle:API:Desktop\homeTabEditForm.html.twig',
+                'ClarolineCoreBundle:API:HomeTab\userHomeTabEditForm.html.twig',
                 $form,
                 $options
             );
@@ -564,6 +564,35 @@ class DesktopHomeController extends Controller
         $this->eventDispatcher->dispatch('log', $event);
 
         return new JsonResponse($htcDatas, 200);
+    }
+
+    /**
+     * @EXT\Route(
+     *     "/api/home/tab/{homeTabConfig}/next/{nextHomeTabConfigId}/reorder",
+     *     name="api_post_desktop_home_tab_config_reorder",
+     *     options = {"expose"=true}
+     * )
+     * @EXT\ParamConverter("user", options={"authenticatedUser" = true})
+     *
+     * Update desktop HomeTabConfig order
+     *
+     * @return Response
+     */
+    public function postDesktopHomeTabConfigReorderAction(
+        User $user,
+        HomeTabConfig $homeTabConfig,
+        $nextHomeTabConfigId
+    ) {
+        $homeTab = $homeTabConfig->getHomeTab();
+        $this->checkHomeTabEdition($homeTab, $user);
+
+        $this->homeTabManager->reorderDesktopHomeTabConfigs(
+            $user,
+            $homeTabConfig,
+            $nextHomeTabConfigId
+        );
+
+        return new JsonResponse('success', 200);
     }
 
     /**

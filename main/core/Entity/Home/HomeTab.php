@@ -175,6 +175,11 @@ class HomeTab
         $this->roles->removeElement($role);
     }
 
+    public function emptyRoles()
+    {
+        $this->roles->clear();
+    }
+
     public function getIcon()
     {
         return $this->icon;

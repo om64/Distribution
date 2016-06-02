@@ -15,8 +15,10 @@ import translation from 'angular-ui-translation/angular-translation'
 
 import clarolineAPI from '../services/module'
 import WidgetsModule from '../widgets/widgets'
-import DesktopHomeTabCreationModalCtrl from './Controller/DesktopHomeTabCreationModalCtrl'
-import HomeTabEditionModalCtrl from './Controller/HomeTabEditionModalCtrl'
+import UserHomeTabCreationModalCtrl from './Controller/UserHomeTabCreationModalCtrl'
+import UserHomeTabEditionModalCtrl from './Controller/UserHomeTabEditionModalCtrl'
+import AdminHomeTabCreationModalCtrl from './Controller/AdminHomeTabCreationModalCtrl'
+import AdminHomeTabEditionModalCtrl from './Controller/AdminHomeTabEditionModalCtrl'
 import HomeTabService from './Service/HomeTabService'
 import DesktopHomeTabsDirective from './Directive/DesktopHomeTabsDirective'
 import AdminHomeTabsDirective from './Directive/AdminHomeTabsDirective'
@@ -33,8 +35,10 @@ angular.module('HomeTabsModule', [
   'ClarolineAPI',
   'WidgetsModule'
 ])
-.controller('DesktopHomeTabCreationModalCtrl', DesktopHomeTabCreationModalCtrl)
-.controller('HomeTabEditionModalCtrl', HomeTabEditionModalCtrl)
+.controller('UserHomeTabCreationModalCtrl', UserHomeTabCreationModalCtrl)
+.controller('UserHomeTabEditionModalCtrl', UserHomeTabEditionModalCtrl)
+.controller('AdminHomeTabCreationModalCtrl', AdminHomeTabCreationModalCtrl)
+.controller('AdminHomeTabEditionModalCtrl', AdminHomeTabEditionModalCtrl)
 .service('HomeTabService', HomeTabService)
 .directive('desktopHomeTabs', () => new DesktopHomeTabsDirective)
 .directive('adminHomeTabs', () => new AdminHomeTabsDirective)
