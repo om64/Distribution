@@ -2,6 +2,7 @@
 
 namespace Claroline\ForumBundle\Entity\Widget;
 
+use Claroline\CoreBundle\Entity\Resource\ResourceNode;
 use Claroline\CoreBundle\Entity\Widget\WidgetInstance;
 use Doctrine\ORM\Mapping as ORM;
 
@@ -32,6 +33,12 @@ class LastMessageWidgetConfig
      * @ORM\Column(name="display_my_last_messages", type="boolean")
      */
     protected $displayMyLastMessages;
+
+    /**
+     * @ORM\ManyToOne(targetEntity="Claroline\CoreBundle\Entity\Resource\ResourceNode")
+     * @ORM\JoinColumn(name="forum_id", onDelete="SET NULL", nullable=true)
+     */
+    protected $forum;
 
     /**
      * @return int
@@ -79,5 +86,15 @@ class LastMessageWidgetConfig
         $this->displayMyLastMessages = $displayMyLastMessages;
 
         return $this;
+    }
+
+    public function getForum()
+    {
+        return $this->forum;
+    }
+
+    public function setForum(ResourceNode $forum = null)
+    {
+        $this->forum = $forum;
     }
 }

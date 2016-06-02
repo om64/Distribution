@@ -9,6 +9,7 @@
 namespace Innova\CollecticielBundle;
 
 use Claroline\CoreBundle\Library\PluginBundle;
+use Innova\CollecticielBundle\Installation\AdditionalInstaller;
 
 class InnovaCollecticielBundle extends PluginBundle
 {
@@ -17,8 +18,13 @@ class InnovaCollecticielBundle extends PluginBundle
         return 'collecticiel';
     }
 
-    public function getPluginsRequirements()
+    public function getRequiredPlugins()
     {
         return ['Claroline\\AgendaBundle\\ClarolineAgendaBundle'];
+    }
+
+    public function getAdditionalInstaller()
+    {
+        return new AdditionalInstaller();
     }
 }

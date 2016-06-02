@@ -1,3 +1,14 @@
+# a
+add_grading_scale_label: Add a grading scale
+add_criteria_label: Add Information/criteria
+
+# d
+default_scale_very_good: Very good
+default_scale_satisfying: Satisfying
+default_scale_insufficient: Not satisfying
+default_criteria_comment: Comment
+
+# to sort
 formatDatetime: 'm/d/Y H:i'
 Resource: 'Resource'
 dropzone_edit: 'Edit'
@@ -454,3 +465,16 @@ Very good : 'Very good'
 Good : 'Good'
 Insufficient : 'Insufficient'
 Add grading scale : '+ Grading scale'
+Notation validation: 'Send'
+Global comment: 'Global comment:'
+Quality argument : 'Quality argument'
+To record : 'To record'
+To transmit : 'To transmit'
+To post a review : 'To post a review'
+Review on : 'Review on'
+Type: 'Type'
+Notation Max : '(/ '
+Transmitted review : 'Transmitted review'
+Not Transmitted review : 'Transmit the evaluation'
+Sure to transmit evaluation for document: 'Sure to transmit evaluation for document ?'
+Assessor : 'Assessor :'

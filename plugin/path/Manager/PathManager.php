@@ -4,14 +4,14 @@ namespace Innova\PathBundle\Manager;
 
 use Claroline\CoreBundle\Entity\User;
 use Claroline\CoreBundle\Entity\Widget\WidgetInstance;
-use Claroline\CoreBundle\Library\Resource\ResourceCollection;
+use Claroline\CoreBundle\Library\Security\Collection\ResourceCollection;
 use Doctrine\Common\Persistence\ObjectManager;
 use Innova\PathBundle\Entity\PathWidgetConfig;
 use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
 use Claroline\CoreBundle\Manager\ResourceManager;
 use Claroline\CoreBundle\Library\Security\Utilities;
-use Symfony\Component\Finder\Exception\AccessDeniedException;
+use Symfony\Component\Security\Core\Exception\AccessDeniedException;
 use Claroline\CoreBundle\Entity\Workspace\Workspace;
 use Innova\PathBundle\Entity\Path\Path;
 use Symfony\Component\Security\Core\User\UserInterface;
@@ -90,7 +90,7 @@ class PathManager
      * @param \Innova\PathBundle\Entity\Path\Path              $path
      * @param \Claroline\CoreBundle\Entity\Workspace\Workspace $workspace
      *
-     * @throws \Symfony\Component\Finder\Exception\AccessDeniedException
+     * @throws \Symfony\Component\Security\Core\Exception\AccessDeniedException
      */
     public function checkAccess($action, Path $path, Workspace $workspace = null)
     {
@@ -284,6 +284,7 @@ class PathManager
         $pathData['modified'] = $path->isModified();
         $pathData['published'] = $path->isPublished();
         $pathData['summaryDisplayed'] = $path->isSummaryDisplayed();
+        $pathData['completeBlockingCondition'] = $path->isCompleteBlockingCondition();
 
         // Get path structure into a file (to replace resources ID with placeholders)
         $uid = uniqid().'.txt';
@@ -331,6 +332,7 @@ class PathManager
         $path->setDescription($pathData['description']);
         $path->setModified($pathData['modified']);
         $path->setSummaryDisplayed($pathData['summaryDisplayed']);
+        $path->setCompleteBlockingCondition($pathData['completeBlockingCondition']);
 
         // Create steps
         $stepData = $data['data']['steps'];
