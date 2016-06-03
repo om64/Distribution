@@ -1,10 +1,7 @@
 
 # o
 options_form_modal_title: Options pour la ressource
-options_form_auto_pause_view: Activer la vue pause automatique
-options_form_live_view: Activer la vue live
-options_form_active_view: Activer la vue active
-options_form_exercise_view: Activer la vue exercise
+options_form_view_mode: Vue pour la ressource
 options_form_enable_text_transcription: Visualiser la transcription textuelle
 options_form_tts_language: Langue pour le text to speech
 options_form_tts_choices_en_US: Anglais (US)
@@ -13,3 +10,7 @@ options_form_tts_choices_de_DE: Allemand
 options_form_tts_choices_es_ES: Espagnol
 options_form_tts_choices_fr_FR: Français
 options_form_tts_choices_it_IT: Italien
+options_form_view_mode_choices_live: Vue live
+options_form_view_mode_choices_pause: Vue auto pause
+options_form_view_mode_choices_free: Vue libre
+options_form_view_mode_choices_active: Vue active

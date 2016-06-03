@@ -92,14 +92,15 @@ $(document).ready(function() {
     wavesurfer.on('seek', function() {
         if (playing) {
             wavesurfer.pause();
+            // pause help
             helpAudioPlayer.pause();
             helpAudioPlayer.currentTime = 0;
-            playing = false;
             wavesurfer.setVolume(1);
             wavesurfer.setPlaybackRate(1);
         }
-        $('#btn-play').removeClass('fa-pause').addClass('fa-play');
+      //  $('#btn-play').removeClass('fa-pause').addClass('fa-play');
         var current = getRegionFromCurrentTime();
+        console.log(current);
         if (current && currentRegion && current.id != currentRegion.id) {
             // update current region
             currentRegion = current;
@@ -107,11 +108,23 @@ $(document).ready(function() {
             $('.help-text').html(currentRegion.note);
         }
 
-        if (helpRegion && current && current.id != helpRegion.id) {
-            console.log('hide help items');
-            $('.region-highlight').remove();
-            $('.help-container').hide();
+        if(!playing){
+          helpRegion = current;
+          // hide any previous help info
+          $('.region-highlight').remove();
+          $('.help-container').hide();
+          // show current help infos
+          $('.help-container').show();
+          showHelp();
+          highlight();
+        } else {
+            if (helpRegion && current && current.id != helpRegion.id) {
+                $('.region-highlight').remove();
+                $('.help-container').hide();
+            }
+            wavesurfer.play();
         }
+
     });
 
     wavesurfer.on('audioprocess', function() {
@@ -123,6 +136,13 @@ $(document).ready(function() {
             // show help text
             $('.help-text').html(currentRegion.note);
         }
+    });
+
+    wavesurfer.on('finish', function () {
+
+      wavesurfer.seekAndCenter(0);
+      wavesurfer.pause();
+      playing = false;
     });
     /* /WAVESURFER */
 });
@@ -324,7 +344,6 @@ function showHelp() {
             html += '<button class="btn btn-default help-item" title="' + Translator.trans('region_help_segment_playback_rate', {}, 'media_resource') + '"  onclick="playSlowly()">x0.8</button>';
         }
         if (current.texts.length > 0) {
-            console.log(current.texts);
             for (var i = 0; i < current.texts.length; i++) {
                 if (current.texts[i] !== '') {
                     html += '<button class="btn btn-default fa fa-file-text-o help-item" title="' + current.texts[i] + '">';

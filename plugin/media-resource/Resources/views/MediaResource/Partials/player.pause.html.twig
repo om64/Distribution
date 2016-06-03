@@ -1,5 +1,5 @@
 <div class="row media-container">
-    <!-- play / pause button -->
+    <!-- play button -->
     <div class="col-md-1">
         <button type="button" class="btn btn-default fa fa-play" id="play" onclick="play()" title="{{'play_pause' | trans({}, 'media_resource')}}"></button>
     </div>
@@ -9,15 +9,13 @@
             <div id="seekbar" class="progress-bar progress-bar-info" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
         </div>
     </div>
-    <audio src="" style="width:100%;"></audio>
 </div>
 <!-- regions hidden -->
 <div class="row" style="display:none;">
     <div class="col-md-12 text-center regions-container">
         {% if regions | length > 0 %}
             {% for region in regions %}
-                <div class="row form-row region" id="{{region.uuid}}" data-uuid="{{region.uuid}}">
-
+                <div class="row region" id="{{region.uuid}}" data-uuid="{{region.uuid}}">
                     <input type="hidden" class="hidden-start" name="start[]" value="{{ region.start }}" required="required">
                     <input type="hidden" class="hidden-end" name="end[]" value="{{ region.end }}" required="required">
                     <input type="hidden" class="hidden-note" name="note[]" value="{{ region.note }}">
@@ -37,7 +35,7 @@
 
 {% block javascripts %}
 
-    {% javascripts
+    {% javascripts output='vendor/claroline/plugin/innovamediaresource/js/player-pause.js'
     '@InnovaMediaResourceBundle/Resources/public/js/play-pause.js'
  %}
     <script src="{{ asset_url }}"></script>

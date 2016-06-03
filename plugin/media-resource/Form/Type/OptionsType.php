@@ -7,33 +7,26 @@ use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolverInterface;
 
 /**
- * Description of ContextType.
+ * Description of OptionsType.
  */
 class OptionsType extends AbstractType
 {
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
-        $builder->add('showAutoPauseView', 'checkbox', array(
-                            'label' => 'options_form_auto_pause_view',
-                            'required' => false,
+        $builder->add('mode', 'choice', array(
+                            'label' => 'options_form_view_mode',
+                            'required' => true,
+                            'choices' => [
+                              'live' => 'options_form_view_mode_choices_live',
+                              'pause' => 'options_form_view_mode_choices_pause',
+                              'free' => 'options_form_view_mode_choices_free',
+                              'active' => 'options_form_view_mode_choices_active',
+                              ],
+                              'expanded' => true,
+                              'multiple' => false,
                     )
                 )
-                ->add('showLiveView', 'checkbox', array(
-                            'label' => 'options_form_live_view',
-                            'required' => false,
-                    )
-                )
-                ->add('showActiveView', 'checkbox', array(
-                            'label' => 'options_form_active_view',
-                            'required' => false,
-                    )
-                )
-                ->add('showExerciseView', 'checkbox', array(
-                            'label' => 'options_form_exercise_view',
-                            'required' => false,
-                    )
-                )
-                ->add('showRegionNote', 'checkbox', array(
+                ->add('showTextTranscription', 'checkbox', array(
                             'label' => 'options_form_enable_text_transcription',
                             'required' => false,
                     )
