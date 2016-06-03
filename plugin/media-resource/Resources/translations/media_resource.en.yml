@@ -44,6 +44,7 @@ move_backward: Go to previous marker
 move_forward: Go to next marker
 media_resource_save_regions: Save resource regions and regions options
 media_resource_options_explain: At least one view type should be enabled
+marker_drag_title: Drag & Drop
 
 #n
 none: None
@@ -54,7 +55,7 @@ play_pause: PLay / Pause
 previous_segment: Previous region
 
 #r
-region_help: Region help
+region_help: See available region help
 region_config: Configure region
 region_delete: Delete region
 region_config_allow_rate: Allow playback rate change

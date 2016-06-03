@@ -44,6 +44,7 @@ move_backward: Aller au marqueur précédent
 move_forward: Aller au marqueur suivant
 media_resource_save_regions: Sauvegarder les regions et leur configuration pour le ressource
 media_resource_options_explain: Au moins un type de vue doit être actif.
+marker_drag_title: Drag & Drop
 
 #n
 none: Aucune
@@ -54,7 +55,7 @@ play_pause: PLay / Pause
 previous_segment: Région précédente
 
 #r
-region_help: Aide sur un segment
+region_help: Voir l'aide disponible pour la région
 region_config: Configurer la région
 region_delete: Supprimer la région
 region_config_allow_rate: Autoriser le changement de vitesse de lecture

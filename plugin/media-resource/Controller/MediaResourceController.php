@@ -10,9 +10,11 @@ use Sensio\Bundle\FrameworkExtraBundle\Configuration\ParamConverter;
 use Innova\MediaResourceBundle\Entity\MediaResource;
 use Claroline\CoreBundle\Entity\Workspace\Workspace;
 use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Innova\MediaResourceBundle\Form\Type\OptionsType;
 use Innova\MediaResourceBundle\Entity\Options;
+use Symfony\Component\HttpFoundation\ResponseHeaderBag;
 
 /**
  * Class MediaResourceController.
@@ -38,61 +40,16 @@ class MediaResourceController extends Controller
         $regions = $this->get('innova_media_resource.manager.media_resource_region')->findByAndOrder($mr);
         // get options
         $options = $mr->getOptions();
-        // if set to exercise view all the other parameters are ignored
-        if ($options->getShowExerciseView()) {
-            return $this->render('InnovaMediaResourceBundle:MediaResource:player.exercise.html.twig', array(
-                        '_resource' => $mr,
-                        'regions' => $regions,
-                        'workspace' => $workspace,
-                            )
-            );
-        } else {
-            $modes = [];
-            // at least one mode is enabled ...
-            if ($options->getShowAutoPauseView) {
-                array_push($modes, 'pause');
-            }
-            if ($options->getShowActiveView) {
-                array_push($modes, 'active');
-            }
-            if ($options->getShowLiveView) {
-                array_push($modes, 'live');
-            }
-
-            return $this->render('InnovaMediaResourceBundle:MediaResource:player.wrapper.html.twig', array(
-                      '_resource' => $mr,
-                      'regions' => $regions,
-                      'workspace' => $workspace,
-                      'mode' => $modes[0], // so... choose the first mode that we encounter...
-                  )
-          );
-        }
-    }
-
-    /**
-     * Media resource player other views.
-     *
-     * @Route("/mr/{id}/mode/{mode}", requirements={"id" = "\d+"}, name="media_resource_change_view")
-     * @ParamConverter("MediaResource", class="InnovaMediaResourceBundle:MediaResource")
-     * @Method("GET")
-     */
-    public function changeViewAction(Workspace $workspace, MediaResource $mr)
-    {
-        if (false === $this->container->get('security.context')->isGranted('OPEN', $mr->getResourceNode())) {
-            throw new AccessDeniedException();
-        }
-
-        // use a specific method to order regions correctly
-        $regions = $this->get('innova_media_resource.manager.media_resource_region')->findByAndOrder($mr);
-        $mode = $this->getRequest()->get('mode');
+        //echo $mode;
+        //die;
 
         return $this->render('InnovaMediaResourceBundle:MediaResource:player.wrapper.html.twig', array(
                   '_resource' => $mr,
                   'regions' => $regions,
                   'workspace' => $workspace,
-                  'mode' => $mode,
-                      )
-                    );
+                  'mode' => $options->getMode(),
+              )
+      );
     }
 
     /**
@@ -114,7 +71,7 @@ class MediaResourceController extends Controller
         // MediaResource Options form
         $form = $this->container->get('form.factory')->create(new OptionsType(), $options);
 
-        return $this->render('InnovaMediaResourceBundle:MediaResource:administrate-2.html.twig', array(
+        return $this->render('InnovaMediaResourceBundle:MediaResource:administrate.html.twig', array(
                     '_resource' => $mr,
                     'regions' => $regions,
                     'workspace' => $workspace,
@@ -201,5 +158,45 @@ class MediaResourceController extends Controller
         $response->headers->set('Content-Type', $type);
 
         return $response;
+    }
+
+    /**
+     * Create a zip that contains :
+     * - the original file
+     * - .srt file (might be empty)
+     * - all regions as audio files.
+     *
+     * @Route(
+     *     "/media/{id}/zip",
+     *     name="mediaresource_zip_export",
+     *     options={"expose"=true}
+     * )
+     * @ParamConverter("MediaResource", class="InnovaMediaResourceBundle:MediaResource")
+     * @Method({"GET"})
+     */
+    public function exportToZip(MediaResource $resource)
+    {
+        $data = $this->container->get('request')->query->get('data');
+
+        $zipPath = $this->get('innova_media_resource.manager.media_resource')->exportToZip($resource, $data);
+
+        $response = new Response();
+        $response->headers->set('Content-Transfer-Encoding', 'octet-stream');
+        $response->headers->set('Content-Type', 'application/force-download');
+        $response->headers->set('Content-Disposition', 'attachment; filename='.urlencode('archive.zip'));
+        $response->headers->set('Content-Type', 'application/zip');
+        $response->headers->set('Connection', 'close');
+        $response->sendHeaders();
+
+        $response->setContent(readfile($zipPath));
+
+        return $response;
+
+      /*  $response = new BinaryFileResponse($zipPath);
+        $response->setContentDisposition(ResponseHeaderBag::DISPOSITION_ATTACHMENT);
+
+        $response->headers->set('Content-Type', 'application/zip');
+
+        return $response;*/
     }
 }

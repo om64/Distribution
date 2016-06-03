@@ -22,34 +22,18 @@ class Options
     protected $id;
 
     /**
-     * @var bool
-     * @ORM\Column(type="boolean", options={"default":true})
+     * View mode for the ressource.
+     *
+     * @var string
+     * @ORM\Column(type="string", length=255)
      */
-    protected $showActiveView;
+    protected $mode;
 
     /**
      * @var bool
      * @ORM\Column(type="boolean", options={"default":false})
      */
-    protected $showAutoPauseView;
-
-    /**
-     * @var bool
-     * @ORM\Column(type="boolean", options={"default":false})
-     */
-    protected $showLiveView;
-
-    /**
-     * @var bool
-     * @ORM\Column(type="boolean", options={"default":false})
-     */
-    protected $showExerciseView;
-
-    /**
-     * @var bool
-     * @ORM\Column(type="boolean", options={"default":false})
-     */
-    protected $showRegionNote;
+    protected $showTextTranscription;
 
     /**
      * The language to use for tts in the form language-region ([ISO 639-1 alpha-2][-][ISO 3166-1 alpha-2]).
@@ -62,11 +46,8 @@ class Options
 
     public function __construct()
     {
-        $this->setShowActiveView(true);
-        $this->setShowAutoPauseView(true);
-        $this->setShowLiveView(true);
-        $this->setShowRegionNote(false);
-        $this->setShowExerciseView(false);
+        $this->setMode('live');
+        $this->setShowTextTranscription(false);
         $this->setTtsLanguage('en-US');
     }
 
@@ -82,64 +63,28 @@ class Options
         return $this->id;
     }
 
-    public function setShowActiveView($showActiveView)
+    public function setMode($mode)
     {
-        $this->showActiveView = $showActiveView;
+        $this->mode = $mode;
 
         return $this;
     }
 
-    public function getShowActiveView()
+    public function getMode()
     {
-        return $this->showActiveView;
+        return $this->mode;
     }
 
-    public function setShowAutoPauseView($showAutoPauseView)
+    public function setShowTextTranscription($showTextTranscription)
     {
-        $this->showAutoPauseView = $showAutoPauseView;
+        $this->showTextTranscription = $showTextTranscription;
 
         return $this;
     }
 
-    public function getShowAutoPauseView()
+    public function getShowTextTranscription()
     {
-        return $this->showAutoPauseView;
-    }
-
-    public function setShowLiveView($showLiveView)
-    {
-        $this->showLiveView = $showLiveView;
-
-        return $this;
-    }
-
-    public function getShowLiveView()
-    {
-        return $this->showLiveView;
-    }
-
-    public function setShowExerciseView($showExerciseView)
-    {
-        $this->showExerciseView = $showExerciseView;
-
-        return $this;
-    }
-
-    public function getShowExerciseView()
-    {
-        return $this->showExerciseView;
-    }
-
-    public function setShowRegionNote($showRegionNote)
-    {
-        $this->showRegionNote = $showRegionNote;
-
-        return $this;
-    }
-
-    public function getShowRegionNote()
-    {
-        return $this->showRegionNote;
+        return $this->showTextTranscription;
     }
 
     public function setTtsLanguage($ttsLanguage)

@@ -14,10 +14,11 @@ var mrId;
 // DOCUMENT READY
 // ======================================================================================================== //
 $(document).ready(function () {
-    audioPlayer = document.getElementsByTagName("audio")[0];
+    audioPlayer = document.getElementById('html-audio-player');
     var progress = document.getElementById('seekbar');
     playButton = document.getElementById('play');
     audioPlayer.loop = false;
+
 
     wId = $('input[name="wId"]').val();
     mrId = $('input[name="mrId"]').val();
@@ -35,8 +36,14 @@ $(document).ready(function () {
         id: mrId
     };
 
-    baseAudioUrl = Routing.generate('innova_get_mediaresource_resource_file', {workspaceId: data.workspaceId ,id: data.id});
-    audioPlayer.src = baseAudioUrl;
+    audioData = Routing.generate('innova_get_mediaresource_resource_file', {
+        workspaceId: data.workspaceId,
+        id: data.id
+    });
+
+    //baseAudioUrl = Routing.generate('innova_get_mediaresource_resource_file', {workspaceId: data.workspaceId ,id: data.id});
+    audioPlayer.src = audioData;
+    baseAudioUrl = audioData;
 
     // draw progress bar while playing
     audioPlayer.addEventListener('timeupdate', function (e) {
@@ -66,6 +73,7 @@ $(document).ready(function () {
         }
     });
 });
+
 
 function play() {
     playButton.disabled = true;

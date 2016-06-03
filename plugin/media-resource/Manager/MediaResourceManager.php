@@ -22,7 +22,7 @@ class MediaResourceManager
     protected $em;
     protected $translator;
     protected $fileDir;
-    //protected $tokenStorage;
+    protected $uploadDir;
     protected $claroUtils;
     protected $container;
     protected $workspaceManager;
@@ -32,7 +32,8 @@ class MediaResourceManager
      *      "container"   = @DI\Inject("service_container"),
      *      "em"          = @DI\Inject("doctrine.orm.entity_manager"),
      *      "translator"  = @DI\Inject("translator"),
-     *      "fileDir"     = @DI\Inject("%claroline.param.files_directory%")
+     *      "fileDir"     = @DI\Inject("%claroline.param.files_directory%"),
+     *      "uploadDir"   = @DI\Inject("%claroline.param.uploads_directory%")
      * })
      *
      * @param ContainerInterface  $container
@@ -40,12 +41,13 @@ class MediaResourceManager
      * @param TranslatorInterface $translator
      * @param string              $fileDir
      */
-    public function __construct(ContainerInterface $container, EntityManager $em, TranslatorInterface $translator, $fileDir)
+    public function __construct(ContainerInterface $container, EntityManager $em, TranslatorInterface $translator, $fileDir, $uploadDir)
     {
         $this->em = $em;
         $this->translator = $translator;
         $this->container = $container;
         $this->fileDir = $fileDir;
+        $this->uploadDir = $uploadDir;
         $this->claroUtils = $container->get('claroline.utilities.misc');
         $this->workspaceManager = $container->get('claroline.manager.workspace_manager');
     }
@@ -170,5 +172,94 @@ class MediaResourceManager
         } else {
             return false;
         }
+    }
+
+    public function exportToZip(MediaResource $resource, $data)
+    {
+        $files = [];
+        // get original file url
+        $url = $resource->getMedias()[0]->getUrl();
+        $originalFileFullPath = $this->container->getParameter('claroline.param.files_directory')
+           .DIRECTORY_SEPARATOR
+           .$url;
+
+        // ensure the name is clean
+        $cleanName = preg_replace('/[^A-Za-z0-9]/', '', $resource->getName());
+        // create temp_dir
+        $temp_dir = $this->uploadDir.DIRECTORY_SEPARATOR.$cleanName.'_temp';
+        $fs = new Filesystem();
+        if (!$fs->exists($temp_dir)) {
+            $fs->mkdir($temp_dir);
+        }
+        // copy original file
+        // get original file extension
+        $ext = pathinfo($originalFileFullPath, PATHINFO_EXTENSION);
+        $fullFileName = $cleanName.'_full_file.'.$ext;
+        $copiedFilePath = $temp_dir.DIRECTORY_SEPARATOR.$fullFileName;
+
+        // create srt file
+        $srtFile = $temp_dir.DIRECTORY_SEPARATOR.$cleanName.'_SRT.vtt';
+        $fs->touch($srtFile);
+        $srt = '';
+        // make a copy of the file
+        if (copy($originalFileFullPath, $copiedFilePath)) {
+            // create chuncked audio files in temp dir
+            $index = 1;
+            array_push($files, $copiedFilePath);
+
+            $srt .= 'WEBVTT'.PHP_EOL;
+
+            foreach ($data as $region) {
+                $start = $region['start'];
+                $end = $region['end'];
+                $duration = $end - $start;
+
+                // create srt string
+                $srt .= $index.PHP_EOL;
+                $srt .= $this->secondsToSrtTime($start).' --> '.$this->secondsToSrtTime($end).PHP_EOL;
+                $srt .= $region['note'].PHP_EOL;
+                $partFilePath = $temp_dir.DIRECTORY_SEPARATOR.$cleanName.'_part_'.$index.'.'.$ext;
+                $cmd = 'ffmpeg -i '.$copiedFilePath.' -ss '.$start.' -t '.$duration.' '.$partFilePath;
+                exec($cmd, $output, $returnVar);
+
+                // cmd error
+                if ($returnVar !== 0) {
+                    echo 'error | '.$cmd.' | ';
+                    //array_push($errors, 'File conversion failed with command '.$cmd.' and returned '.$returnVar);
+
+                    //return array('file' => null, 'errors' => $errors);
+                } else {
+                    array_push($files, $partFilePath);
+                }
+
+                ++$index;
+            }
+
+            file_put_contents($srtFile, $srt);
+            array_push($files, $srtFile);
+        }
+
+        $zipName = $cleanName.'.zip';
+        $archive = new \ZipArchive();
+        $pathToArchive = $temp_dir.DIRECTORY_SEPARATOR.$zipName;
+        $archive->open($pathToArchive, \ZipArchive::CREATE);
+        foreach ($files as $f) {
+            $archive->addFromString(basename($f),  file_get_contents($f));
+        }
+        $archive->close();
+
+        $fs->remove($files);
+
+        return $pathToArchive;
+    }
+
+    private function secondsToSrtTime($seconds)
+    {
+        $stringSec = (string) $seconds;
+        $fullMilli = explode('.', $stringSec);
+        $milli = array_key_exists(1, $fullMilli) ?  substr($fullMilli[1], 0, 3) : '000';
+        $ms = \gmdate('i:s', $seconds);
+        // time limit is 00:59:59,999 (less than one hour)
+        return '00:'.$ms.'.'.$milli;
     }
 }
