@@ -15,9 +15,12 @@ import translation from 'angular-ui-translation/angular-translation'
 
 import clarolineAPI from '../services/module'
 import DesktopWidgetInstanceCreationModalCtrl from './Controller/DesktopWidgetInstanceCreationModalCtrl'
-import WidgetInstanceEditionModalCtrl from './Controller/WidgetInstanceEditionModalCtrl'
+import DesktopWidgetInstanceEditionModalCtrl from './Controller/DesktopWidgetInstanceEditionModalCtrl'
+import AdminWidgetInstanceCreationModalCtrl from './Controller/AdminWidgetInstanceCreationModalCtrl'
+import AdminWidgetInstanceEditionModalCtrl from './Controller/AdminWidgetInstanceEditionModalCtrl'
 import WidgetService from './Service/WidgetService'
 import WidgetsDirective from './Directive/WidgetsDirective'
+import AdminWidgetsDirective from './Directive/AdminWidgetsDirective'
 
 //import Interceptors from '../interceptorsDefault'
 //import HtmlTruster from '../html-truster/module'
@@ -32,6 +35,9 @@ angular.module('WidgetsModule', [
   'gridster'
 ])
 .controller('DesktopWidgetInstanceCreationModalCtrl', DesktopWidgetInstanceCreationModalCtrl)
-.controller('WidgetInstanceEditionModalCtrl', WidgetInstanceEditionModalCtrl)
+.controller('DesktopWidgetInstanceEditionModalCtrl', DesktopWidgetInstanceEditionModalCtrl)
+.controller('AdminWidgetInstanceCreationModalCtrl', AdminWidgetInstanceCreationModalCtrl)
+.controller('AdminWidgetInstanceEditionModalCtrl', AdminWidgetInstanceEditionModalCtrl)
 .service('WidgetService', WidgetService)
 .directive('widgets', () => new WidgetsDirective)
+.directive('adminWidgets', () => new AdminWidgetsDirective)

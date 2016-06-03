@@ -7,7 +7,7 @@
  * file that was distributed with this source code.
  */
 
-export default class WidgetInstanceEditionModalCtrl {
+export default class DesktopWidgetInstanceEditionModalCtrl {
   constructor($http, $sce, $uibModal, $uibModalInstance, $httpParamSerializer, ClarolineAPIService, WidgetService, widgetInstanceId, widgetDisplayId, configurable, contentConfig) {
     this.$http = $http
     this.$sce = $sce
@@ -36,7 +36,7 @@ export default class WidgetInstanceEditionModalCtrl {
   }
 
   secureHtml (html) {
-    return this.$sce.trustAsHtml(html)
+    return typeof html === 'string' ? this.$sce.trustAsHtml(html) : html
   }
 
   submit() {
@@ -65,7 +65,7 @@ export default class WidgetInstanceEditionModalCtrl {
     const headers = {headers: {'Content-Type': 'application/x-www-form-urlencoded'}}
     this.$http.put(route, data, headers).then(
       d => {
-        this.WidgetService.updateUserWidget(d.data)
+        this.WidgetService.updateWidget(d.data)
 
         if (widgetContentConfigResult) {
           this.contentConfig = this.secureHtml(widgetContentConfigResult)
@@ -78,7 +78,7 @@ export default class WidgetInstanceEditionModalCtrl {
           this.$uibModalInstance.close()
           const instance = this.$uibModal.open({
             template: d.data,
-            controller: 'WidgetInstanceEditionModalCtrl',
+            controller: 'DesktopWidgetInstanceEditionModalCtrl',
             controllerAs: 'wfmc',
             bindToController: true,
             resolve: {

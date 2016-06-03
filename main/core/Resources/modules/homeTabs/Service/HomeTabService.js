@@ -161,7 +161,7 @@ export default class HomeTabService {
       this.options['selectedTabId'] = this.adminHomeTabs[0]['tabId']
       this.options['selectedTabConfigId'] = this.adminHomeTabs[0]['configId']
     }
-    //this.WidgetService.loadAdminWidgets(this.options['selectedTabId'])
+    this.WidgetService.loadAdminWidgets(this.options['selectedTabId'])
   }
 
   selectDefaultHomeTab() {

@@ -19,32 +19,41 @@ use Symfony\Component\Validator\Constraints\NotBlank;
 
 class WidgetInstanceConfigType extends AngularType
 {
-    private $isDesktop;
-    private $withRole;
-    private $roles;
+    private $bundles;
     private $color;
-    private $textTitleColor;
-    private $forApi = false;
-    private $ngAlias;
     private $creationMode;
+    private $forApi = false;
+    private $locked;
+    private $ngAlias;
+    private $roles;
+    private $textTitleColor;
+    private $type;
+    private $visible;
+    private $withRole;
 
     public function __construct(
-        $isDesktop = true,
+        $type = 'desktop',
+        array $bundles = [],
         $withRole = false,
-        array $roles = array(),
+        array $roles = [],
         $color = null,
         $textTitleColor = null,
-        $ngAlias = 'wfmc',
-        $creationMode = true
+        $locked = false,
+        $visible = true,
+        $creationMode = true,
+        $ngAlias = 'wfmc'
     )
     {
-        $this->isDesktop = $isDesktop;
-        $this->withRole = $withRole;
-        $this->roles = $roles;
+        $this->bundles = $bundles;
         $this->color = $color;
-        $this->textTitleColor = $textTitleColor;
-        $this->ngAlias = $ngAlias;
         $this->creationMode = $creationMode;
+        $this->locked = $locked;
+        $this->ngAlias = $ngAlias;
+        $this->roles = $roles;
+        $this->textTitleColor = $textTitleColor;
+        $this->type = $type;
+        $this->visible = $visible;
+        $this->withRole = $withRole;
     }
 
     public function buildForm(FormBuilderInterface $builder, array $options)
@@ -60,9 +69,10 @@ class WidgetInstanceConfigType extends AngularType
 
         if ($this->creationMode) {
             $datas = array();
-            $datas['is_desktop'] = $this->isDesktop;
+            $datas['is_desktop'] = $this->type === 'desktop' || $this->type === 'admin';
             $datas['with_role'] = $this->withRole;
             $datas['roles'] = $this->roles;
+            $datas['bundles'] = $this->bundles;
 
             $builder->add(
                 'widget',
@@ -77,28 +87,87 @@ class WidgetInstanceConfigType extends AngularType
                     'constraints' => new NotBlank(),
                     'query_builder' => function (WidgetRepository $widgetRepo) use ($datas) {
                         if ($datas['is_desktop']) {
-
                             if ($datas['with_role']) {
-
                                 return $widgetRepo->createQueryBuilder('w')
                                     ->join('w.roles', 'r')
                                     ->where('w.isDisplayableInDesktop = true')
                                     ->andWhere("r IN (:roles)")
-                                    ->setParameter('roles', $datas['roles']);
+                                    ->leftJoin('w.plugin', 'p')
+                                    ->andWhere('CONCAT(p.vendorName, p.bundleName) IN (:bundles)')
+                                    ->orWhere('w.plugin is null')
+                                    ->setParameter('roles', $datas['roles'])
+                                    ->setParameter('bundles', $datas['bundles']);
 
                             } else {
-
                                 return $widgetRepo->createQueryBuilder('w')
-                                    ->where('w.isDisplayableInDesktop = true');
+                                    ->where('w.isDisplayableInDesktop = true')
+                                    ->leftJoin('w.plugin', 'p')
+                                    ->andWhere('CONCAT(p.vendorName, p.bundleName) IN (:bundles)')
+                                    ->orWhere('w.plugin is null')
+                                    ->setParameter('bundles', $datas['bundles']);
                             }
                         } else {
                             return $widgetRepo->createQueryBuilder('w')
-                                ->where('w.isDisplayableInWorkspace = true');
+                                ->where('w.isDisplayableInWorkspace = true')
+                                ->leftJoin('w.plugin', 'p')
+                                ->andWhere('CONCAT(p.vendorName, p.bundleName) IN (:bundles)')
+                                ->orWhere('w.plugin is null')
+                                ->setParameter('bundles', $datas['bundles']);
                         }
                     }
                 )
             );
         }
+
+        if ($this->type === 'admin') {
+            $builder->add(
+                'visible',
+                'choice',
+                array(
+                    'choices' => array(
+                        'yes' => true,
+                        'no' => false,
+                    ),
+                    'label' => 'visible',
+                    'required' => true,
+                    'mapped' => false,
+                    'choices_as_values' => true,
+                    'data' => $this->visible,
+                )
+            );
+            $builder->add(
+                'locked',
+                'choice',
+                array(
+                    'choices' => array(
+                        'yes' => true,
+                        'no' => false,
+                    ),
+                    'label' => 'locked',
+                    'mapped' => false,
+                    'required' => true,
+                    'choices_as_values' => true,
+                    'data' => $this->locked,
+                )
+            );
+        } elseif ($this->type === 'workspace') {
+            $builder->add(
+                'visible',
+                'choice',
+                array(
+                    'choices' => array(
+                        'yes' => true,
+                        'no' => false,
+                    ),
+                    'label' => 'visible',
+                    'required' => true,
+                    'mapped' => false,
+                    'choices_as_values' => true,
+                    'data' => $this->visible,
+                )
+            );
+        }
+
         $builder->add(
             'color',
             'text',

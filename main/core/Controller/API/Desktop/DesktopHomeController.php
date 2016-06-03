@@ -31,6 +31,7 @@ use Claroline\CoreBundle\Form\WidgetInstanceConfigType;
 use Claroline\CoreBundle\Library\Security\Utilities;
 use Claroline\CoreBundle\Manager\ApiManager;
 use Claroline\CoreBundle\Manager\HomeTabManager;
+use Claroline\CoreBundle\Manager\PluginManager;
 use Claroline\CoreBundle\Manager\RoleManager;
 use Claroline\CoreBundle\Manager\UserManager;
 use Claroline\CoreBundle\Manager\WidgetManager;
@@ -48,8 +49,10 @@ class DesktopHomeController extends Controller
 {
     private $apiManager;
     private $authorization;
+    private $bundles;
     private $eventDispatcher;
     private $homeTabManager;
+    private $pluginManager;
     private $request;
     private $roleManager;
     private $tokenStorage;
@@ -59,16 +62,17 @@ class DesktopHomeController extends Controller
 
     /**
      * @DI\InjectParams({
-     *     "apiManager"            = @DI\Inject("claroline.manager.api_manager"),
-     *     "authorization"         = @DI\Inject("security.authorization_checker"),
-     *     "eventDispatcher"       = @DI\Inject("event_dispatcher"),
-     *     "homeTabManager"        = @DI\Inject("claroline.manager.home_tab_manager"),
-     *     "request"               = @DI\Inject("request"),
-     *     "roleManager"           = @DI\Inject("claroline.manager.role_manager"),
-     *     "tokenStorage"          = @DI\Inject("security.token_storage"),
-     *     "userManager"           = @DI\Inject("claroline.manager.user_manager"),
-     *     "utils"                 = @DI\Inject("claroline.security.utilities"),
-     *     "widgetManager"         = @DI\Inject("claroline.manager.widget_manager")
+     *     "apiManager"      = @DI\Inject("claroline.manager.api_manager"),
+     *     "authorization"   = @DI\Inject("security.authorization_checker"),
+     *     "eventDispatcher" = @DI\Inject("event_dispatcher"),
+     *     "homeTabManager"  = @DI\Inject("claroline.manager.home_tab_manager"),
+     *     "pluginManager"   = @DI\Inject("claroline.manager.plugin_manager"),
+     *     "request"         = @DI\Inject("request"),
+     *     "roleManager"     = @DI\Inject("claroline.manager.role_manager"),
+     *     "tokenStorage"    = @DI\Inject("security.token_storage"),
+     *     "userManager"     = @DI\Inject("claroline.manager.user_manager"),
+     *     "utils"           = @DI\Inject("claroline.security.utilities"),
+     *     "widgetManager"   = @DI\Inject("claroline.manager.widget_manager")
      * })
      */
     public function __construct(
@@ -76,6 +80,7 @@ class DesktopHomeController extends Controller
         AuthorizationCheckerInterface $authorization,
         EventDispatcherInterface $eventDispatcher,
         HomeTabManager $homeTabManager,
+        PluginManager $pluginManager,
         Request $request,
         RoleManager $roleManager,
         TokenStorageInterface $tokenStorage,
@@ -86,8 +91,10 @@ class DesktopHomeController extends Controller
     {
         $this->apiManager = $apiManager;
         $this->authorization = $authorization;
+        $this->bundles = $pluginManager->getEnabled(true);
         $this->eventDispatcher = $eventDispatcher;
         $this->homeTabManager = $homeTabManager;
+        $this->pluginManager = $pluginManager;
         $this->request = $request;
         $this->roleManager = $roleManager;
         $this->tokenStorage = $tokenStorage;
@@ -395,7 +402,7 @@ class DesktopHomeController extends Controller
         $details = !is_null($homeTabConfig) ? $homeTabConfig->getDetails() : null;
         $color = isset($details['color']) ? $details['color'] : null;
 
-        $formType = new HomeTabType(null, false, $color);
+        $formType = new HomeTabType('desktop', $color);
         $formType->enableApi();
         $form = $this->createForm($formType, $homeTab);
 
@@ -608,7 +615,7 @@ class DesktopHomeController extends Controller
     public function getWidgetInstanceCreationFormAction(User $user, HomeTabConfig $htc)
     {
         $this->checkWidgetCreation($user, $htc);
-        $formType = new WidgetInstanceConfigType(true, true, $user->getEntityRoles());
+        $formType = new WidgetInstanceConfigType('desktop', $this->bundles, true, $user->getEntityRoles());
         $formType->enableApi();
         $form = $this->createForm($formType);
 
@@ -637,7 +644,7 @@ class DesktopHomeController extends Controller
         $color = $wdc->getColor();
         $details = $wdc->getDetails();
         $textTitleColor = isset($details['textTitleColor']) ? $details['textTitleColor'] : null;
-        $formType = new WidgetInstanceConfigType(true, false, array(), $color, $textTitleColor, 'wfmc', false);
+        $formType = new WidgetInstanceConfigType('desktop', $this->bundles, false, [], $color, $textTitleColor, false, true, false);
         $formType->enableApi();
         $form = $this->createForm($formType, $widgetInstance);
 
@@ -689,7 +696,7 @@ class DesktopHomeController extends Controller
     public function postDesktopWidgetInstanceCreationAction(User $user, HomeTabConfig $htc)
     {
         $this->checkWidgetCreation($user, $htc);
-        $formType = new WidgetInstanceConfigType(true, true, $user->getEntityRoles());
+        $formType = new WidgetInstanceConfigType('desktop', $this->bundles, true, $user->getEntityRoles());
         $formType->enableApi();
         $form = $this->createForm($formType);
         $form->submit($this->request);
@@ -785,7 +792,7 @@ class DesktopHomeController extends Controller
         $color = $wdc->getColor();
         $details = $wdc->getDetails();
         $textTitleColor = isset($details['textTitleColor']) ? $details['textTitleColor'] : null;
-        $formType = new WidgetInstanceConfigType(true, false, array(), $color, $textTitleColor, 'wfmc', false);
+        $formType = new WidgetInstanceConfigType('desktop', $this->bundles, false, [], $color, $textTitleColor, false, true, false);
         $formType->enableApi();
         $form = $this->createForm($formType, $widgetInstance);
         $form->submit($this->request);

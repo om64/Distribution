@@ -8,12 +8,12 @@
  */
 
 export default class DesktopWidgetInstanceCreationModalCtrl {
-    constructor($http, $uibModal, $uibModalInstance, ClarolineAPIService, homeTabConfigId, callback) {
+    constructor($http, $uibModal, $uibModalInstance, ClarolineAPIService, homeTabId, callback) {
         this.$http = $http
         this.$uibModal = $uibModal
         this.$uibModalInstance = $uibModalInstance
         this.ClarolineAPIService = ClarolineAPIService
-        this.homeTabConfigId = homeTabConfigId
+        this.homeTabId = homeTabId
         this.callback = callback
         this.widgetInstance = {}
     }
@@ -24,8 +24,8 @@ export default class DesktopWidgetInstanceCreationModalCtrl {
             this.widgetInstance
         )
         const route = Routing.generate(
-            'api_post_desktop_widget_instance_creation',
-            {'_format': 'html', htc: this.homeTabConfigId}
+            'api_post_admin_widget_instance_creation',
+            {'_format': 'html', homeTab: this.homeTabId}
         )
         const headers = {headers: {'Content-Type': 'application/x-www-form-urlencoded'}}
 
@@ -38,11 +38,11 @@ export default class DesktopWidgetInstanceCreationModalCtrl {
                     this.$uibModalInstance.close()
                     const instance = this.$uibModal.open({
                         template: d.data,
-                        controller: 'DesktopWidgetInstanceCreationModalCtrl',
+                        controller: 'AdminWidgetInstanceCreationModalCtrl',
                         controllerAs: 'wfmc',
                         bindToController: true,
                         resolve: {
-                            homeTabConfigId: () => { return this.homeTabConfigId },
+                            homeTabId: () => { return this.homeTabId },
                             callback: () => { return this.callback },
                             widgetInstance: () => { return this.widgetInstance }
                         }

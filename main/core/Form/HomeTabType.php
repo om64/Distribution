@@ -20,18 +20,22 @@ use Symfony\Component\Validator\Constraints\NotBlank;
 
 class HomeTabType extends AngularType
 {
-    private $isAdmin;
-    private $workspace;
     private $color;
     private $forApi = false;
+    private $locked;
     private $ngAlias;
+    private $type;
+    private $visible;
+    private $workspace;
 
-    public function __construct(Workspace $workspace = null, $isAdmin = false, $color = null, $ngAlias = 'htfmc')
+    public function __construct($type = 'desktop', $color = null, $locked = false, $visible = true, Workspace $workspace = null, $ngAlias = 'htfmc')
     {
-        $this->isAdmin = $isAdmin;
-        $this->workspace = $workspace;
         $this->color = $color;
+        $this->locked = $locked;
         $this->ngAlias = $ngAlias;
+        $this->type = $type;
+        $this->visible = $visible;
+        $this->workspace = $workspace;
     }
 
     public function buildForm(FormBuilderInterface $builder, array $options)
@@ -48,30 +52,39 @@ class HomeTabType extends AngularType
                 'attr' => array('colorpicker' => 'hex')
             )
         );
-        $workspace = $this->workspace;
 
-        if (!is_null($workspace)) {
+        if ($this->type === 'admin') {
             $builder->add(
-                'roles',
-                'entity',
+                'visible',
+                'choice',
                 array(
-                    'label' => 'roles',
-                    'class' => 'ClarolineCoreBundle:Role',
-                    'choice_translation_domain' => true,
-                    'query_builder' => function (EntityRepository $er) use ($workspace) {
-
-                        return $er->createQueryBuilder('r')
-                            ->where('r.workspace = :workspace')
-                            ->setParameter('workspace', $workspace)
-                            ->orderBy('r.translationKey', 'ASC');
-                    },
-                    'property' => 'translationKey',
-                    'expanded' => true,
-                    'multiple' => true,
-                    'required' => false,
+                    'choices' => array(
+                        'yes' => true,
+                        'no' => false,
+                    ),
+                    'label' => 'visible',
+                    'required' => true,
+                    'mapped' => false,
+                    // *this line is important*
+                    'choices_as_values' => true,
+                    'data' => $this->visible,
                 )
             );
-        } elseif ($this->isAdmin) {
+            $builder->add(
+                'locked',
+                'choice',
+                array(
+                    'choices' => array(
+                        'yes' => true,
+                        'no' => false,
+                    ),
+                    'label' => 'locked',
+                    'mapped' => false,
+                    'required' => true,
+                    'choices_as_values' => true,
+                    'data' => $this->locked,
+                )
+            );
             $builder->add(
                 'roles',
                 'entity',
@@ -85,6 +98,44 @@ class HomeTabType extends AngularType
                             ->andWhere('r.type = 1')
                             ->andWhere('r.name != :anonymousRole')
                             ->setParameter('anonymousRole', 'ROLE_ANONYMOUS')
+                            ->orderBy('r.translationKey', 'ASC');
+                    },
+                    'property' => 'translationKey',
+                    'expanded' => true,
+                    'multiple' => true,
+                    'required' => false,
+                )
+            );
+        } elseif ($this->type === 'workspace' && !is_null($this->workspace)) {
+            $builder->add(
+                'visible',
+                'choice',
+                array(
+                    'choices' => array(
+                        'yes' => true,
+                        'no' => false,
+                    ),
+                    'label' => 'visible',
+                    'required' => true,
+                    'mapped' => false,
+                    // *this line is important*
+                    'choices_as_values' => true,
+                    'data' => $this->visible,
+                )
+            );
+            $workspace = $this->workspace;
+            $builder->add(
+                'roles',
+                'entity',
+                array(
+                    'label' => 'roles',
+                    'class' => 'ClarolineCoreBundle:Role',
+                    'choice_translation_domain' => true,
+                    'query_builder' => function (EntityRepository $er) use ($workspace) {
+
+                        return $er->createQueryBuilder('r')
+                            ->where('r.workspace = :workspace')
+                            ->setParameter('workspace', $workspace)
                             ->orderBy('r.translationKey', 'ASC');
                     },
                     'property' => 'translationKey',

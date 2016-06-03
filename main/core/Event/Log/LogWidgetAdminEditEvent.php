@@ -15,9 +15,9 @@ use Claroline\CoreBundle\Entity\Widget\WidgetDisplayConfig;
 use Claroline\CoreBundle\Entity\Widget\WidgetHomeTabConfig;
 use Claroline\CoreBundle\Entity\Widget\WidgetInstance;
 
-class LogWidgetUserEditEvent extends LogGenericEvent
+class LogWidgetAdminEditEvent extends LogGenericEvent
 {
-    const ACTION = 'user-widget-edit';
+    const ACTION = 'admin-widget-edit';
 
     /**
      * Constructor.

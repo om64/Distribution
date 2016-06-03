@@ -14,30 +14,17 @@ export default class AdminHomeTabsConfigCtrl {
     this.HomeTabService = HomeTabService
     this.WidgetService = WidgetService
     this.adminHomeTabs = HomeTabService.getAdminHomeTabs()
-    //this.userHomeTabs = HomeTabService.getUserHomeTabs()
-    //this.workspaceHomeTabs = HomeTabService.getWorkspaceHomeTabs()
     this.homeTabsOptions = HomeTabService.getOptions()
-    //this.widgets = WidgetService.getWidgets()
-    //this.widgetsOptions = WidgetService.getOptions()
-    //this.widgetsDisplayOptions = WidgetService.getWidgetsDisplayOptions()
-    //this.editionMode = false
-    //this.isHomeLocked = true
+    this.widgets = WidgetService.getWidgets()
+    this.widgetsDisplayOptions = WidgetService.getWidgetsDisplayOptions()
     this.gridsterOptions = WidgetService.getGridsterOptions()
     this.initialize()
     this.initializeDragAndDrop()
   }
 
   initialize() {
+    this.WidgetService.setType('admin')
     this.HomeTabService.loadAdminHomeTabs()
-    //const route = Routing.generate('api_get_desktop_options')
-    //this.$http.get(route).then(datas => {
-    //  if (datas['status'] === 200) {
-    //    this.isHomeLocked = datas['data']['isHomeLocked']
-    //    this.editionMode = datas['data']['editionMode']
-    //    this.homeTabsOptions['canEdit'] = !this.isHomeLocked && this.editionMode
-    //    this.HomeTabService.loadDesktopHomeTabs()
-    //  }
-    //})
   }
 
   initializeDragAndDrop () {
@@ -65,7 +52,7 @@ export default class AdminHomeTabsConfigCtrl {
   showTab(tabId, tabConfigId) {
     this.homeTabsOptions['selectedTabId'] = tabId
     this.homeTabsOptions['selectedTabConfigId'] = tabConfigId
-    //this.WidgetService.loadAdminHomeTabs(tabId)
+    this.WidgetService.loadAdminWidgets(tabId)
   }
 
   createAdminHomeTab() {
@@ -80,5 +67,19 @@ export default class AdminHomeTabsConfigCtrl {
   deleteAdminHomeTab($event, tabConfigId) {
     $event.stopPropagation()
     this.HomeTabService.deleteAdminHomeTab(tabConfigId)
+  }
+
+  createAdminWidget(tabId) {
+    this.WidgetService.createAdminWidget(tabId)
+  }
+
+  editAdminWidget($event, widgetInstanceId, widgetHomeTabConfigId, widgetDisplayId, configurable) {
+    $event.stopPropagation()
+    this.WidgetService.editAdminWidget(widgetInstanceId, widgetHomeTabConfigId, widgetDisplayId, configurable)
+  }
+
+  deleteAdminWidget($event, widgetHTCId) {
+    $event.stopPropagation()
+    this.WidgetService.deleteAdminWidget(widgetHTCId)
   }
 }

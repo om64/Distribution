@@ -23,10 +23,6 @@ import HomeTabService from './Service/HomeTabService'
 import DesktopHomeTabsDirective from './Directive/DesktopHomeTabsDirective'
 import AdminHomeTabsDirective from './Directive/AdminHomeTabsDirective'
 
-//import Interceptors from '../interceptorsDefault'
-//import HtmlTruster from '../html-truster/module'
-//import bootstrap from 'angular-bootstrap'
-
 angular.module('HomeTabsModule', [
   'ui.bootstrap',
   'ui.bootstrap.tpls',
