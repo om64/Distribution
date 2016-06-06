@@ -1,11 +1,11 @@
- <h3 class="panel-title">
- {% if mode == 'pause' %}
-  {{'btn_auto_pause' | trans({}, 'media_resource')}}
- {% elseif mode == 'live' %}
-  {{'btn_live_listening' | trans({}, 'media_resource')}}
- {% elseif mode == 'active' %}
-  {{'btn_active_listening' | trans({}, 'media_resource')}}
- {% elseif mode == 'free' %}
- free
- {% endif %}
+<h3 class="panel-title">
+    {% if mode == 'pause' %}
+        {{'label_play_mode_pause' | trans({}, 'media_resource')}}
+    {% elseif mode == 'live' %}
+        {{'label_play_mode_live' | trans({}, 'media_resource')}}
+    {% elseif mode == 'active' %}
+        {{'label_play_mode_active' | trans({}, 'media_resource')}}
+    {% elseif mode == 'free' %}
+        {{'label_play_mode_free' | trans({}, 'media_resource')}}
+    {% endif %}
 </h3>

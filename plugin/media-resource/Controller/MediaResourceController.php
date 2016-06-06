@@ -9,7 +9,6 @@ use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\ParamConverter;
 use Innova\MediaResourceBundle\Entity\MediaResource;
 use Claroline\CoreBundle\Entity\Workspace\Workspace;
-use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Innova\MediaResourceBundle\Form\Type\OptionsType;
@@ -39,8 +38,6 @@ class MediaResourceController extends Controller
         $regions = $this->get('innova_media_resource.manager.media_resource_region')->findByAndOrder($mr);
         // get options
         $options = $mr->getOptions();
-        //echo $mode;
-        //die;
 
         return $this->render('InnovaMediaResourceBundle:MediaResource:player.wrapper.html.twig', array(
                   '_resource' => $mr,
@@ -80,58 +77,53 @@ class MediaResourceController extends Controller
     }
 
     /**
-     * AJAX administrate media resource options.
+     * All in one save action, save regions and ressource options
+     * !Only regions use a FormType.
      *
-     * @Route("/mr/{id}/options/edit", requirements={"id" = "\d+"}, name="media_resource_save_options")
-     * @Method("POST")
-     * @ParamConverter("MediaResource", class="InnovaMediaResourceBundle:MediaResource")
+     * @Route("/save/all/{id}", requirements={"id" = "\d+"}, name="media_resource_save_all")
+     * @Method({"POST"})
      */
-    public function saveOptionsAction(MediaResource $mr)
+    public function save(Workspace $workspace, MediaResource $resource)
     {
-        $form = $this->container->get('form.factory')->create(new OptionsType(), $mr->getOptions());
+        $flashMessageType = 'success';
+        $msg = $this->get('translator')->trans('resource_update_success', array(), 'media_resource');
+        // handle options for the resource
+        $form = $this->container->get('form.factory')->create(new OptionsType(), $resource->getOptions());
         // Try to process form
         $request = $this->container->get('request');
         $form->handleRequest($request);
-        $msg = '';
-        $code = 200;
+        $error = false;
+
+        // handle options for the resource
         if ($form->isValid()) {
             $options = $form->getData();
-            $mr->setOptions($options);
-            $mr = $this->get('innova_media_resource.manager.media_resource')->persist($mr);
-            $msg = $this->get('translator')->trans('config_update_success', array(), 'media_resource');
+            $resource->setOptions($options);
+            $resource = $this->get('innova_media_resource.manager.media_resource')->persist($resource);
         } else {
-            $msg = $this->get('translator')->trans('config_update_error', array(), 'media_resource');
-            $code = 500;
+            $error = true;
         }
-
-        return new JsonResponse($msg, $code);
-    }
-
-    /**
-     * AJAX
-     * save media resource regions.
-     *
-     * @Route("/save/{id}", requirements={"id" = "\d+"}, name="media_resource_save")
-     * @ParamConverter("MediaResource", class="InnovaMediaResourceBundle:MediaResource")
-     *  @Method({"POST"})
-     */
-    public function saveAction(MediaResource $mr)
-    {
-        $request = $this->container->get('request');
+        // handle regions data
         $data = $request->request->all();
-        if (count($data) > 0) {
-            $regionManager = $this->get('innova_media_resource.manager.media_resource_region');
-            $mediaResource = $regionManager->handleMediaResourceRegions($mr, $data);
-            if ($mediaResource) {
-                $msg = $this->get('translator')->trans('resource_update_success', array(), 'media_resource');
 
-                return new JsonResponse($msg, 200);
-            } else {
-                $msg = $this->get('translator')->trans('resource_update_error', array(), 'media_resource');
-
-                return new JsonResponse($msg, 500);
-            }
+        $regionManager = $this->get('innova_media_resource.manager.media_resource_region');
+        if (!$regionManager->handleMediaResourceRegions($resource, $data)) {
+            $error = true;
         }
+
+        if ($error) {
+            $msg = $this->get('translator')->trans('resource_update_error', array(), 'media_resource');
+            $flashMessageType = 'error';
+        }
+
+        $this->get('session')->getFlashBag()->add($flashMessageType, $msg);
+
+        return $this->render('InnovaMediaResourceBundle:MediaResource:administrate.html.twig', array(
+                    '_resource' => $resource,
+                    'regions' => $resource->getRegions(),
+                    'workspace' => $workspace,
+                    'form' => $form->createView(),
+          )
+        );
     }
 
     /**

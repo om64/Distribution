@@ -22,7 +22,7 @@ class OptionsType extends AbstractType
                               'free' => 'options_form_view_mode_choices_free',
                               'active' => 'options_form_view_mode_choices_active',
                               ],
-                              'expanded' => true,
+                              'expanded' => false,
                               'multiple' => false,
                     )
                 )

@@ -18,6 +18,8 @@ var domUtils;
 var helpIsPlaying = false;
 var utterance; // webspeech utterance
 var strUtils;
+var autoPause = false;
+var showTextTranscription;
 
 var wavesurferOptions = {
     container: '#waveform',
@@ -39,6 +41,8 @@ var wavesurferOptions = {
 $(document).ready(function() {
     // get some hidden inputs usefull values
     currentExerciseType = 'audio';
+    showTextTranscription = $('input[name="textTranscription"]').val();
+    console.log($('input[name="textTranscription"]').val(););
     // js helpers
     domUtils = Object.create(DomUtils);
     strUtils = Object.create(StringUtils);
