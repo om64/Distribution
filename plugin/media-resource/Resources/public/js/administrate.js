@@ -129,7 +129,7 @@ var actions = {
         }
     },
     zip : function(){
-      console.log(wId + ' ' + mrId );
+
       var url = Routing.generate('mediaresource_zip_export', {
           workspaceId: wId,
           id: mrId,

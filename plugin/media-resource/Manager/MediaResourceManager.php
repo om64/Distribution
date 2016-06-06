@@ -186,19 +186,19 @@ class MediaResourceManager
         // ensure the name is clean
         $cleanName = preg_replace('/[^A-Za-z0-9]/', '', $resource->getName());
         // create temp_dir
-        $temp_dir = $this->uploadDir.DIRECTORY_SEPARATOR.$cleanName.'_temp';
+        $tempDir = $this->uploadDir.DIRECTORY_SEPARATOR.$cleanName.'_temp';
         $fs = new Filesystem();
-        if (!$fs->exists($temp_dir)) {
-            $fs->mkdir($temp_dir);
+        if (!$fs->exists($tempDir)) {
+            $fs->mkdir($tempDir);
         }
         // copy original file
         // get original file extension
         $ext = pathinfo($originalFileFullPath, PATHINFO_EXTENSION);
         $fullFileName = $cleanName.'_full_file.'.$ext;
-        $copiedFilePath = $temp_dir.DIRECTORY_SEPARATOR.$fullFileName;
+        $copiedFilePath = $tempDir.DIRECTORY_SEPARATOR.$fullFileName;
 
         // create srt file
-        $srtFile = $temp_dir.DIRECTORY_SEPARATOR.$cleanName.'_SRT.vtt';
+        $srtFile = $tempDir.DIRECTORY_SEPARATOR.$cleanName.'_SRT.vtt';
         $fs->touch($srtFile);
         $srt = '';
         // make a copy of the file
@@ -218,18 +218,15 @@ class MediaResourceManager
                 $srt .= $index.PHP_EOL;
                 $srt .= $this->secondsToSrtTime($start).' --> '.$this->secondsToSrtTime($end).PHP_EOL;
                 $srt .= $region['note'].PHP_EOL;
-                $partFilePath = $temp_dir.DIRECTORY_SEPARATOR.$cleanName.'_part_'.$index.'.'.$ext;
+                $partFilePath = $tempDir.DIRECTORY_SEPARATOR.$cleanName.'_part_'.$index.'.'.$ext;
                 $cmd = 'ffmpeg -i '.$copiedFilePath.' -ss '.$start.' -t '.$duration.' '.$partFilePath;
                 exec($cmd, $output, $returnVar);
 
                 // cmd error
-                if ($returnVar !== 0) {
-                    echo 'error | '.$cmd.' | ';
-                    //array_push($errors, 'File conversion failed with command '.$cmd.' and returned '.$returnVar);
-
-                    //return array('file' => null, 'errors' => $errors);
-                } else {
+                if ($returnVar === 0) {
                     array_push($files, $partFilePath);
+                } else {
+                    // @TODO do something in case of cmd error
                 }
 
                 ++$index;
@@ -241,7 +238,7 @@ class MediaResourceManager
 
         $zipName = $cleanName.'.zip';
         $archive = new \ZipArchive();
-        $pathToArchive = $temp_dir.DIRECTORY_SEPARATOR.$zipName;
+        $pathToArchive = $tempDir.DIRECTORY_SEPARATOR.$zipName;
         $archive->open($pathToArchive, \ZipArchive::CREATE);
         foreach ($files as $f) {
             $archive->addFromString(basename($f),  file_get_contents($f));
@@ -250,7 +247,7 @@ class MediaResourceManager
 
         $fs->remove($files);
 
-        return $pathToArchive;
+        return ['zip' => $pathToArchive, 'name' => $zipName, 'tempFolder' => $tempDir];
     }
 
     private function secondsToSrtTime($seconds)

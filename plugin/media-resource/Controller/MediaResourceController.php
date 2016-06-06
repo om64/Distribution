@@ -14,7 +14,6 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Innova\MediaResourceBundle\Form\Type\OptionsType;
 use Innova\MediaResourceBundle\Entity\Options;
-use Symfony\Component\HttpFoundation\ResponseHeaderBag;
 
 /**
  * Class MediaResourceController.
@@ -163,7 +162,7 @@ class MediaResourceController extends Controller
     /**
      * Create a zip that contains :
      * - the original file
-     * - .srt file (might be empty)
+     * - .vtt file (might be empty)
      * - all regions as audio files.
      *
      * @Route(
@@ -178,25 +177,23 @@ class MediaResourceController extends Controller
     {
         $data = $this->container->get('request')->query->get('data');
 
-        $zipPath = $this->get('innova_media_resource.manager.media_resource')->exportToZip($resource, $data);
+        //return ['zip' => $pathToArchive, 'name' => $zipName, 'tempFolder' => $tempDir];
+        $zipData = $this->get('innova_media_resource.manager.media_resource')->exportToZip($resource, $data);
 
         $response = new Response();
         $response->headers->set('Content-Transfer-Encoding', 'octet-stream');
         $response->headers->set('Content-Type', 'application/force-download');
-        $response->headers->set('Content-Disposition', 'attachment; filename='.urlencode('archive.zip'));
+        $response->headers->set('Content-Disposition', 'attachment; filename='.urlencode($zipData['name']));
         $response->headers->set('Content-Type', 'application/zip');
         $response->headers->set('Connection', 'close');
         $response->sendHeaders();
 
-        $response->setContent(readfile($zipPath));
+        $response->setContent(readfile($zipData['zip']));
+        // remove zip file
+        unlink($zipData['zip']);
+        // remove temp folder
+        rmdir($zipData['tempFolder']);
 
         return $response;
-
-      /*  $response = new BinaryFileResponse($zipPath);
-        $response->setContentDisposition(ResponseHeaderBag::DISPOSITION_ATTACHMENT);
-
-        $response->headers->set('Content-Type', 'application/zip');
-
-        return $response;*/
     }
 }
