@@ -51,11 +51,11 @@ none: Aucune
 no_media_resource: Aucune resource trouvée.
 
 #p
-play_pause: PLay / Pause
+play_pause: Play / Pause
 previous_segment: Région précédente
 
 #r
-region_help: Voir l'aide disponible pour la région
+region_help: Visualiser les aides prévues (région sélectionnée)
 region_config: Configurer la région
 region_delete: Supprimer la région
 region_config_allow_rate: Autoriser le changement de vitesse de lecture
@@ -75,6 +75,7 @@ region_help_segment_playback_loop: Lire la région en boucle
 region_help_segment_playback_rate: Lire la région plus lentement
 region_help_related_segment_playback: Lire la région connexe
 region_help_no_help_available: Aucune aide disponible pour la région.
+resource_zip_export: Exporter
 
 #s
 save: Sauvegarder

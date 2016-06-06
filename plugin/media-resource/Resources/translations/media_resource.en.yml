@@ -51,11 +51,11 @@ none: None
 no_media_resource: None found.
 
 #p
-play_pause: PLay / Pause
+play_pause: Play / Pause
 previous_segment: Previous region
 
 #r
-region_help: See available region help
+region_help: View the planned help (selected area)
 region_config: Configure region
 region_delete: Delete region
 region_config_allow_rate: Allow playback rate change

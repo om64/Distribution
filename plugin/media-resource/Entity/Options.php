@@ -46,7 +46,7 @@ class Options
 
     public function __construct()
     {
-        $this->setMode('live');
+        $this->setMode('free');
         $this->setShowTextTranscription(false);
         $this->setTtsLanguage('en-US');
     }
