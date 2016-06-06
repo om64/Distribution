@@ -17,7 +17,8 @@
               </div>
           </div>
       </div>
-      <div class="panel-body">
+      <div class="panel-body">      
+        <hr/>
           <!-- waveform -->
           <hr/>
           <div class="row media-container">
@@ -47,7 +48,7 @@
                 </div>
                 <button type="button" class="btn btn-danger fa fa-flag" title="{{'add_marker' | trans({}, 'media_resource')}}" data-action="mark"></button>
                 <button type="button" class="btn btn-default fa fa-question" data-action="help" title="{{'region_help' | trans({}, 'media_resource')}}"></button>
-                <button type="button" class="btn btn-default fa fa-file-zip-o" data-action="zip" title="{{'region_help' | trans({}, 'media_resource')}}"></button>
+                <button type="button" class="btn btn-default fa fa-download" data-action="zip" title="{{'resource_zip_export' | trans({}, 'media_resource')}}"></button>
               </div>
           </div>
           <hr/>
@@ -149,8 +150,9 @@
                             </label>
                           </div>
                         {% endfor %}
-                        <hr>
-                        <div class="form-group row">
+
+                        <div class="form-group row" id="transcription-row" style="{% if  _resource.options.mode != 'free' %} display:none; {% endif %}">
+                            <hr>
                             <div class="col-md-1">{{ form_widget(form.showTextTranscription) }}</div>
                             <label class="control-label col-md-11" for="media_resource_options_showTextTranscription">
                               {{form.showTextTranscription.vars.label | trans({}, 'resource_form')}}

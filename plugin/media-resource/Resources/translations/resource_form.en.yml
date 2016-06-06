@@ -10,7 +10,7 @@ options_form_tts_choices_de_DE: German
 options_form_tts_choices_es_ES: Spanish
 options_form_tts_choices_fr_FR: French
 options_form_tts_choices_it_IT: Italian
-options_form_view_mode_choices_live: Live view
-options_form_view_mode_choices_pause: Auto pause view
+options_form_view_mode_choices_live: Continuous live view
+options_form_view_mode_choices_pause: Continuous pause view
 options_form_view_mode_choices_free: Free view
-options_form_view_mode_choices_active: Active view
+options_form_view_mode_choices_active: Continuous active view

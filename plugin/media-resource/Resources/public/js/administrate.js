@@ -80,12 +80,12 @@ var actions = {
     help: function() {
         helpCurrentRegion = currentRegion;
         // search for prev region only if we are not in the first one
-        if(currentRegion.start > 0){
-          for(var i = 0; i < regions.length; i++){
-            if(regions[i].end === currentRegion.start){
-              helpPreviousRegion = regions[i];
+        if (currentRegion.start > 0) {
+            for (var i = 0; i < regions.length; i++) {
+                if (regions[i].end === currentRegion.start) {
+                    helpPreviousRegion = regions[i];
+                }
             }
-          }
         }
 
         // open modal
@@ -128,15 +128,15 @@ var actions = {
             manualTextAnnotation(text, 'accent-' + color);
         }
     },
-    zip : function(){
+    zip: function() {
 
-      var url = Routing.generate('mediaresource_zip_export', {
-          workspaceId: wId,
-          id: mrId,
-          data: regions
-      });
+        var url = Routing.generate('mediaresource_zip_export', {
+            workspaceId: wId,
+            id: mrId,
+            data: regions
+        });
 
-      location.href = url;
+        location.href = url;
     }
 };
 
@@ -162,6 +162,7 @@ $(document).ready(function() {
             actions[action]($(this));
         }
     });
+
 
     /* SWITCHES INPUTS */
     var toggleAnnotationCheck = $("[name='toggle-annotation-checkbox']").bootstrapSwitch('state', true);
@@ -352,18 +353,14 @@ $(document).ready(function() {
 // ======================================================================================================== //
 
 // listen to resource options change to check rules
-$('body').on('change', '#mr-options-form input:checkbox', function(e) {
-    // at least one of these
-    var oneIsChecked = $('input[name="media_resource_options[showAutoPauseView]"').prop('checked') === true || $('input[name="media_resource_options[showLiveView]"').prop('checked') === true || $('input[name="media_resource_options[showActiveView]"').prop('checked') === true || $('input[name="media_resource_options[showExerciseView]"').prop('checked') === true ? true : false;
+$('body').on('change, click', '#mr-options-form input:radio', function(e) {
 
-    // if none is checked
-    if (!oneIsChecked) {
-        $('#mr-options-form-submit-btn').attr('disabled', true);
-        $('#options-alert').fadeIn();
+    // if the option free view is selected show annotation option
+    if (e.target.value === 'free') {
+        $('#transcription-row').show();
     } else {
-        // hide alert and enable submit button
-        $('#options-alert').fadeOut();
-        $('#mr-options-form-submit-btn').attr('disabled', false);
+        $('#media_resource_options_showTextTranscription').prop('checked', false);
+        $('#transcription-row').hide();
     }
 });
 
@@ -404,35 +401,35 @@ function getRegionFromTime(time) {
 }
 
 // create a new region "object" and create a new row in the dom
-function createRegion(time){
-  // each time we create a new region we have to split an existing one
-  // find the region to split / update
-  var toSplit = getRegionFromTime(time);
-  // region to create after the given time
-  var region = {
-    start: Number(time),
-    end: Number(toSplit.end),
-    uuid: strUtils.createGuid(),
-    note: '',
-    hasHelp: false,
-    helpUuid: '',
-    loop: false,
-    backward: false,
-    rate: false,
-    texts: false
-  };
-  // find corresponding dom row and update the end infos (in visible and hidden fields and )
-  var $regionRow = domUtils.getRegionRow(toSplit.start, toSplit.end);
-  // update "left" region in array
-  toSplit.end = time;
-  // update "left" region in DOM
-  $regionRow.find('input.hidden-end').val(time);
-  var hms = javascriptUtils.secondsToHms(toSplit.end);
-  $regionRow.find('.end').text(hms);
+function createRegion(time) {
+    // each time we create a new region we have to split an existing one
+    // find the region to split / update
+    var toSplit = getRegionFromTime(time);
+    // region to create after the given time
+    var region = {
+        start: Number(time),
+        end: Number(toSplit.end),
+        uuid: strUtils.createGuid(),
+        note: '',
+        hasHelp: false,
+        helpUuid: '',
+        loop: false,
+        backward: false,
+        rate: false,
+        texts: false
+    };
+    // find corresponding dom row and update the end infos (in visible and hidden fields and )
+    var $regionRow = domUtils.getRegionRow(toSplit.start, toSplit.end);
+    // update "left" region in array
+    toSplit.end = time;
+    // update "left" region in DOM
+    $regionRow.find('input.hidden-end').val(time);
+    var hms = javascriptUtils.secondsToHms(toSplit.end);
+    $regionRow.find('.end').text(hms);
 
-  // add the "right" region row in the dom
-  domUtils.addRegionToDom(region, javascriptUtils, $regionRow);
-  regions.push(region);
+    // add the "right" region row in the dom
+    domUtils.addRegionToDom(region, javascriptUtils, $regionRow);
+    regions.push(region);
 }
 
 // build markers, regions from existing ones
@@ -450,7 +447,7 @@ function initRegionsAndMarkers() {
         var texts = $(this).find('input.hidden-config-text').val() !== '' ? $(this).find('input.hidden-config-text').val().split(';') : false;
         var hasHelp = rate || backward || (texts && texts.length > 0) || loop || helpUuid !== '';
         var region = {
-            id: id,// @TODO check if still usefull
+            id: id, // @TODO check if still usefull
             uuid: uuid,
             start: Number(start),
             end: Number(end),
@@ -647,8 +644,8 @@ function configRegion(elem) {
     }
 
     configModal.on('shown.bs.modal', function() {
-      var uuid = $('#select-help-related-region :selected').val();
-      currentHelpRelatedRegion = getRegionByUuid(uuid);
+        var uuid = $('#select-help-related-region :selected').val();
+        currentHelpRelatedRegion = getRegionByUuid(uuid);
     });
 
     configModal.on('hidden.bs.modal', function() {
@@ -671,17 +668,17 @@ function configRegion(elem) {
  * Allow the user to listen to the selected help related region while configuring help
  * Uses html audio player to avoid wavesurfer animations behind the modal while playing
  **/
-$('body').on('click', '#btn-help-related-region-play', function(){
-  if(currentHelpRelatedRegion){
-      playHelp(currentHelpRelatedRegion.start, currentHelpRelatedRegion.end, false, false);
-  }
+$('body').on('click', '#btn-help-related-region-play', function() {
+    if (currentHelpRelatedRegion) {
+        playHelp(currentHelpRelatedRegion.start, currentHelpRelatedRegion.end, false, false);
+    }
 });
 
 /**
  * fired by ConfigRegion Modal <select> element (help related region)
  * @param {type} elem the source of the event
  **/
-$('body').on('change', '#select-help-related-region', function(){
+$('body').on('change', '#select-help-related-region', function() {
     // get region uuid
     var uuid = $(this).find(":selected").val();
     currentHelpRelatedRegion = getRegionByUuid(uuid);
@@ -713,8 +710,8 @@ function checkIfRowHasConfigValue(row) {
 // ======================================================================================================== //
 
 /*
-* Add a marker to the DOM and in collection
-*/
+ * Add a marker to the DOM and in collection
+ */
 function addMarker(time, uuid) {
 
     var $canvas = $('#waveform').find('wave').first().find('canvas').first();
@@ -764,18 +761,18 @@ function addMarker(time, uuid) {
         drag: function() {
             var time = getTimeFromPosition($(this).position().left);
             // check obstacles
-            if(dragData && dragData.minTime < time &&  dragData.maxTime > time ){
-              updateTimeData(time, dragData);
-            } else if (dragData && time > dragData.maxTime){
-              // update data and slightly move marker left
-              updateTimeData(time - 0.2, dragData);
-              changeMarkerPosition(time - 0.2, dragData);
-              return false;
-            } else if (dragData && time < dragData.minTime){
-              // update data and slightly move marker right
-              updateTimeData(time + 0.2, dragData);
-              changeMarkerPosition(time + 0.2, dragData);
-              return false;
+            if (dragData && dragData.minTime < time && dragData.maxTime > time) {
+                updateTimeData(time, dragData);
+            } else if (dragData && time > dragData.maxTime) {
+                // update data and slightly move marker left
+                updateTimeData(time - 0.2, dragData);
+                changeMarkerPosition(time - 0.2, dragData);
+                return false;
+            } else if (dragData && time < dragData.minTime) {
+                // update data and slightly move marker right
+                updateTimeData(time + 0.2, dragData);
+                changeMarkerPosition(time + 0.2, dragData);
+                return false;
             }
         },
         stop: function() {
@@ -793,10 +790,10 @@ function addMarker(time, uuid) {
 }
 
 /*
-* While dragging we need to update some fields
-* therefore we need to store some data
-* marker is the dom marker
-*/
+ * While dragging we need to update some fields
+ * therefore we need to store some data
+ * marker is the dom marker
+ */
 function setDragData(time, marker) {
     var data = {};
     var hiddenEndToUpdate;
@@ -825,10 +822,10 @@ function setDragData(time, marker) {
 
     // search for marker object
     var markerObject;
-    for(var i = 0; i < markers.length; i++ ){
-      if(markers[i].time === time){
-        markerObject = markers[i];
-      }
+    for (var i = 0; i < markers.length; i++) {
+        if (markers[i].time === time) {
+            markerObject = markers[i];
+        }
     }
 
     data = {
@@ -854,19 +851,19 @@ function getMarkerLeftPostionFromTime(time) {
 }
 
 /*
-* update data while dragging
-* should also update marker data-time value
-*/
+ * update data while dragging
+ * should also update marker data-time value
+ */
 function updateTimeData(time, dragData) {
     $(dragData.startToUpdate).text(javascriptUtils.secondsToHms(time));
     $(dragData.hiddenStartToUpdate).val(time);
 
     // update region object data
-    if(dragData.prevRegion){
-      dragData.prevRegion.end = Number(time);
+    if (dragData.prevRegion) {
+        dragData.prevRegion.end = Number(time);
     }
-    if(dragData.nextRegion){
-      dragData.nextRegion.start = Number(time);
+    if (dragData.nextRegion) {
+        dragData.nextRegion.start = Number(time);
     }
 
     if (dragData.hiddenEndToUpdate && dragData.endToUpdate) {
@@ -880,11 +877,11 @@ function updateTimeData(time, dragData) {
     dragData.markerO.time = time;
 }
 
-function changeMarkerPosition(time, dragData){
-  // in case of moving the marker to some specific places, time attribute will be modified
-  // so in any case reset the position of the marker
-  var position = getMarkerLeftPostionFromTime(time);
-  dragData.marker.style.left = position + 'px';
+function changeMarkerPosition(time, dragData) {
+    // in case of moving the marker to some specific places, time attribute will be modified
+    // so in any case reset the position of the marker
+    var position = getMarkerLeftPostionFromTime(time);
+    dragData.marker.style.left = position + 'px';
 }
 
 
@@ -898,69 +895,69 @@ function changeMarkerPosition(time, dragData){
 // REGIONS (Objects)
 // ======================================================================================================== //
 
-function getRegionById(id){
-  var searched;
-    for(var i = 0 ; i < regions.length; i++){
-      if(regions[i].id === id){
-        searched = regions[i];
-      }
+function getRegionById(id) {
+    var searched;
+    for (var i = 0; i < regions.length; i++) {
+        if (regions[i].id === id) {
+            searched = regions[i];
+        }
     }
     return searched;
 }
 
 
-function getRegionByUuid(uuid){
-  var searched;
-    for(var i = 0 ; i < regions.length; i++){
-      if(regions[i].uuid === uuid){
-        searched = regions[i];
-      }
+function getRegionByUuid(uuid) {
+    var searched;
+    for (var i = 0; i < regions.length; i++) {
+        if (regions[i].uuid === uuid) {
+            searched = regions[i];
+        }
     }
     return searched;
 }
 
-function removeRegionFromCollection(uuid){
-  for(var i = 0 ; i < regions.length; i++){
-    if(regions[i].uuid === uuid){
-      regions.splice(i, 1);
+function removeRegionFromCollection(uuid) {
+    for (var i = 0; i < regions.length; i++) {
+        if (regions[i].uuid === uuid) {
+            regions.splice(i, 1);
+        }
     }
-  }
 }
 
-function getNextRegion(time){
-  var next;
-  var region;
-  if(time){
-    region = getRegionFromTime(time);
-  } else {
-    region = currentRegion;
-  }
-  // find next region relatively to current
-  for(var i = 0; i < regions.length; i++){
-    if(regions[i].start == region.end){
-      next = regions[i];
+function getNextRegion(time) {
+    var next;
+    var region;
+    if (time) {
+        region = getRegionFromTime(time);
+    } else {
+        region = currentRegion;
     }
-  }
-  return next;
-}
-
-function getPrevRegion(time){
-  var prev;
-  var region;
-  if(time){
-    region = getRegionFromTime(time);
-  } else {
-    region = currentRegion;
-  }
-  if(region){
     // find next region relatively to current
-    for(var i = 0; i < regions.length; i++){
-      if(regions[i].end == region.start){
-        prev = regions[i];
-      }
+    for (var i = 0; i < regions.length; i++) {
+        if (regions[i].start == region.end) {
+            next = regions[i];
+        }
     }
-  }
-  return prev;
+    return next;
+}
+
+function getPrevRegion(time) {
+    var prev;
+    var region;
+    if (time) {
+        region = getRegionFromTime(time);
+    } else {
+        region = currentRegion;
+    }
+    if (region) {
+        // find next region relatively to current
+        for (var i = 0; i < regions.length; i++) {
+            if (regions[i].end == region.start) {
+                prev = regions[i];
+            }
+        }
+    }
+    return prev;
 }
 
 /**
@@ -999,7 +996,7 @@ function deleteRegion(elem) {
                     }
 
                     var start = Number(toRemove.start);
-                    var end =  Number(toRemove.end);
+                    var end = Number(toRemove.end);
                     // if we are deleting the first region
                     if (start === 0) {
                         var next = getNextRegion(end - 0.1);
@@ -1034,17 +1031,17 @@ function deleteRegion(elem) {
                     $(regionDomRow).remove();
                     // remove marker from DOM
                     $('.marker-drag-handler').each(function() {
-                      var $marker = $(this).closest('.divide-marker');
-                      var time =  Number($marker.attr('data-time'));
-                      if(time === start){
-                        $marker.remove();
-                      }
+                        var $marker = $(this).closest('.divide-marker');
+                        var time = Number($marker.attr('data-time'));
+                        if (time === start) {
+                            $marker.remove();
+                        }
                     });
                     // remove marker from array
-                    for(var i = 0; i < markers.length; i++ ){
-                      if(markers[i].time === start){
-                        markers.splice(i,1);
-                      }
+                    for (var i = 0; i < markers.length; i++) {
+                        if (markers[i].time === start) {
+                            markers.splice(i, 1);
+                        }
                     }
                     console.log('after deletion regions + markers are updated ?');
                     console.log(regions);
@@ -1067,11 +1064,11 @@ function playRegion(elem) {
 function playRegionFrom(start) {
     var region = getRegionFromTime(start);
     var wRegion = wavesurfer.addRegion({
-      start:region.start,
-      end:region.end,
-      color: 'rgba(0,0,0,0)',
-      drag: false,
-      resize:false
+        start: region.start,
+        end: region.end,
+        color: 'rgba(0,0,0,0)',
+        drag: false,
+        resize: false
     });
     if (!playing) {
         wRegion.play();
