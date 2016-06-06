@@ -3,8 +3,8 @@
     <div class="row">
         <div class="col-md-12">
             <div class="my-flex-row">
-                <div class="text-center player-col" style="width:10%;">
-                    <i style="cursor:pointer;" class="fa fa-font big bordered-top bordered-left bordered-right"></i>
+                <div class="text-center player-col" style="width:10%;" onclick="toggleTextAnnotation()">
+                    <i style="cursor:pointer;" class="fa fa-font big bordered-top bordered-left bordered-right" title="Transcription textuelle"></i>
                 </div>
                 <div class="player-col" style="width:90%;">
                     <div class="help-text"></div>
@@ -44,35 +44,36 @@
 
 <!-- hidden fields -->
 
-        <!-- regions hidden -->
-        <div style="display:none;">
-            {% if regions | length > 0 %}
-                {% for region in regions %}
-                    <div class="region" id="{{region.uuid}}" data-uuid="{{region.uuid}}">
-                        <input type="hidden" class="hidden-start" name="start[]" value="{{ region.start }}">
-                        <input type="hidden" class="hidden-end" name="end[]" value="{{ region.end }}">
-                        <input type="hidden" class="hidden-note" name="note[]" value="{{ region.note }}">
-                        <input type="hidden" class="hidden-region-id" name="region-id[]" value="{{ region.id }}">
-                        <input type="hidden" class="hidden-region-uuid" name="region-uuid[]" value="{{ region.uuid }}">
-                        <!-- Region config -->
-                        <input type="hidden" class="hidden-config-help-region-uuid" name="help-region-uuid[]" value="{{ region.regionConfig.helpRegionUuid ? region.regionConfig.helpRegionUuid : '' }}">
-                        <input type="hidden" class="hidden-config-loop" name="loop[]" value="{{ region.regionConfig.hasLoop ? '1' : '0' }}">
-                        <input type="hidden" class="hidden-config-backward" name="backward[]" value="{{ region.regionConfig.hasBackward ? '1' : '0' }}">
-                        <input type="hidden" class="hidden-config-rate" name="rate[]" value="{{ region.regionConfig.hasRate ? '1' : '0' }}">
-                        <input type="hidden" class="hidden-config-text" name="text[]" value="{{ region.regionConfig.helpText ? region.regionConfig.helpText : '' }}">
-                    </div>
-                {% endfor %}
-            {% endif %}
-        </div>
+<!-- regions hidden -->
+<div style="display:none;">
+    {% if regions | length > 0 %}
+        {% for region in regions %}
+            <div class="region" id="{{region.uuid}}" data-uuid="{{region.uuid}}">
+                <input type="hidden" class="hidden-start" name="start[]" value="{{ region.start }}">
+                <input type="hidden" class="hidden-end" name="end[]" value="{{ region.end }}">
+                <input type="hidden" class="hidden-note" name="note[]" value="{{ region.note }}">
+                <input type="hidden" class="hidden-region-id" name="region-id[]" value="{{ region.id }}">
+                <input type="hidden" class="hidden-region-uuid" name="region-uuid[]" value="{{ region.uuid }}">
+                <!-- Region config -->
+                <input type="hidden" class="hidden-config-help-region-uuid" name="help-region-uuid[]" value="{{ region.regionConfig.helpRegionUuid ? region.regionConfig.helpRegionUuid : '' }}">
+                <input type="hidden" class="hidden-config-loop" name="loop[]" value="{{ region.regionConfig.hasLoop ? '1' : '0' }}">
+                <input type="hidden" class="hidden-config-backward" name="backward[]" value="{{ region.regionConfig.hasBackward ? '1' : '0' }}">
+                <input type="hidden" class="hidden-config-rate" name="rate[]" value="{{ region.regionConfig.hasRate ? '1' : '0' }}">
+                <input type="hidden" class="hidden-config-text" name="text[]" value="{{ region.regionConfig.helpText ? region.regionConfig.helpText : '' }}">
+            </div>
+        {% endfor %}
+    {% endif %}
+</div>
 
 <!-- regions hidden -->
 <input type="hidden" name="type" value="audio"/>
 <input type="hidden" name="wId" value="{{workspace.id}}"/>
 <input type="hidden" name="mrId" value="{{_resource.id}}"/>
 <input type="hidden" name="tts" value="{{_resource.options.getTtsLanguage}}"/>
+<input type="hidden" name="textTranscription" value="{{_resource.options.getShowTextTranscription}}"/>
 
 {% block javascripts %}
-    {% javascripts output='vendor/claroline/plugin/innovamediaresource/js/player-free.js'
+    {% javascripts output = 'vendor/claroline/plugin/innovamediaresource/js/player-free.js'
     '@InnovaMediaResourceBundle/Resources/public/js/play-free.js' %}
     <script src="{{ asset_url }}"></script>
     {% endjavascripts %}

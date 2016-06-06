@@ -8,78 +8,65 @@
 {% block stylesheets %}
     {{ parent() }}
 
-    {% stylesheets debug=false filter='cssmin'  output='vendor/claroline/plugin/innovamediaresource/css/innova-media-resource-bootstrap-switch.css'
-        '@InnovaMediaResourceBundle/Resources/public/css/bootstrap-switch.css'
-    %}
-    <link rel="stylesheet" href="{{ asset_url }}" />
+    {% stylesheets debug = false filter = 'cssmin' output = 'vendor/claroline/plugin/innovamediaresource/css/innova-media-resource-bootstrap-switch.css'
+    '@InnovaMediaResourceBundle/Resources/public/css/bootstrap-switch.css'
+ %}
+    <link rel="stylesheet" href="{{ asset_url }}"/>
     {% endstylesheets %}
 
-    {% stylesheets debug=false filter='lessphp, cssmin' output='vendor/claroline/plugin/innovamediaresource/css/innova-media-resource.css'
-        '@InnovaMediaResourceBundle/Resources/public/less/app.less'
-    %}
-    <link href="{{ asset_url }}" rel="stylesheet" media="screen" />
+    {% stylesheets debug = false filter = 'lessphp, cssmin' output = 'vendor/claroline/plugin/innovamediaresource/css/innova-media-resource.css'
+    '@InnovaMediaResourceBundle/Resources/public/less/app.less'
+ %}
+    <link href="{{ asset_url }}" rel="stylesheet" media="screen"/>
     {% endstylesheets %}
 {% endblock %}
 
-
-
 {% block content %}
     <div class="media-resource-content-container">
-      <div class="alert-messages">
-          {% for successMessage in app.session.flashbag.get('success') %}
-              <div class="alert alert-dismissable alert-success">
-                <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
-                {{ successMessage }}
-              </div>
-          {% endfor %}
+        <div class="alert-messages">
+            {% for successMessage in app.session.flashbag.get('success') %}
+                <div class="alert alert-dismissable alert-success">
+                    <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
+                    {{ successMessage }}
+                </div>
+            {% endfor %}
 
-          {% for errorMessage in app.session.flashbag.get('error') %}
-              <div class="alert alert-dismissable alert-danger">
-                <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
-                {{ errorMessage }}
-              </div>
-          {% endfor %}
-      </div>
-      <div class="panel panel-default">
-          {% block media_resource_content %}
-          {% endblock %}
-      </div>
+            {% for errorMessage in app.session.flashbag.get('error') %}
+                <div class="alert alert-dismissable alert-danger">
+                    <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
+                    {{ errorMessage }}
+                </div>
+            {% endfor %}
+        </div>
+
+        {% block media_resource_content %}{% endblock %}
+
     </div>
 {% endblock %}
 
 {% block javascripts %}
     {{parent()}}
     <script type="text/javascript" src="{{ url('bazinga_jstranslation_js', { 'domain':'media_resource' }) }}"></script>
-    <script type="text/javascript" src="{{ asset('packages/jquery-ui/ui/minified/draggable.min.js') }}"> </script>
-    <script type="text/javascript" src="{{ asset('packages/jquery-ui/ui/minified/droppable.min.js') }}"> </script>
+    <script type="text/javascript" src="{{ asset('packages/jquery-ui/ui/minified/draggable.min.js') }}"></script>
+    <script type="text/javascript" src="{{ asset('packages/jquery-ui/ui/minified/droppable.min.js') }}"></script>
 
-    {% javascripts output='vendor/claroline/plugin/innovamediaresource/js/libs/mixed/libs.js'
-        '@InnovaMediaResourceBundle/Resources/public/js/libs/bootstrap-switch.js'
-        '@InnovaMediaResourceBundle/Resources/public/js/libs/jquery.restfulizer.js'
-        '@InnovaMediaResourceBundle/Resources/public/js/libs/bootbox.js'
-    %}
+    {% javascripts output = 'vendor/claroline/plugin/innovamediaresource/js/libs/mixed/libs.js' '@InnovaMediaResourceBundle/Resources/public/js/libs/bootstrap-switch.js' '@InnovaMediaResourceBundle/Resources/public/js/libs/jquery.restfulizer.js'
+    '@InnovaMediaResourceBundle/Resources/public/js/libs/bootbox.js' %}
 
     <script src="{{ asset_url }}"></script>
 
     {% endjavascripts %}
 
-    {% javascripts output='vendor/claroline/plugin/innovamediaresource/js/libs/wavesurfer/wavesurfer.js'
-        '@InnovaMediaResourceBundle/Resources/public/js/libs/wavesurfer/wavesurfer.min.js'
-        '@InnovaMediaResourceBundle/Resources/public/js/libs/wavesurfer/plugins/wavesurfer.timeline.min.js'
-        '@InnovaMediaResourceBundle/Resources/public/js/libs/wavesurfer/plugins/wavesurfer.regions.min.js'
-        '@InnovaMediaResourceBundle/Resources/public/js/libs/wavesurfer/plugins/wavesurfer.minimap.min.js'
-    %}
+    {% javascripts output = 'vendor/claroline/plugin/innovamediaresource/js/libs/wavesurfer/wavesurfer.js' '@InnovaMediaResourceBundle/Resources/public/js/libs/wavesurfer/wavesurfer.min.js'
+    '@InnovaMediaResourceBundle/Resources/public/js/libs/wavesurfer/plugins/wavesurfer.timeline.min.js' '@InnovaMediaResourceBundle/Resources/public/js/libs/wavesurfer/plugins/wavesurfer.regions.min.js'
+    '@InnovaMediaResourceBundle/Resources/public/js/libs/wavesurfer/plugins/wavesurfer.minimap.min.js' %}
 
     <script src="{{ asset_url }}"></script>
 
     {% endjavascripts %}
 
-    {% javascripts output='vendor/claroline/plugin/innovamediaresource/js/helpers/utils.js'
-        '@InnovaMediaResourceBundle/Resources/public/js/helpers/JavascriptUtils.js'
-        '@InnovaMediaResourceBundle/Resources/public/js/helpers/StringUtils.js'
-        '@InnovaMediaResourceBundle/Resources/public/js/helpers/WavesurferUtils.js'
-        '@InnovaMediaResourceBundle/Resources/public/js/helpers/DomUtils.js'
-    %}
+    {% javascripts output = 'vendor/claroline/plugin/innovamediaresource/js/helpers/utils.js' '@InnovaMediaResourceBundle/Resources/public/js/helpers/JavascriptUtils.js' '@InnovaMediaResourceBundle/Resources/public/js/helpers/StringUtils.js'
+    '@InnovaMediaResourceBundle/Resources/public/js/helpers/WavesurferUtils.js' '@InnovaMediaResourceBundle/Resources/public/js/helpers/DomUtils.js' %}
 
     <script src="{{ asset_url }}"></script>
 

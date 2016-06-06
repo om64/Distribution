@@ -1,8 +1,8 @@
 
 # o
 options_form_modal_title: Resource options
-options_form_view_mode: View for the resource
-options_form_enable_text_transcription: View text transcription
+options_form_view_mode: Play mode
+options_form_enable_text_transcription: Display textual transcription
 options_form_tts_language: Text to speech language
 options_form_tts_choices_en_US: English (US)
 options_form_tts_choices_en_GB: English (GB)
@@ -10,7 +10,7 @@ options_form_tts_choices_de_DE: German
 options_form_tts_choices_es_ES: Spanish
 options_form_tts_choices_fr_FR: French
 options_form_tts_choices_it_IT: Italian
-options_form_view_mode_choices_live: Continuous live view
-options_form_view_mode_choices_pause: Continuous pause view
-options_form_view_mode_choices_free: Free view
-options_form_view_mode_choices_active: Continuous active view
+options_form_view_mode_choices_live: Continuous live
+options_form_view_mode_choices_pause: Continuous pause
+options_form_view_mode_choices_free: Free
+options_form_view_mode_choices_active: Continuous active

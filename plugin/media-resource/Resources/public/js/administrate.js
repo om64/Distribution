@@ -304,7 +304,7 @@ $(document).ready(function() {
     /* /WAVESURFER */
 
     /* SAVE REGIONS FORM SUBMIT */
-    $('#media-resource-regions-form').on('submit', function(e) {
+    /*$('#media-resource-regions-form').on('submit', function(e) {
         e.preventDefault();
         var url = $(this).attr('action');
         var type = $(this).attr('method');
@@ -320,11 +320,11 @@ $(document).ready(function() {
                 showErrorFlashBag(response);
             }
         });
-    });
+    });*/
     /* END SAVE REGIONS FORM SUBMIT */
 
     /* SAVE OPTIONS FORM SUBMIT */
-    $('#mr-options-form').on('submit', function(e) {
+    /*$('#mr-options-form').on('submit', function(e) {
         e.preventDefault();
         var url = $(this).attr('action');
         var type = $(this).attr('method');
@@ -344,7 +344,7 @@ $(document).ready(function() {
                 showErrorFlashBag(response);
             }
         });
-    });
+    });*/
     /* /SAVE OPTIONS FORM SUBMIT */
 
 });
@@ -352,18 +352,18 @@ $(document).ready(function() {
 // DOCUMENT READY END
 // ======================================================================================================== //
 
-// listen to resource options change to check rules
-$('body').on('change, click', '#mr-options-form input:radio', function(e) {
-
+// listen to resource play mode options change event
+$('body').on('change', '#media_resource_options_mode', function(e) {
+    var selected = e.target.options[e.target.selectedIndex];
     // if the option free view is selected show annotation option
-    if (e.target.value === 'free') {
+    if (selected.value === 'free') {
         $('#transcription-row').show();
     } else {
         $('#media_resource_options_showTextTranscription').prop('checked', false);
         $('#transcription-row').hide();
     }
 });
-
+/*
 function showSuccessFlashBag(message) {
     var template = '<div class="alert alert-dismissable alert-success">';
     template += '<button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>';
@@ -387,7 +387,7 @@ function showErrorFlashBag(message) {
         scrollTop: 0
     }, "slow");
 }
-
+*/
 function getRegionFromTime(time) {
     var currentTime = time ? time : wavesurfer.getCurrentTime();
     var region;
@@ -605,7 +605,6 @@ function continueToSay(utterance, voices, lang, callback) {
     }
     window.speechSynthesis.speak(utterance);
     utterance.onend = function(event) {
-        console.log('speech end');
         return callback();
     };
 }
@@ -661,7 +660,6 @@ function configRegion(elem) {
     configModal.modal("show");
 }
 
-// @TODO for all modals event do the same...
 
 /**
  * Region options Modal
@@ -746,7 +744,6 @@ function addMarker(time, uuid) {
     marker.appendChild(dragHandler);
     $('#waveform').find('wave').first().append(marker);
 
-
     var dragData;
     // set the drag data when handler is clicked
     dragHandler.addEventListener('mousedown', function(event) {
@@ -782,7 +779,7 @@ function addMarker(time, uuid) {
         }
     });
     var mark = {
-        time: time,
+        time: Number(time),
         uuid: guid
     };
     markers.push(mark);
@@ -823,7 +820,7 @@ function setDragData(time, marker) {
     // search for marker object
     var markerObject;
     for (var i = 0; i < markers.length; i++) {
-        if (markers[i].time === time) {
+        if (markers[i].time.toFixed(2) === time.toFixed(2)) {
             markerObject = markers[i];
         }
     }
@@ -1043,9 +1040,6 @@ function deleteRegion(elem) {
                             markers.splice(i, 1);
                         }
                     }
-                    console.log('after deletion regions + markers are updated ?');
-                    console.log(regions);
-                    console.log(markers);
                 }
             });
         }
