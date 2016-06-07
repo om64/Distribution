@@ -743,7 +743,7 @@ export default class CursusQueueManagementCtrl {
     }
 
     initialize() {
-        const userRoute = Routing.generate('claroline_core_api_user_api_connecteduser')
+        const userRoute = Routing.generate('api_get_connected_user')
         this.$http.get(userRoute).then(userDatas => {
 
             if (userDatas['status'] === 200) {
