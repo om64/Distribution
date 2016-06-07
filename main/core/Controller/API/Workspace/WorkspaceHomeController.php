@@ -896,18 +896,6 @@ class WorkspaceHomeController extends Controller
         }
     }
 
-    private function checkWorkspaceWidgetHTC(Workspace $workspace, WidgetHomeTabConfig $whtc)
-    {
-        $htWorkspace = $whtc->getWorkspace();
-
-        if ($workspace !== $htWorkspace) {
-            $exception = new WorkspaceAccessDeniedException();
-            $exception->setWorkspace($workspace);
-
-            throw $exception;
-        }
-    }
-
     private function checkWorkspaceWidgetDisplayConfig(Workspace $workspace, WidgetDisplayConfig $wdc)
     {
         $htWorkspace = $wdc->getWorkspace();
