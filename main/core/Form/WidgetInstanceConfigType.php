@@ -92,24 +92,21 @@ class WidgetInstanceConfigType extends AngularType
                                     ->where('w.isDisplayableInDesktop = true')
                                     ->andWhere('r IN (:roles)')
                                     ->leftJoin('w.plugin', 'p')
-                                    ->andWhere('CONCAT(p.vendorName, p.bundleName) IN (:bundles)')
-                                    ->orWhere('w.plugin is null')
+                                    ->andWhere('CONCAT(p.vendorName, p.bundleName) IN (:bundles) OR w.plugin is null')
                                     ->setParameter('roles', $datas['roles'])
                                     ->setParameter('bundles', $datas['bundles']);
                             } else {
                                 return $widgetRepo->createQueryBuilder('w')
                                     ->where('w.isDisplayableInDesktop = true')
                                     ->leftJoin('w.plugin', 'p')
-                                    ->andWhere('CONCAT(p.vendorName, p.bundleName) IN (:bundles)')
-                                    ->orWhere('w.plugin is null')
+                                    ->andWhere('CONCAT(p.vendorName, p.bundleName) IN (:bundles) OR w.plugin is null')
                                     ->setParameter('bundles', $datas['bundles']);
                             }
                         } else {
                             return $widgetRepo->createQueryBuilder('w')
                                 ->where('w.isDisplayableInWorkspace = true')
                                 ->leftJoin('w.plugin', 'p')
-                                ->andWhere('CONCAT(p.vendorName, p.bundleName) IN (:bundles)')
-                                ->orWhere('w.plugin is null')
+                                ->andWhere('CONCAT(p.vendorName, p.bundleName) IN (:bundles) OR w.plugin is null')
                                 ->setParameter('bundles', $datas['bundles']);
                         }
                     },
