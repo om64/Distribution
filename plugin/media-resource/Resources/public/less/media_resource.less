@@ -52,7 +52,7 @@
             z-index: 4;
         }
         .help-container {
-            width: 40%;
+            width: 250px;
             display: flex;
             flex-direction: row;
             justify-content: center;
@@ -60,16 +60,35 @@
             height: 70px;
             padding: 5px;
             margin: 10px auto;
+            #btn-text{
+              position: relative;
+            }
+            .my-label{
+              position: absolute;
+              top : -8px;
+              left: 32px;
+            }
+            .help-item {
+                width: 45px;
+                height: 45px;
+                display: flex;
+                justify-content: center;
+                margin: auto;
+                border: 1px solid #444;
+                border-radius: 5px;
+                font-size: 1em;
+            }
         }
-        .help-item {
-            width: 45px;
-            height: 45px;
-            display: flex;
-            justify-content: center;
-            margin: auto;
-            border: 1px solid #444;
-            border-radius: 5px;
-            font-size: 1em;
+        .help-text-container {
+          width: 250px;
+          display: flex;
+          flex-direction: row;
+          justify-content: center;
+          border: 1px solid #00A1E5;
+          height: 30px;
+          padding: 5px;
+          margin: 10px auto;
+          font-size: 1em;
         }
         /* /EXERCISE VIEW - FREE */
     }

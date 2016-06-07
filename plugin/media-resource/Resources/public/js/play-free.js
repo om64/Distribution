@@ -18,8 +18,10 @@ var domUtils;
 var helpIsPlaying = false;
 var utterance; // webspeech utterance
 var strUtils;
-var autoPause = false;
+var isInAutoPause = false;
 var showTextTranscription;
+var currentHelpTextIndex = 0;
+var currentAutoPauseRegion;
 
 var wavesurferOptions = {
     container: '#waveform',
@@ -41,8 +43,7 @@ var wavesurferOptions = {
 $(document).ready(function() {
     // get some hidden inputs usefull values
     currentExerciseType = 'audio';
-    showTextTranscription = $('input[name="textTranscription"]').val();
-    console.log($('input[name="textTranscription"]').val(););
+    showTextTranscription = $('input[name="textTranscription"]').val() === '1' ? true : false;
     // js helpers
     domUtils = Object.create(DomUtils);
     strUtils = Object.create(StringUtils);
@@ -79,10 +80,37 @@ $(document).ready(function() {
     helpAudioPlayer.src = audioUrl;
     wavesurfer.load(audioUrl);
 
+    // used for the "auto-pause" playback
+    /*helpAudioPlayer.addEventListener('timeupdate', function() {
+        if (isInAutoPause && helpAudioPlayer.currentTime >= currentAutoPauseRegion.end) {
+            helpAudioPlayer.pause();
+            wavesurfer.pause();
+            var nextRegion = getRegionFromTime(currentAutoPauseRegion.end + 0.1);
+            if (nextRegion) {
+                window.setTimeout(function() {
+                    currentAutoPauseRegion = nextRegion;
+                    var progress = currentAutoPauseRegion.start / wavesurfer.getDuration();
+                    wavesurfer.seekTo(progress);
+                    console.log('currentAutoPauseRegion.start');
+                    console.log(currentAutoPauseRegion.start);
+                    playAutoPause(currentAutoPauseRegion.start);
+                }, 2000);
+            } else {
+                wavesurfer.seekTo(0);
+                helpAudioPlayer.pause();
+                wavesurfer.setVolume(1);
+                isInAutoPause = false;
+            }
+        }
+    });*/
+
     createRegions();
     if (regions.length > 0) {
         currentRegion = regions[0];
-        $('.help-text').html(currentRegion.note);
+        if (showTextTranscription) {
+            // show help text
+            $('.help-text').html(currentRegion.note);
+        }
     }
 
     wavesurfer.on('ready', function() {
@@ -102,33 +130,33 @@ $(document).ready(function() {
             wavesurfer.setVolume(1);
             wavesurfer.setPlaybackRate(1);
         }
-      //  $('#btn-play').removeClass('fa-pause').addClass('fa-play');
         var current = getRegionFromCurrentTime();
-        console.log(current);
         if (current && currentRegion && current.id != currentRegion.id) {
             // update current region
             currentRegion = current;
-            // show help text
-            $('.help-text').html(currentRegion.note);
+            if (showTextTranscription) {
+                // show help text
+                $('.help-text').html(currentRegion.note);
+            }
         }
 
-        if(!playing){
-          helpRegion = current;
-          // hide any previous help info
-          $('.region-highlight').remove();
-          $('.help-container').hide();
-          // show current help infos
-          $('.help-container').show();
-          showHelp();
-          highlight();
+        if (!playing) {
+            helpRegion = current;
+            // hide any previous help info
+            $('.region-highlight').remove();
+            $('.help-container').hide();
+            // show current help infos
+            currentHelpTextIndex = 0;
+            showHelp();
+            highlight();
         } else {
             if (helpRegion && current && current.id != helpRegion.id) {
                 $('.region-highlight').remove();
                 $('.help-container').hide();
+                currentHelpTextIndex = 0;
             }
             wavesurfer.play();
         }
-
     });
 
     wavesurfer.on('audioprocess', function() {
@@ -137,19 +165,30 @@ $(document).ready(function() {
         if (current && currentRegion && current.id != currentRegion.id) {
             // update current region
             currentRegion = current;
-            // show help text
-            $('.help-text').html(currentRegion.note);
+            if (showTextTranscription) {
+                // show help text
+                $('.help-text').html(currentRegion.note);
+            }
+
         }
     });
 
-    wavesurfer.on('finish', function () {
-
-      wavesurfer.seekAndCenter(0);
-      wavesurfer.pause();
-      playing = false;
+    wavesurfer.on('finish', function() {
+        wavesurfer.seekAndCenter(0);
+        wavesurfer.pause();
+        playing = false;
     });
     /* /WAVESURFER */
 });
+
+function toggleTextTranscription() {
+    showTextTranscription = !showTextTranscription;
+    if (showTextTranscription) {
+        $('.help-text').html(currentRegion.note);
+    } else {
+        $('.help-text').html('');
+    }
+}
 
 function highlight() {
     var $canvas = $('#waveform').find('wave').first().find('canvas').first();
@@ -179,6 +218,7 @@ function getPositionFromTime(time) {
 
 // play
 function play() {
+    isInAutoPause = false;
     helpAudioPlayer.pause();
     helpAudioPlayer.currentTime = 0;
     wavesurfer.playPause();
@@ -187,6 +227,7 @@ function play() {
         $('#btn-play').removeClass('fa-play').addClass('fa-pause');
         $('.region-highlight').remove();
         $('.help-container').hide();
+        hideHelpText();
     } else {
         // show available help if any
         $('#btn-play').removeClass('fa-pause').addClass('fa-play');
@@ -197,6 +238,26 @@ function play() {
 
 // play with auto pause
 function autoPause() {
+    if (playing) {
+        helpAudioPlayer.pause();
+        if (wavesurfer.isPlaying()) wavesurfer.pause();
+        $('#btn-auto-pause').removeClass('fa-pause').addClass('fa-step-forward');
+        isInAutoPause = false;
+        playing = false;
+    } else {
+        $('#btn-auto-pause').removeClass('fa-step-forward').addClass('fa-pause');
+        $('#btn-auto-pause');
+        isInAutoPause = true;
+        playing = true;
+        var region = getRegionFromTime(wavesurfer.getCurrentTime());
+        playAutoPause(region);
+    }
+
+    /*var region = wavesurfer.createRegion(options);
+    region.play();
+    wavesurefer.once('pause', function(){
+
+    });*/
     // get region from current time
     // play the region from current time until the end of the region
     // get next region if any
@@ -204,7 +265,58 @@ function autoPause() {
 
 }
 
+function getRegionFromTime(time) {
+    var region;
+    for (var i = 0; i < regions.length; i++) {
+        if (regions[i].start <= time && regions[i].end > time) {
+            region = regions[i];
+            break;
+        }
+    }
+    return region;
+}
+
+function playAutoPause(region) {
+  isInAutoPause = true;
+  var options = {
+      start: region.start,
+      end: region.end,
+      color: 'rgba(0,0,0,0)',
+      drag: false,
+      resize: false
+  };
+  var wRegion = wavesurfer.addRegion(options);
+  wRegion.play();
+  console.log(region);
+  wavesurfer.once('pause', function(){
+      wavesurfer.clearRegions();
+      var nextRegion = getNextRegion(region.end);
+      if (nextRegion) {
+          window.setTimeout(function() {
+              console.log('nextRegion');
+              console.log(nextRegion);
+              playAutoPause(nextRegion);
+          }, 2000);
+      } else {
+          isInAutoPause = false;
+          $('#btn-auto-pause').removeClass('fa-pause').addClass('fa-step-forward');
+      }
+  });
+}
+
+function getNextRegion(time) {
+    var next;
+    // find next region relatively to given time
+    for (var i = 0; i < regions.length; i++) {
+        if (regions[i].start == time) {
+            next = regions[i];
+        }
+    }
+    return next;
+}
+
 function playInLoop() {
+    hideHelpText();
     wavesurfer.setPlaybackRate(1);
     var options = {
         start: helpRegion.start,
@@ -226,8 +338,7 @@ function playInLoop() {
 }
 
 function playSlowly() {
-    wavesurfer.setPlaybackRate(0.8);
-    wavesurfer.setVolume(0);
+    hideHelpText();
     //var current = getRegionFromCurrentTime();
     var options = {
         start: helpRegion.start,
@@ -246,32 +357,35 @@ function playSlowly() {
         helpAudioPlayer.pause();
         wavesurfer.setVolume(1);
     } else {
-        region.play();
+        wavesurfer.setPlaybackRate(0.8);
+        wavesurfer.setVolume(0);
         helpAudioPlayer.playbackRate = 0.8;
         helpAudioPlayer.currentTime = helpRegion.start;
+        region.play();
         helpAudioPlayer.play();
         playing = true;
-        region.on('out', function() {
+        wavesurfer.once('pause', function() {
             playing = false;
-            wavesurfer.pause();
-            var progress = helpRegion.start / wavesurfer.getDuration();
+            //wavesurfer.pause();
+            helpAudioPlayer.pause();
+            var progress = region.start / wavesurfer.getDuration();
             wavesurfer.seekTo(progress);
+            helpAudioPlayer.currentTime = region.start;
             wavesurfer.clearRegions();
             wavesurfer.setPlaybackRate(1);
             wavesurfer.setVolume(1);
             helpAudioPlayer.playbackRate = 1;
-            helpAudioPlayer.pause();
-            helpAudioPlayer.currentTime = helpRegion.start;
         });
     }
 }
 
 function playBackward() {
+    hideHelpText();
     // is playing for real audio (ie not for TTS)
-    if (helpIsPlaying && helpAudioPlayer) {
+    if (playing) {
         // stop audio playback before playing TTS
         helpAudioPlayer.pause();
-        helpIsPlaying = false;
+        playing = false;
     }
     if (window.SpeechSynthesisUtterance === undefined) {
         console.log('not supported!');
@@ -291,27 +405,27 @@ function sayIt(text, callback) {
     utterance.text = text;
     var lang = $('input[name=tts]').val();
     var voices = window.speechSynthesis.getVoices();
-    if(voices.length === 0){
-      // chrome hack...
-      window.setTimeout(function(){
-        voices = window.speechSynthesis.getVoices();
-        continueToSay(utterance, voices, lang, callback);
-      },200);
+    if (voices.length === 0) {
+        // chrome hack...
+        window.setTimeout(function() {
+            voices = window.speechSynthesis.getVoices();
+            continueToSay(utterance, voices, lang, callback);
+        }, 200);
     } else {
-      continueToSay(utterance, voices, lang, callback);
+        continueToSay(utterance, voices, lang, callback);
     }
 }
 
-function continueToSay(utterance, voices, lang, callback){
-  for(var i = 0; i < voices.length ; i++) {
-    if(voices[i].lang == lang){
-      utterance.voice = voices[i];
+function continueToSay(utterance, voices, lang, callback) {
+    for (var i = 0; i < voices.length; i++) {
+        if (voices[i].lang == lang) {
+            utterance.voice = voices[i];
+        }
     }
-  }
-  window.speechSynthesis.speak(utterance);
-  utterance.onend = function(event) {
-      return callback();
-  };
+    window.speechSynthesis.speak(utterance);
+    utterance.onend = function(event) {
+        return callback();
+    };
 }
 
 function handleUtterancePlayback(index, textArray) {
@@ -321,10 +435,13 @@ function handleUtterancePlayback(index, textArray) {
         toSay += textArray[j] + ' ';
     }
     if (index >= 0) {
+        playing = true;
         sayIt(toSay, function() {
             index = index - 1;
             handleUtterancePlayback(index, textArray);
         });
+    } else {
+        playing = false;
     }
 }
 
@@ -332,33 +449,62 @@ function handleUtterancePlayback(index, textArray) {
 function showHelp() {
     var current = getRegionFromCurrentTime();
     var $root = $('.help-container');
-    $root.empty();
-    $root.show();
     var html = '';
     if (current.hasHelp) {
         if (current.loop) {
-            html += '<button class="btn btn-default fa fa-retweet help-item" title="' + Translator.trans('region_help_segment_playback_loop', {}, 'media_resource') + '"  onclick="playInLoop()">';
-            html += '</button>';
+            $('#btn-loop').prop('disabled', false);
+        } else {
+            $('#btn-loop').prop('disabled', true);
         }
         if (current.backward) {
-            html += '<button class="btn btn-default fa fa-exchange help-item" title="' + Translator.trans('region_help_segment_playback_backward', {}, 'media_resource') + '" onclick="playBackward();">';
-            html += '</button>';
+            $('#btn-backward').prop('disabled', false);
+        } else {
+            $('#btn-backward').prop('disabled', true);
         }
         if (current.rate) {
-            html += '<button class="btn btn-default help-item" title="' + Translator.trans('region_help_segment_playback_rate', {}, 'media_resource') + '"  onclick="playSlowly()">x0.8</button>';
+            $('#btn-slow').prop('disabled', false);
+        } else {
+            $('#btn-slow').prop('disabled', true);
         }
         if (current.texts.length > 0) {
-            for (var i = 0; i < current.texts.length; i++) {
-                if (current.texts[i] !== '') {
-                    html += '<button class="btn btn-default fa fa-file-text-o help-item" title="' + current.texts[i] + '">';
-                    html += '</button>';
-                }
-            }
+            $('#btn-text').prop('disabled', false);
+            $('.my-label').show();
+        } else {
+            $('#btn-text').prop('disabled', true);
+            $('.my-label').hide();
+
         }
-    } else {
-        html += '<h4>' + Translator.trans('region_help_no_help_available', {}, 'media_resource') + '</h4>';
+        $root.show();
     }
-    $root.append(html);
+}
+
+function showHelpText() {
+    if (playing) {
+        playing = false;
+        if (wavesurfer.isPlaying()) wavesurfer.pause();
+        helpAudioPlayer.pause();
+        if (window.speechSynthesis.speaking) {
+            // can not really stop playing tts since the callback can not be canceled
+            window.speechSynthesis.cancel();
+        }
+    }
+    var current = getRegionFromCurrentTime();
+
+    $('.help-text-item').text(current.texts[currentHelpTextIndex]);
+    if (currentHelpTextIndex < current.texts.length - 1) {
+        currentHelpTextIndex++;
+    } else {
+        currentHelpTextIndex = 0;
+    }
+    // say to user there is another text available (so if we currently display the text number 1 the label should display 2)
+    var displayIndex = currentHelpTextIndex + 1;
+    $('.my-label').text(displayIndex);
+    $('.help-text-container').show();
+}
+
+function hideHelpText() {
+    currentHelpTextIndex = 0;
+    $('.help-text-container').hide();
 }
 
 function getRegionFromCurrentTime() {

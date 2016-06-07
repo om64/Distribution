@@ -3,7 +3,7 @@
     <div class="row">
         <div class="col-md-12">
             <div class="my-flex-row">
-                <div class="text-center player-col" style="width:10%;" onclick="toggleTextAnnotation()">
+                <div class="text-center player-col" style="width:10%;" onclick="toggleTextTranscription()">
                     <i style="cursor:pointer;" class="fa fa-font big bordered-top bordered-left bordered-right" title="Transcription textuelle"></i>
                 </div>
                 <div class="player-col" style="width:90%;">
@@ -18,7 +18,9 @@
     <div class="col-md-12">
         <div class="my-flex-row">
             <div class="text-center player-col" style="width:10%;">
-                <i style="height:20%;cursor:pointer;" id="btn-pause" class="fa fa-step-forward big bordered-top bordered-left bordered-right"></i>
+                <!-- Play with sort of "auto pause" mode -->
+                <i style="height:20%;cursor:pointer;" id="btn-auto-pause" class="fa fa-step-forward big bordered-top bordered-left bordered-right" onclick="autoPause()"></i>
+                <!-- Play / Pause -->
                 <i style="height:80%;cursor:pointer;" id="btn-play" title="{{'play_pause' | trans({}, 'media_resource')}}" onclick="play()" class="fa fa-play big bordered-top bordered-left bordered-right bordered-bottom"></i>
             </div>
             <div class="player-col" style="width:90%;">
@@ -35,7 +37,22 @@
 <!-- Help row -->
 <div class="row">
     <div class="col-md-12">
-        <div class="help-container" style="display:none;"></div>
+        <div class="help-container" style="display:none;">
+          <button class="btn btn-default fa fa-retweet help-item" id="btn-loop" title="{{'region_help_segment_playback_loop' | trans({}, 'media_resource')}}"  onclick="playInLoop()"></button>
+          <button class="btn btn-default fa fa-exchange help-item" id="btn-backward" title="{{'region_help_segment_playback_backward' | trans({}, 'media_resource')}}" onclick="playBackward()"></button>
+          <button class="btn btn-default help-item" id="btn-slow" title="{{'region_help_segment_playback_rate' | trans({}, 'media_resource')}}" onclick="playSlowly()">x0.8</button>
+          <button class="btn btn-default fa fa-file-text-o help-item" id="btn-text" title="{{'region_help_help_text_label' | trans({}, 'media_resource')}}" onclick="showHelpText()">
+            <span class="label label-info my-label">1</span>
+          </button>
+        </div>
+    </div>
+</div>
+<!-- Help text row -->
+<div class="row">
+    <div class="col-md-12">
+        <div class="help-text-container" style="display:none;">
+          <span class="help-text-item"></span>
+        </div>
     </div>
 </div>
 

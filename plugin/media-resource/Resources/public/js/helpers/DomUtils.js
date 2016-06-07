@@ -374,7 +374,7 @@ var DomUtils = {
      */
     getRegionRow: function (start, end) {
         var row;
-        $('.row.form-row.region').each(function () {
+        $('.region').each(function () {
             var temp = $(this);
             // current row start
             var sinput = $(this).find("input.hidden-start");
@@ -415,7 +415,7 @@ var DomUtils = {
         var isNote = $(elem).hasClass('note');
         if (isNote) {
             // find associated input[name="note"] input and set val
-            var hiddenNoteInput = $(elem).closest(".row.form-row.region").find('input.hidden-note');
+            var hiddenNoteInput = $(elem).closest(".region").find('input.hidden-note');
             var content = $(elem).html() ? $(elem).html() : $(elem).text();
             $(hiddenNoteInput).val(content);
         }

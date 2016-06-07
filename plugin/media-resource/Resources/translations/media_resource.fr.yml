@@ -40,10 +40,10 @@ help_modal_help_tab_label: Aide disponible pour la région
 innova_media_resource: Ressource média
 
 # l
-label_play_mode_live: Continuous live
-label_play_mode_pause: Continuous pause
-label_play_mode_free: Free
-label_play_mode_active: Continuous active
+label_play_mode_live: Continu live
+label_play_mode_pause: Continu pause
+label_play_mode_free: Libre
+label_play_mode_active: Continu active
 
 #m
 move_backward: Aller au marqueur précédent
