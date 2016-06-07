@@ -181,12 +181,12 @@ class WidgetDisplayConfig
         $this->color = $color;
     }
 
-    function getDetails()
+    public function getDetails()
     {
         return $this->details;
     }
 
-    function setDetails($details)
+    public function setDetails($details)
     {
         $this->details = $details;
     }

@@ -17,6 +17,8 @@ use Claroline\CoreBundle\Entity\User;
 use Claroline\CoreBundle\Entity\Widget\WidgetDisplayConfig;
 use Claroline\CoreBundle\Entity\Widget\WidgetHomeTabConfig;
 use Claroline\CoreBundle\Entity\Widget\WidgetInstance;
+use Claroline\CoreBundle\Event\ConfigureWidgetEvent;
+use Claroline\CoreBundle\Event\DisplayWidgetEvent;
 use Claroline\CoreBundle\Event\Log\LogHomeTabAdminUserEditEvent;
 use Claroline\CoreBundle\Event\Log\LogHomeTabUserCreateEvent;
 use Claroline\CoreBundle\Event\Log\LogHomeTabUserDeleteEvent;
@@ -87,8 +89,7 @@ class DesktopHomeController extends Controller
         UserManager $userManager,
         Utilities $utils,
         WidgetManager $widgetManager
-    )
-    {
+    ) {
         $this->apiManager = $apiManager;
         $this->authorization = $authorization;
         $this->bundles = $pluginManager->getEnabled(true);
@@ -118,7 +119,7 @@ class DesktopHomeController extends Controller
     public function getDesktopOptionsAction(User $user)
     {
         $options = $this->userManager->getUserOptions($user);
-        $desktopOptions = array();
+        $desktopOptions = [];
         $desktopOptions['editionMode'] = $options->getDesktopMode() === 1;
         $desktopOptions['isHomeLocked'] = $this->roleManager->isHomeLocked($user);
 
@@ -140,14 +141,14 @@ class DesktopHomeController extends Controller
     public function getDesktopHomeTabsAction(User $user)
     {
         $options = $this->userManager->getUserOptions($user);
-        $desktopHomeDatas = array(
-            'tabsAdmin' => array(),
-            'tabsUser' => array(),
-            'tabsWorkspace' => array()
-        );
+        $desktopHomeDatas = [
+            'tabsAdmin' => [],
+            'tabsUser' => [],
+            'tabsWorkspace' => [],
+        ];
         $desktopHomeDatas['editionMode'] = $options->getDesktopMode() === 1;
         $desktopHomeDatas['isHomeLocked'] = $this->roleManager->isHomeLocked($user);
-        $userHomeTabConfigs = array();
+        $userHomeTabConfigs = [];
         $roleNames = $this->utils->getRoles($this->tokenStorage->getToken());
 
         if ($desktopHomeDatas['isHomeLocked']) {
@@ -170,7 +171,7 @@ class DesktopHomeController extends Controller
             $tab = $htc->getHomeTab();
             $details = $htc->getDetails();
             $color = isset($details['color']) ? $details['color'] : null;
-            $desktopHomeDatas['tabsAdmin'][] = array(
+            $desktopHomeDatas['tabsAdmin'][] = [
                 'configId' => $htc->getId(),
                 'locked' => $htc->isLocked(),
                 'tabOrder' => $htc->getTabOrder(),
@@ -180,15 +181,15 @@ class DesktopHomeController extends Controller
                 'tabName' => $tab->getName(),
                 'tabType' => $tab->getType(),
                 'tabIcon' => $tab->getIcon(),
-                'color' => $color
-            );
+                'color' => $color,
+            ];
         }
 
         foreach ($userHomeTabConfigs as $htc) {
             $tab = $htc->getHomeTab();
             $details = $htc->getDetails();
             $color = isset($details['color']) ? $details['color'] : null;
-            $desktopHomeDatas['tabsUser'][] = array(
+            $desktopHomeDatas['tabsUser'][] = [
                 'configId' => $htc->getId(),
                 'locked' => $htc->isLocked(),
                 'tabOrder' => $htc->getTabOrder(),
@@ -198,15 +199,15 @@ class DesktopHomeController extends Controller
                 'tabName' => $tab->getName(),
                 'tabType' => $tab->getType(),
                 'tabIcon' => $tab->getIcon(),
-                'color' => $color
-            );
+                'color' => $color,
+            ];
         }
 
         foreach ($workspaceUserHTCs as $htc) {
             $tab = $htc->getHomeTab();
             $details = $htc->getDetails();
             $color = isset($details['color']) ? $details['color'] : null;
-            $desktopHomeDatas['tabsWorkspace'][] = array(
+            $desktopHomeDatas['tabsWorkspace'][] = [
                 'configId' => $htc->getId(),
                 'locked' => $htc->isLocked(),
                 'tabOrder' => $htc->getTabOrder(),
@@ -216,8 +217,8 @@ class DesktopHomeController extends Controller
                 'tabName' => $tab->getName(),
                 'tabType' => $tab->getType(),
                 'tabIcon' => $tab->getIcon(),
-                'color' => $color
-            );
+                'color' => $color,
+            ];
         }
 
         return new JsonResponse($desktopHomeDatas, 200);
@@ -262,7 +263,7 @@ class DesktopHomeController extends Controller
         $tab = $htc->getHomeTab();
         $details = $htc->getDetails();
         $color = isset($details['color']) ? $details['color'] : null;
-        $htcDatas = array(
+        $htcDatas = [
             'configId' => $htc->getId(),
             'locked' => $htc->isLocked(),
             'tabOrder' => $htc->getTabOrder(),
@@ -273,8 +274,8 @@ class DesktopHomeController extends Controller
             'tabType' => $tab->getType(),
             'tabIcon' => $tab->getIcon(),
             'color' => $color,
-            'details' => $details
-        );
+            'details' => $details,
+        ];
         $event = new LogHomeTabAdminUserEditEvent($htc);
         $this->eventDispatcher->dispatch('log', $event);
 
@@ -339,7 +340,7 @@ class DesktopHomeController extends Controller
             $homeTabConfig->setUser($user);
             $homeTabConfig->setLocked(false);
             $homeTabConfig->setVisible(true);
-            $homeTabConfig->setDetails(array('color' => $color));
+            $homeTabConfig->setDetails(['color' => $color]);
 
             $lastOrder = $this->homeTabManager->getOrderOfLastDesktopHomeTabConfigByUser($user);
 
@@ -352,7 +353,7 @@ class DesktopHomeController extends Controller
             $event = new LogHomeTabUserCreateEvent($homeTabConfig);
             $this->eventDispatcher->dispatch('log', $event);
 
-            $homeTabDatas = array(
+            $homeTabDatas = [
                 'configId' => $homeTabConfig->getId(),
                 'locked' => $homeTabConfig->isLocked(),
                 'tabOrder' => $homeTabConfig->getTabOrder(),
@@ -362,16 +363,16 @@ class DesktopHomeController extends Controller
                 'tabName' => $homeTab->getName(),
                 'tabType' => $homeTab->getType(),
                 'tabIcon' => $homeTab->getIcon(),
-                'color' => $color
-            );
+                'color' => $color,
+            ];
 
             return new JsonResponse($homeTabDatas, 200);
         } else {
-            $options = array(
+            $options = [
                 'http_code' => 400,
                 'extra_parameters' => null,
-                'serializer_group' => 'api_home_tab'
-            );
+                'serializer_group' => 'api_home_tab',
+            ];
 
             return $this->apiManager->handleFormView(
                 'ClarolineCoreBundle:API:HomeTab\userHomeTabCreateForm.html.twig',
@@ -458,7 +459,7 @@ class DesktopHomeController extends Controller
             $details = $homeTabConfig->getDetails();
 
             if (is_null($details)) {
-                $details = array();
+                $details = [];
             }
             $details['color'] = $color;
             $homeTabConfig->setDetails($details);
@@ -466,7 +467,7 @@ class DesktopHomeController extends Controller
             $event = new LogHomeTabUserEditEvent($homeTabConfig);
             $this->eventDispatcher->dispatch('log', $event);
 
-            $homeTabDatas = array(
+            $homeTabDatas = [
                 'configId' => $homeTabConfig->getId(),
                 'locked' => $homeTabConfig->isLocked(),
                 'tabOrder' => $homeTabConfig->getTabOrder(),
@@ -476,16 +477,16 @@ class DesktopHomeController extends Controller
                 'tabName' => $homeTab->getName(),
                 'tabType' => $homeTab->getType(),
                 'tabIcon' => $homeTab->getIcon(),
-                'color' => $color
-            );
+                'color' => $color,
+            ];
 
             return new JsonResponse($homeTabDatas, 200);
         } else {
-            $options = array(
+            $options = [
                 'http_code' => 400,
                 'extra_parameters' => null,
-                'serializer_group' => 'api_home_tab'
-            );
+                'serializer_group' => 'api_home_tab',
+            ];
 
             return $this->apiManager->handleFormView(
                 'ClarolineCoreBundle:API:HomeTab\userHomeTabEditForm.html.twig',
@@ -513,7 +514,7 @@ class DesktopHomeController extends Controller
         $tab = $htc->getHomeTab();
         $details = $htc->getDetails();
         $color = isset($details['color']) ? $details['color'] : null;
-        $htcDatas = array(
+        $htcDatas = [
             'configId' => $htc->getId(),
             'locked' => $htc->isLocked(),
             'tabOrder' => $htc->getTabOrder(),
@@ -524,8 +525,8 @@ class DesktopHomeController extends Controller
             'tabType' => $tab->getType(),
             'tabIcon' => $tab->getIcon(),
             'color' => $color,
-            'details' => $details
-        );
+            'details' => $details,
+        ];
         $this->homeTabManager->deleteHomeTabConfig($htc);
         $this->homeTabManager->deleteHomeTab($tab);
         $event = new LogHomeTabUserDeleteEvent($htcDatas);
@@ -553,7 +554,7 @@ class DesktopHomeController extends Controller
         $tab = $htc->getHomeTab();
         $details = $htc->getDetails();
         $color = isset($details['color']) ? $details['color'] : null;
-        $htcDatas = array(
+        $htcDatas = [
             'configId' => $htc->getId(),
             'locked' => $htc->isLocked(),
             'tabOrder' => $htc->getTabOrder(),
@@ -564,8 +565,8 @@ class DesktopHomeController extends Controller
             'tabType' => $tab->getType(),
             'tabIcon' => $tab->getIcon(),
             'color' => $color,
-            'details' => $details
-        );
+            'details' => $details,
+        ];
         $this->homeTabManager->deleteHomeTabConfig($htc);
         $event = new LogHomeTabWorkspaceUnpinEvent($user, $workspace, $htcDatas);
         $this->eventDispatcher->dispatch('log', $event);
@@ -575,7 +576,7 @@ class DesktopHomeController extends Controller
 
     /**
      * @EXT\Route(
-     *     "/api/home/tab/{homeTabConfig}/next/{nextHomeTabConfigId}/reorder",
+     *     "/api/desktop/home/tab/{homeTabConfig}/next/{nextHomeTabConfigId}/reorder",
      *     name="api_post_desktop_home_tab_config_reorder",
      *     options = {"expose"=true}
      * )
@@ -600,6 +601,153 @@ class DesktopHomeController extends Controller
         );
 
         return new JsonResponse('success', 200);
+    }
+
+    /**
+     * @EXT\Route(
+     *     "/api/desktop/home/tab/{homeTab}/widgets/display",
+     *     name="api_get_desktop_widgets_display",
+     *     options = {"expose"=true}
+     * )
+     * @EXT\ParamConverter("user", options={"authenticatedUser" = true})
+     *
+     * Retrieves desktop widgets
+     *
+     * @return \Symfony\Component\HttpFoundation\Response
+     */
+    public function getDesktopWidgetsAction(HomeTab $homeTab)
+    {
+        $user = $this->tokenStorage->getToken()->getUser();
+        $isVisibleHomeTab = $this->homeTabManager->checkHomeTabVisibilityForConfigByUser($homeTab, $user);
+        $isLockedHomeTab = $this->homeTabManager->checkHomeTabLock($homeTab);
+        $isHomeLocked = $this->roleManager->isHomeLocked($user);
+        $isWorkspace = false;
+        $configs = [];
+        $widgets = [];
+        $widgetsDatas = [
+            'isLockedHomeTab' => $isLockedHomeTab,
+            'initWidgetsPosition' => false,
+            'widgets' => [],
+        ];
+
+        if ($isVisibleHomeTab) {
+            if ($homeTab->getType() === 'admin_desktop') {
+                $adminConfigs = $this->homeTabManager->getAdminWidgetConfigs($homeTab);
+
+                if ($isLockedHomeTab || $isHomeLocked) {
+                    foreach ($adminConfigs as $adminConfig) {
+                        if ($adminConfig->isVisible()) {
+                            $configs[] = $adminConfig;
+                        }
+                    }
+                } else {
+                    $userWidgetsConfigs = $this->homeTabManager
+                        ->getWidgetConfigsByUser($homeTab, $user);
+
+                    foreach ($adminConfigs as $adminConfig) {
+                        if ($adminConfig->isLocked()) {
+                            if ($adminConfig->isVisible()) {
+                                $configs[] = $adminConfig;
+                            }
+                        } else {
+                            $existingWidgetConfig = $this->homeTabManager
+                                ->getUserAdminWidgetHomeTabConfig(
+                                    $homeTab,
+                                    $adminConfig->getWidgetInstance(),
+                                    $user
+                                );
+                            if (is_null($existingWidgetConfig) && $adminConfig->isVisible()) {
+                                $newWHTC = new WidgetHomeTabConfig();
+                                $newWHTC->setHomeTab($homeTab);
+                                $newWHTC->setWidgetInstance($adminConfig->getWidgetInstance());
+                                $newWHTC->setUser($user);
+                                $newWHTC->setWidgetOrder($adminConfig->getWidgetOrder());
+                                $newWHTC->setVisible($adminConfig->isVisible());
+                                $newWHTC->setLocked(false);
+                                $newWHTC->setType('admin_desktop');
+                                $this->homeTabManager->insertWidgetHomeTabConfig($newWHTC);
+                                $configs[] = $newWHTC;
+                            } elseif ($existingWidgetConfig->isVisible()) {
+                                $configs[] = $existingWidgetConfig;
+                            }
+                        }
+                    }
+
+                    foreach ($userWidgetsConfigs as $userWidgetsConfig) {
+                        $configs[] = $userWidgetsConfig;
+                    }
+                }
+            } elseif ($homeTab->getType() === 'desktop') {
+                $configs = $this->homeTabManager->getWidgetConfigsByUser($homeTab, $user);
+            } elseif ($homeTab->getType() === 'workspace') {
+                $workspace = $homeTab->getWorkspace();
+                $widgetsDatas['isLockedHomeTab'] = true;
+                $isWorkspace = true;
+                $configs = $this->homeTabManager->getWidgetConfigsByWorkspace(
+                    $homeTab,
+                    $workspace
+                );
+            }
+
+            if ($isWorkspace) {
+                $wdcs = $this->widgetManager->generateWidgetDisplayConfigsForWorkspace(
+                    $workspace,
+                    $configs
+                );
+            } elseif ($isLockedHomeTab || $isHomeLocked) {
+                $wdcs = $this->widgetManager->getAdminWidgetDisplayConfigsByWHTCs($configs);
+            } else {
+                $wdcs = $this->widgetManager->generateWidgetDisplayConfigsForUser(
+                    $user,
+                    $configs
+                );
+            }
+
+            foreach ($wdcs as $wdc) {
+                if ($wdc->getRow() === -1 || $wdc->getColumn() === -1) {
+                    $widgetsDatas['initWidgetsPosition'] = true;
+                    break;
+                }
+            }
+
+            foreach ($configs as $config) {
+                $widgetDatas = [];
+                $widgetInstance = $config->getWidgetInstance();
+                $widget = $widgetInstance->getWidget();
+                $widgetInstanceId = $widgetInstance->getId();
+                $widgetDatas['widgetId'] = $widget->getId();
+                $widgetDatas['widgetName'] = $widget->getName();
+                $widgetDatas['configId'] = $config->getId();
+                $event = $this->eventDispatcher->dispatch(
+                    "widget_{$config->getWidgetInstance()->getWidget()->getName()}",
+                    new DisplayWidgetEvent($config->getWidgetInstance())
+                );
+                $widgetDatas['content'] = $event->getContent();
+                $widgetDatas['configurable'] = $config->isLocked() !== true
+                    && $config->getWidgetInstance()->getWidget()->isConfigurable();
+                $widgetDatas['locked'] = $config->isLocked();
+                $widgetDatas['type'] = $config->getType();
+                $widgetDatas['instanceId'] = $widgetInstanceId;
+                $widgetDatas['instanceName'] = $widgetInstance->getName();
+                $widgetDatas['instanceIcon'] = $widgetInstance->getIcon();
+                $widgetDatas['displayId'] = $wdcs[$widgetInstanceId]->getId();
+                $row = $wdcs[$widgetInstanceId]->getRow();
+                $column = $wdcs[$widgetInstanceId]->getColumn();
+                $widgetDatas['row'] = $row >= 0 ? $row : null;
+                $widgetDatas['col'] = $column >= 0 ? $column : null;
+                $widgetDatas['sizeY'] = $wdcs[$widgetInstanceId]->getHeight();
+                $widgetDatas['sizeX'] = $wdcs[$widgetInstanceId]->getWidth();
+                $widgetDatas['color'] = $wdcs[$widgetInstanceId]->getColor();
+                $details = $wdcs[$widgetInstanceId]->getDetails();
+                $widgetDatas['textTitleColor'] = isset($details['textTitleColor']) ?
+                    $details['textTitleColor'] :
+                    null;
+                $widgets[] = $widgetDatas;
+            }
+            $widgetsDatas['widgets'] = $widgets;
+        }
+
+        return new JsonResponse($widgetsDatas, 200);
     }
 
     /**
@@ -651,7 +799,7 @@ class DesktopHomeController extends Controller
         return $this->apiManager->handleFormView(
             'ClarolineCoreBundle:API:Widget\widgetInstanceEditForm.html.twig',
             $form,
-            array('extra_infos' => $widget->isConfigurable())
+            ['extra_infos' => $widget->isConfigurable()]
         );
     }
 
@@ -670,10 +818,9 @@ class DesktopHomeController extends Controller
         $widget = $widgetInstance->getWidget();
 
         if ($widget->isConfigurable()) {
-            $event = $this->get('claroline.event.event_dispatcher')->dispatch(
+            $event = $this->eventDispatcher->dispatch(
                 "widget_{$widgetInstance->getWidget()->getName()}_configuration",
-                'ConfigureWidget',
-                array($widgetInstance)
+                new ConfigureWidgetEvent($widgetInstance)
             );
             $content = $event->getContent();
         } else {
@@ -728,7 +875,7 @@ class DesktopHomeController extends Controller
             $widgetDisplayConfig->setWidth($widget->getDefaultWidth());
             $widgetDisplayConfig->setHeight($widget->getDefaultHeight());
             $widgetDisplayConfig->setColor($color);
-            $widgetDisplayConfig->setDetails(array('textTitleColor' => $textTitleColor));
+            $widgetDisplayConfig->setDetails(['textTitleColor' => $textTitleColor]);
 
             $this->widgetManager->persistWidgetConfigs(
                 $widgetInstance,
@@ -738,7 +885,7 @@ class DesktopHomeController extends Controller
             $event = new LogWidgetUserCreateEvent($homeTab, $widgetHomeTabConfig, $widgetDisplayConfig);
             $this->eventDispatcher->dispatch('log', $event);
 
-            $widgetDatas = array(
+            $widgetDatas = [
                 'widgetId' => $widget->getId(),
                 'widgetName' => $widget->getName(),
                 'configId' => $widgetHomeTabConfig->getId(),
@@ -754,16 +901,16 @@ class DesktopHomeController extends Controller
                 'sizeY' => $widgetDisplayConfig->getHeight(),
                 'sizeX' => $widgetDisplayConfig->getWidth(),
                 'color' => $color,
-                'textTitleColor' => $textTitleColor
-            );
+                'textTitleColor' => $textTitleColor,
+            ];
 
             return new JsonResponse($widgetDatas, 200);
         } else {
-            $options = array(
+            $options = [
                 'http_code' => 400,
                 'extra_parameters' => null,
-                'serializer_group' => 'api_widget'
-            );
+                'serializer_group' => 'api_widget',
+            ];
 
             return $this->apiManager->handleFormView(
                 'ClarolineCoreBundle:API:Widget\widgetInstanceCreateForm.html.twig',
@@ -807,7 +954,7 @@ class DesktopHomeController extends Controller
             $details = $wdc->getDetails();
 
             if (is_null($details)) {
-                $details = array();
+                $details = [];
             }
             $details['textTitleColor'] = $textTitleColor;
             $wdc->setDetails($details);
@@ -816,7 +963,7 @@ class DesktopHomeController extends Controller
             $event = new LogWidgetUserEditEvent($widgetInstance, null, $wdc);
             $this->eventDispatcher->dispatch('log', $event);
 
-            $widgetDatas = array(
+            $widgetDatas = [
                 'widgetId' => $widget->getId(),
                 'widgetName' => $widget->getName(),
                 'instanceId' => $widgetInstance->getId(),
@@ -828,17 +975,17 @@ class DesktopHomeController extends Controller
                 'sizeY' => $wdc->getHeight(),
                 'sizeX' => $wdc->getWidth(),
                 'color' => $color,
-                'textTitleColor' => $textTitleColor
-            );
+                'textTitleColor' => $textTitleColor,
+            ];
 
             return new JsonResponse($widgetDatas, 200);
         } else {
-            $options = array(
+            $options = [
                 'http_code' => 400,
                 'extra_parameters' => null,
                 'serializer_group' => 'api_widget',
-                'extra_infos' => $widget->isConfigurable()
-            );
+                'extra_infos' => $widget->isConfigurable(),
+            ];
 
             return $this->apiManager->handleFormView(
                 'ClarolineCoreBundle:API:Widget\widgetInstanceEditForm.html.twig',
@@ -870,7 +1017,7 @@ class DesktopHomeController extends Controller
 
         $widgetInstance = $widgetHomeTabConfig->getWidgetInstance();
         $widget = $widgetInstance->getWidget();
-        $datas = array(
+        $datas = [
             'widgetId' => $widget->getId(),
             'widgetName' => $widget->getName(),
             'widgetIsConfigurable' => $widget->isConfigurable(),
@@ -886,8 +1033,8 @@ class DesktopHomeController extends Controller
             'order' => $widgetHomeTabConfig->getWidgetOrder(),
             'type' => $widgetHomeTabConfig->getType(),
             'visible' => $widgetHomeTabConfig->isVisible(),
-            'locked' => $widgetHomeTabConfig->isLocked()
-        );
+            'locked' => $widgetHomeTabConfig->isLocked(),
+        ];
 
         return new JsonResponse($datas, 200);
     }
@@ -910,7 +1057,7 @@ class DesktopHomeController extends Controller
         $homeTab = $widgetHomeTabConfig->getHomeTab();
         $widgetInstance = $widgetHomeTabConfig->getWidgetInstance();
         $widget = $widgetInstance->getWidget();
-        $datas = array(
+        $datas = [
             'tabId' => $homeTab->getId(),
             'tabName' => $homeTab->getName(),
             'tabType' => $homeTab->getType(),
@@ -930,8 +1077,8 @@ class DesktopHomeController extends Controller
             'order' => $widgetHomeTabConfig->getWidgetOrder(),
             'type' => $widgetHomeTabConfig->getType(),
             'visible' => $widgetHomeTabConfig->isVisible(),
-            'locked' => $widgetHomeTabConfig->isLocked()
-        );
+            'locked' => $widgetHomeTabConfig->isLocked(),
+        ];
         $this->homeTabManager->deleteWidgetHomeTabConfig($widgetHomeTabConfig);
 
         if ($this->hasUserAccessToWidgetInstance($user, $widgetInstance)) {
@@ -958,9 +1105,9 @@ class DesktopHomeController extends Controller
     public function putDesktopWidgetDisplayUpdateAction(User $user, $datas)
     {
         $jsonDatas = json_decode($datas, true);
-        $displayConfigs = array();
+        $displayConfigs = [];
 
-        foreach($jsonDatas as $data) {
+        foreach ($jsonDatas as $data) {
             $displayConfig = $this->widgetManager->getWidgetDisplayConfigById($data['id']);
 
             if (!is_null($displayConfig)) {
@@ -982,7 +1129,6 @@ class DesktopHomeController extends Controller
         $user = $this->tokenStorage->getToken()->getUser();
 
         if ($user === '.anon' || $this->roleManager->isHomeLocked($user)) {
-
             throw new AccessDeniedException();
         }
     }
@@ -993,7 +1139,6 @@ class DesktopHomeController extends Controller
         $type = $htc->getType();
 
         if ($type !== $homeTabType || $authenticatedUser !== $user) {
-
             throw new AccessDeniedException();
         }
     }
@@ -1004,7 +1149,6 @@ class DesktopHomeController extends Controller
         $homeTabType = $homeTab->getType();
 
         if ($homeTabType !== 'desktop' || $user !== $homeTabUser) {
-
             throw new AccessDeniedException();
         }
     }
@@ -1014,7 +1158,6 @@ class DesktopHomeController extends Controller
         $user = $whtc->getUser();
 
         if ($authenticatedUser !== $user) {
-
             throw new AccessDeniedException();
         }
     }
@@ -1024,7 +1167,6 @@ class DesktopHomeController extends Controller
         $user = $wdc->getUser();
 
         if ($authenticatedUser !== $user) {
-
             throw new AccessDeniedException();
         }
     }
@@ -1034,7 +1176,6 @@ class DesktopHomeController extends Controller
         $user = $widgetInstance->getUser();
 
         if ($authenticatedUser !== $user) {
-
             throw new AccessDeniedException();
         }
     }
@@ -1051,7 +1192,6 @@ class DesktopHomeController extends Controller
             (($type === 'desktop' && $homeTabUser === $user) || ($type === 'admin_desktop' && $visible && !$locked));
 
         if ($user === '.anon' || $this->roleManager->isHomeLocked($user) || !$canCreate) {
-
             throw new AccessDeniedException();
         }
     }

@@ -75,6 +75,8 @@ export default class WidgetService {
       this.checkDesktopWidgetsDisplayOptions()
     } else if (this.type === 'admin') {
       this.checkAdminWidgetsDisplayOptions()
+    } else if (this.type === 'workspace') {
+      this.checkWorkspaceWidgetsDisplayOptions()
     }
   }
 
@@ -115,7 +117,7 @@ export default class WidgetService {
     if (tabId === 0) {
       this.widgets.splice(0, this.widgets.length)
     } else {
-      const route = Routing.generate('claro_desktop_home_widgets_display', {homeTab: tabId})
+      const route = Routing.generate('api_get_desktop_widgets_display', {homeTab: tabId})
       this.$http.get(route).then(datas => {
         if (datas['status'] === 200) {
           this.options['canEdit'] = isEditionEnabled && !datas['data']['isLockedHomeTab']
@@ -142,6 +144,23 @@ export default class WidgetService {
           this.generateWidgetsDisplayOptions()
           this.checkAdminWidgetsDisplayOptions()
           this.switchGridsterEdition(true)
+          this.secureWidgetsContents()
+        }
+      })
+    }
+  }
+
+  loadWorkspaceWidgets (tabId) {
+    if (tabId === 0) {
+      this.widgets.splice(0, this.widgets.length)
+    } else {
+      const route = Routing.generate('api_get_workspace_widgets_display', {homeTab: tabId})
+      this.$http.get(route).then(datas => {
+        if (datas['status'] === 200) {
+          this.widgets.splice(0, this.widgets.length)
+          angular.merge(this.widgets, datas['data'])
+          this.generateWidgetsDisplayOptions()
+          this.checkWorkspaceWidgetsDisplayOptions()
           this.secureWidgetsContents()
         }
       })
@@ -245,8 +264,6 @@ export default class WidgetService {
           console.log('error')
         }
       )
-    } else {
-      console.log('no modif')
     }
   }
 
@@ -293,8 +310,52 @@ export default class WidgetService {
           console.log('error')
         }
       )
-    } else {
-      console.log('no modif')
+    }
+  }
+
+  checkWorkspaceWidgetsDisplayOptions () {
+    let modifiedWidgets = []
+
+    this.widgets.forEach(w => {
+      const displayId = w['displayId']
+
+      if (w['row'] !== this.widgetsDisplayOptions[displayId]['row'] ||
+        w['col'] !== this.widgetsDisplayOptions[displayId]['col'] ||
+        w['sizeX'] !== this.widgetsDisplayOptions[displayId]['sizeX'] ||
+        w['sizeY'] !== this.widgetsDisplayOptions[displayId]['sizeY']) {
+
+        const widgetDatas = {
+          id: displayId,
+          row: w['row'],
+          col: w['col'],
+          sizeX: w['sizeX'],
+          sizeY: w['sizeY']
+        }
+        modifiedWidgets.push(widgetDatas)
+      }
+    })
+
+    if (modifiedWidgets.length > 0) {
+      const json = JSON.stringify(modifiedWidgets)
+      const route = Routing.generate('api_put_workspace_widget_display_update', {datas: json})
+      this.$http.put(route).then(
+        (datas) => {
+          if (datas['status'] === 200) {
+            const displayDatas = datas['data']
+
+            displayDatas.forEach(d => {
+              const id = d['id']
+              this.widgetsDisplayOptions[id]['row'] = d['row']
+              this.widgetsDisplayOptions[id]['col'] = d['col']
+              this.widgetsDisplayOptions[id]['sizeX'] = d['sizeX']
+              this.widgetsDisplayOptions[id]['sizeY'] = d['sizeY']
+            })
+          }
+        },
+        () => {
+          console.log('error')
+        }
+      )
     }
   }
 
@@ -426,6 +487,58 @@ export default class WidgetService {
   deleteAdminWidget (widgetHTCId) {
     const url = Routing.generate(
       'api_delete_admin_widget_home_tab_config',
+      {widgetHomeTabConfig: widgetHTCId}
+    )
+
+    this.ClarolineAPIService.confirm(
+      {url, method: 'DELETE'},
+      this._removeWidgetCallback,
+      Translator.trans('widget_home_tab_delete_confirm_title', {}, 'platform'),
+      Translator.trans('widget_home_tab_delete_confirm_message', {}, 'platform')
+    )
+  }
+
+  createWorkspaceWidget (tabId) {
+    const modal = this.$uibModal.open({
+      templateUrl: Routing.generate('api_get_workspace_widget_instance_creation_form', {homeTab: tabId}),
+      controller: 'WorkspaceWidgetInstanceCreationModalCtrl',
+      controllerAs: 'wfmc',
+      resolve: {
+        homeTabId: () => { return tabId },
+        callback: () => { return this._addWidgetCallback }
+      }
+    })
+
+    modal.result.then(result => {
+      if (!result) {
+        return
+      } else {
+        this._addWidgetCallback(result)
+      }
+    })
+  }
+
+  editWorkspaceWidget (widgetInstanceId, widgetHomeTabConfigId, widgetDisplayId, configurable) {
+    const modal = this.$uibModal.open({
+      templateUrl: Routing.generate(
+        'api_get_workspace_widget_instance_edition_form',
+        {whtc: widgetHomeTabConfigId, wdc: widgetDisplayId}
+      ) + '?bust=' + Math.random().toString(36).slice(2),
+      controller: 'WorkspaceWidgetInstanceEditionModalCtrl',
+      controllerAs: 'wfmc',
+      resolve: {
+        widgetInstanceId: () => { return widgetInstanceId },
+        widgetHomeTabConfigId: () => { return widgetHomeTabConfigId },
+        widgetDisplayId: () => { return widgetDisplayId },
+        configurable: () => { return configurable },
+        contentConfig: () => { return null }
+      }
+    })
+  }
+
+  deleteWorkspaceWidget (widgetHTCId) {
+    const url = Routing.generate(
+      'api_delete_workspace_widget_home_tab_config',
       {widgetHomeTabConfig: widgetHTCId}
     )
 

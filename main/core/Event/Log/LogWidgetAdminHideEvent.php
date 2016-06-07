@@ -47,7 +47,7 @@ class LogWidgetAdminHideEvent extends LogGenericEvent
         $details['type'] = $whtc->getType();
         $details['visible'] = $whtc->isVisible();
         $details['locked'] = $whtc->isLocked();
-        
+
         if (!is_null($wdc)) {
             $details['widgetDisplayConfigId'] = $wdc->getId();
             $details['row'] = $wdc->getRow();

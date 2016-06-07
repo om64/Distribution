@@ -46,8 +46,6 @@ class FormFactory
     const TYPE_USER_RESET_PWD = 'user_reset_pwd';
     const TYPE_SIMPLE_TEXT = 'simple_text';
     const TYPE_HOME_TAB = 'home_tab';
-    const TYPE_WIDGET_CONFIG = 'widget_config';
-    const TYPE_WIDGET_INSTANCE = 'widget_instance';
     const TYPE_RESOURCE_TEXT = 'resource_text';
     const TYPE_USER_FULL = 'user_full';
     const TYPE_USER_BASE_PROFILE = 'user_base_profile';
@@ -153,14 +151,6 @@ class FormFactory
         self::TYPE_HOME_TAB => array(
             'formType' => 'Claroline\CoreBundle\Form\HomeTabType',
             'entity' => 'Claroline\CoreBundle\Entity\Home\HomeTab',
-        ),
-        self::TYPE_WIDGET_CONFIG => array(
-            'formType' => 'Claroline\CoreBundle\Form\WidgetDisplayType',
-            'entity' => 'Claroline\CoreBundle\Entity\Widget\WidgetInstance',
-        ),
-        self::TYPE_WIDGET_INSTANCE => array(
-            'formType' => 'Claroline\CoreBundle\Form\WidgetInstanceType',
-            'entity' => 'Claroline\CoreBundle\Entity\Widget\WidgetInstance',
         ),
         self::TYPE_RESOURCE_TEXT => array(
             'formType' => 'Claroline\CoreBundle\Form\TextType',

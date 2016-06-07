@@ -19,9 +19,12 @@ import UserHomeTabCreationModalCtrl from './Controller/UserHomeTabCreationModalC
 import UserHomeTabEditionModalCtrl from './Controller/UserHomeTabEditionModalCtrl'
 import AdminHomeTabCreationModalCtrl from './Controller/AdminHomeTabCreationModalCtrl'
 import AdminHomeTabEditionModalCtrl from './Controller/AdminHomeTabEditionModalCtrl'
+import WorkspaceHomeTabCreationModalCtrl from './Controller/WorkspaceHomeTabCreationModalCtrl'
+import WorkspaceHomeTabEditionModalCtrl from './Controller/WorkspaceHomeTabEditionModalCtrl'
 import HomeTabService from './Service/HomeTabService'
 import DesktopHomeTabsDirective from './Directive/DesktopHomeTabsDirective'
 import AdminHomeTabsDirective from './Directive/AdminHomeTabsDirective'
+import WorkspaceHomeTabsDirective from './Directive/WorkspaceHomeTabsDirective'
 
 angular.module('HomeTabsModule', [
   'ui.bootstrap',
@@ -35,6 +38,9 @@ angular.module('HomeTabsModule', [
 .controller('UserHomeTabEditionModalCtrl', UserHomeTabEditionModalCtrl)
 .controller('AdminHomeTabCreationModalCtrl', AdminHomeTabCreationModalCtrl)
 .controller('AdminHomeTabEditionModalCtrl', AdminHomeTabEditionModalCtrl)
+.controller('WorkspaceHomeTabCreationModalCtrl', WorkspaceHomeTabCreationModalCtrl)
+.controller('WorkspaceHomeTabEditionModalCtrl', WorkspaceHomeTabEditionModalCtrl)
 .service('HomeTabService', HomeTabService)
 .directive('desktopHomeTabs', () => new DesktopHomeTabsDirective)
 .directive('adminHomeTabs', () => new AdminHomeTabsDirective)
+.directive('workspaceHomeTabs', () => new WorkspaceHomeTabsDirective)

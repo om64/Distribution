@@ -24,22 +24,15 @@ use Claroline\CoreBundle\Event\Log\LogWidgetAdminCreateEvent;
 use Claroline\CoreBundle\Event\Log\LogWidgetAdminDeleteEvent;
 use Claroline\CoreBundle\Event\Log\LogWidgetAdminEditEvent;
 use Claroline\CoreBundle\Form\HomeTabType;
-use Claroline\CoreBundle\Form\HomeTabConfigType;
-use Claroline\CoreBundle\Form\WidgetDisplayType;
-use Claroline\CoreBundle\Form\WidgetDisplayConfigType;
-use Claroline\CoreBundle\Form\WidgetHomeTabConfigType;
 use Claroline\CoreBundle\Form\WidgetInstanceConfigType;
-use Claroline\CoreBundle\Form\WidgetInstanceType;
 use Claroline\CoreBundle\Manager\ApiManager;
 use Claroline\CoreBundle\Manager\HomeTabManager;
 use Claroline\CoreBundle\Manager\WidgetManager;
 use Claroline\CoreBundle\Manager\PluginManager;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
-use Symfony\Component\Form\FormFactory;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Security\Core\Exception\AccessDeniedException;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration as EXT;
 use JMS\DiExtraBundle\Annotation as DI;
@@ -54,7 +47,6 @@ class HomeTabController extends Controller
     private $apiManager;
     private $bundles;
     private $eventDispatcher;
-    private $formFactory;
     private $homeTabManager;
     private $pluginManager;
     private $request;
@@ -64,7 +56,6 @@ class HomeTabController extends Controller
      * @DI\InjectParams({
      *     "apiManager"      = @DI\Inject("claroline.manager.api_manager"),
      *     "eventDispatcher" = @DI\Inject("event_dispatcher"),
-     *     "formFactory"     = @DI\Inject("form.factory"),
      *     "homeTabManager"  = @DI\Inject("claroline.manager.home_tab_manager"),
      *     "pluginManager"   = @DI\Inject("claroline.manager.plugin_manager"),
      *     "request"         = @DI\Inject("request"),
@@ -74,7 +65,6 @@ class HomeTabController extends Controller
     public function __construct(
         ApiManager $apiManager,
         EventDispatcherInterface $eventDispatcher,
-        FormFactory $formFactory,
         HomeTabManager $homeTabManager,
         PluginManager $pluginManager,
         Request $request,
@@ -83,7 +73,6 @@ class HomeTabController extends Controller
         $this->apiManager = $apiManager;
         $this->bundles = $pluginManager->getEnabled(true);
         $this->eventDispatcher = $eventDispatcher;
-        $this->formFactory = $formFactory;
         $this->homeTabManager = $homeTabManager;
         $this->pluginManager = $pluginManager;
         $this->request = $request;
@@ -104,7 +93,7 @@ class HomeTabController extends Controller
      */
     public function adminHomeTabsConfigAction()
     {
-        return array();
+        return [];
     }
 
     /**
@@ -138,7 +127,7 @@ class HomeTabController extends Controller
                 'tabName' => $tab->getName(),
                 'tabType' => $tab->getType(),
                 'tabIcon' => $tab->getIcon(),
-                'color' => $color
+                'color' => $color,
             ];
         }
 
@@ -147,7 +136,7 @@ class HomeTabController extends Controller
 
     /**
      * @EXT\Route(
-     *     "/api/admin/home/tab/type/create/form",
+     *     "/api/admin/home/tab/create/form",
      *     name="api_get_admin_home_tab_creation_form",
      *     options = {"expose"=true}
      * )
@@ -207,7 +196,7 @@ class HomeTabController extends Controller
             $homeTabConfig->setType($type);
             $homeTabConfig->setLocked($locked);
             $homeTabConfig->setVisible($visible);
-            $homeTabConfig->setDetails(array('color' => $color));
+            $homeTabConfig->setDetails(['color' => $color]);
             $lastOrder = $isDesktop ?
                 $this->homeTabManager->getOrderOfLastAdminDesktopHomeTabConfig() :
                 $this->homeTabManager->getOrderOfLastAdminWorkspaceHomeTabConfig();
@@ -221,7 +210,7 @@ class HomeTabController extends Controller
             $event = new LogHomeTabAdminCreateEvent($homeTabConfig);
             $this->eventDispatcher->dispatch('log', $event);
 
-            $homeTabDatas = array(
+            $homeTabDatas = [
                 'configId' => $homeTabConfig->getId(),
                 'locked' => $homeTabConfig->isLocked(),
                 'tabOrder' => $homeTabConfig->getTabOrder(),
@@ -231,16 +220,16 @@ class HomeTabController extends Controller
                 'tabName' => $homeTab->getName(),
                 'tabType' => $homeTab->getType(),
                 'tabIcon' => $homeTab->getIcon(),
-                'color' => $color
-            );
+                'color' => $color,
+            ];
 
             return new JsonResponse($homeTabDatas, 200);
         } else {
-            $options = array(
+            $options = [
                 'http_code' => 400,
                 'extra_parameters' => null,
-                'serializer_group' => 'api_home_tab'
-            );
+                'serializer_group' => 'api_home_tab',
+            ];
 
             return $this->apiManager->handleFormView(
                 'ClarolineCoreBundle:API:HomeTab\adminHomeTabCreateForm.html.twig',
@@ -328,7 +317,7 @@ class HomeTabController extends Controller
             $event = new LogHomeTabAdminEditEvent($homeTabConfig);
             $this->eventDispatcher->dispatch('log', $event);
 
-            $homeTabDatas = array(
+            $homeTabDatas = [
                 'configId' => $homeTabConfig->getId(),
                 'locked' => $homeTabConfig->isLocked(),
                 'tabOrder' => $homeTabConfig->getTabOrder(),
@@ -338,16 +327,16 @@ class HomeTabController extends Controller
                 'tabName' => $homeTab->getName(),
                 'tabType' => $homeTab->getType(),
                 'tabIcon' => $homeTab->getIcon(),
-                'color' => $color
-            );
+                'color' => $color,
+            ];
 
             return new JsonResponse($homeTabDatas, 200);
         } else {
-            $options = array(
+            $options = [
                 'http_code' => 400,
                 'extra_parameters' => null,
-                'serializer_group' => 'api_home_tab'
-            );
+                'serializer_group' => 'api_home_tab',
+            ];
 
             return $this->apiManager->handleFormView(
                 'ClarolineCoreBundle:API:HomeTab\adminHomeTabEditForm.html.twig',
@@ -376,7 +365,7 @@ class HomeTabController extends Controller
         $this->checkAdminHomeTabConfig($homeTabConfig, $homeTabType);
         $details = $homeTabConfig->getDetails();
         $color = isset($details['color']) ? $details['color'] : null;
-        $htcDatas = array(
+        $htcDatas = [
             'configId' => $homeTabConfig->getId(),
             'locked' => $homeTabConfig->isLocked(),
             'tabOrder' => $homeTabConfig->getTabOrder(),
@@ -387,8 +376,8 @@ class HomeTabController extends Controller
             'tabType' => $homeTab->getType(),
             'tabIcon' => $homeTab->getIcon(),
             'color' => $color,
-            'details' => $details
-        );
+            'details' => $details,
+        ];
         $this->homeTabManager->deleteHomeTabConfig($homeTabConfig);
         $this->homeTabManager->deleteHomeTab($homeTab);
         $event = new LogHomeTabAdminDeleteEvent($htcDatas);
@@ -405,24 +394,17 @@ class HomeTabController extends Controller
      * )
      * @EXT\Method("POST")
      *
-     * Update workspace HomeTabConfig order
+     * Update admin HomeTabConfig order
      *
      * @return \Symfony\Component\HttpFoundation\JsonResponse
      */
-    public function postAdminHomeTabConfigReorderAction(
-        $homeTabType,
-        HomeTabConfig $homeTabConfig,
-        $nextHomeTabConfigId
-    ) {
+    public function postAdminHomeTabConfigReorderAction($homeTabType, HomeTabConfig $homeTabConfig, $nextHomeTabConfigId)
+    {
         $this->checkAdminHomeTabConfig($homeTabConfig, $homeTabType);
         $homeTab = $homeTabConfig->getHomeTab();
         $this->checkAdminHomeTab($homeTab, $homeTabType);
 
-        $this->homeTabManager->reorderAdminHomeTabConfigs(
-            $homeTabType,
-            $homeTabConfig,
-            $nextHomeTabConfigId
-        );
+        $this->homeTabManager->reorderAdminHomeTabConfigs($homeTabType, $homeTabConfig, $nextHomeTabConfigId);
 
         return new JsonResponse('success', 200);
     }
@@ -446,7 +428,7 @@ class HomeTabController extends Controller
         $wdcs = $this->widgetManager->generateWidgetDisplayConfigsForAdmin($configs);
 
         foreach ($configs as $config) {
-            $widgetDatas = array();
+            $widgetDatas = [];
             $widgetInstance = $config->getWidgetInstance();
             $widget = $widgetInstance->getWidget();
             $widgetInstanceId = $widgetInstance->getId();
@@ -472,9 +454,7 @@ class HomeTabController extends Controller
             $widgetDatas['sizeX'] = $wdcs[$widgetInstanceId]->getWidth();
             $widgetDatas['color'] = $wdcs[$widgetInstanceId]->getColor();
             $details = $wdcs[$widgetInstanceId]->getDetails();
-            $widgetDatas['textTitleColor'] = isset($details['textTitleColor']) ?
-                $details['textTitleColor'] :
-                null;
+            $widgetDatas['textTitleColor'] = isset($details['textTitleColor']) ? $details['textTitleColor'] : null;
             $widgets[] = $widgetDatas;
         }
 
@@ -547,17 +527,12 @@ class HomeTabController extends Controller
             $widgetDisplayConfig->setWidth($widget->getDefaultWidth());
             $widgetDisplayConfig->setHeight($widget->getDefaultHeight());
             $widgetDisplayConfig->setColor($color);
-            $widgetDisplayConfig->setDetails(array('textTitleColor' => $textTitleColor));
-
-            $this->widgetManager->persistWidgetConfigs(
-                $widgetInstance,
-                $widgetHomeTabConfig,
-                $widgetDisplayConfig
-            );
+            $widgetDisplayConfig->setDetails(['textTitleColor' => $textTitleColor]);
+            $this->widgetManager->persistWidgetConfigs($widgetInstance, $widgetHomeTabConfig, $widgetDisplayConfig);
             $event = new LogWidgetAdminCreateEvent($homeTab, $widgetHomeTabConfig, $widgetDisplayConfig);
             $this->eventDispatcher->dispatch('log', $event);
 
-            $widgetDatas = array(
+            $widgetDatas = [
                 'widgetId' => $widget->getId(),
                 'widgetName' => $widget->getName(),
                 'configId' => $widgetHomeTabConfig->getId(),
@@ -574,16 +549,16 @@ class HomeTabController extends Controller
                 'sizeY' => $widgetDisplayConfig->getHeight(),
                 'sizeX' => $widgetDisplayConfig->getWidth(),
                 'color' => $color,
-                'textTitleColor' => $textTitleColor
-            );
+                'textTitleColor' => $textTitleColor,
+            ];
 
             return new JsonResponse($widgetDatas, 200);
         } else {
-            $options = array(
+            $options = [
                 'http_code' => 400,
                 'extra_parameters' => null,
-                'serializer_group' => 'api_widget'
-            );
+                'serializer_group' => 'api_widget',
+            ];
 
             return $this->apiManager->handleFormView(
                 'ClarolineCoreBundle:API:Widget\widgetInstanceCreateForm.html.twig',
@@ -622,7 +597,7 @@ class HomeTabController extends Controller
         return $this->apiManager->handleFormView(
             'ClarolineCoreBundle:API:Widget\widgetInstanceEditForm.html.twig',
             $form,
-            array('extra_infos' => $widget->isConfigurable())
+            ['extra_infos' => $widget->isConfigurable()]
         );
     }
 
@@ -667,7 +642,7 @@ class HomeTabController extends Controller
             $details = $wdc->getDetails();
 
             if (is_null($details)) {
-                $details = array();
+                $details = [];
             }
             $details['textTitleColor'] = $textTitleColor;
             $wdc->setDetails($details);
@@ -676,7 +651,7 @@ class HomeTabController extends Controller
             $event = new LogWidgetAdminEditEvent($widgetInstance, $whtc, $wdc);
             $this->eventDispatcher->dispatch('log', $event);
 
-            $widgetDatas = array(
+            $widgetDatas = [
                 'widgetId' => $widget->getId(),
                 'widgetName' => $widget->getName(),
                 'instanceId' => $widgetInstance->getId(),
@@ -690,17 +665,17 @@ class HomeTabController extends Controller
                 'sizeY' => $wdc->getHeight(),
                 'sizeX' => $wdc->getWidth(),
                 'color' => $color,
-                'textTitleColor' => $textTitleColor
-            );
+                'textTitleColor' => $textTitleColor,
+            ];
 
             return new JsonResponse($widgetDatas, 200);
         } else {
-            $options = array(
+            $options = [
                 'http_code' => 400,
                 'extra_parameters' => null,
                 'serializer_group' => 'api_widget',
-                'extra_infos' => $widget->isConfigurable()
-            );
+                'extra_infos' => $widget->isConfigurable(),
+            ];
 
             return $this->apiManager->handleFormView(
                 'ClarolineCoreBundle:API:Widget\widgetInstanceEditForm.html.twig',
@@ -728,7 +703,7 @@ class HomeTabController extends Controller
         $homeTab = $widgetHomeTabConfig->getHomeTab();
         $widgetInstance = $widgetHomeTabConfig->getWidgetInstance();
         $widget = $widgetInstance->getWidget();
-        $datas = array(
+        $datas = [
             'tabId' => $homeTab->getId(),
             'tabName' => $homeTab->getName(),
             'tabType' => $homeTab->getType(),
@@ -748,8 +723,8 @@ class HomeTabController extends Controller
             'order' => $widgetHomeTabConfig->getWidgetOrder(),
             'type' => $widgetHomeTabConfig->getType(),
             'visible' => $widgetHomeTabConfig->isVisible(),
-            'locked' => $widgetHomeTabConfig->isLocked()
-        );
+            'locked' => $widgetHomeTabConfig->isLocked(),
+        ];
         $this->homeTabManager->deleteWidgetHomeTabConfig($widgetHomeTabConfig);
         $this->widgetManager->removeInstance($widgetInstance);
         $event = new LogWidgetAdminDeleteEvent($datas);
@@ -773,9 +748,9 @@ class HomeTabController extends Controller
     public function putAdminWidgetDisplayUpdateAction($datas)
     {
         $jsonDatas = json_decode($datas, true);
-        $displayConfigs = array();
+        $displayConfigs = [];
 
-        foreach($jsonDatas as $data) {
+        foreach ($jsonDatas as $data) {
             $displayConfig = $this->widgetManager->getWidgetDisplayConfigById($data['id']);
 
             if (!is_null($displayConfig)) {

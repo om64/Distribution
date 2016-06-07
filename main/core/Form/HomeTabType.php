@@ -40,55 +40,55 @@ class HomeTabType extends AngularType
 
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
-        $builder->add('name', 'text', array('constraints' => new NotBlank(), 'label' => 'name'));
+        $builder->add('name', 'text', ['constraints' => new NotBlank(), 'label' => 'name']);
         $builder->add(
             'color',
             'text',
-            array(
+            [
                 'required' => false,
                 'mapped' => false,
                 'label' => 'color',
                 'data' => $this->color,
-                'attr' => array('colorpicker' => 'hex')
-            )
+                'attr' => ['colorpicker' => 'hex'],
+            ]
         );
 
         if ($this->type === 'admin') {
             $builder->add(
                 'visible',
                 'choice',
-                array(
-                    'choices' => array(
+                [
+                    'choices' => [
                         'yes' => true,
                         'no' => false,
-                    ),
+                    ],
                     'label' => 'visible',
                     'required' => true,
                     'mapped' => false,
                     // *this line is important*
                     'choices_as_values' => true,
                     'data' => $this->visible,
-                )
+                ]
             );
             $builder->add(
                 'locked',
                 'choice',
-                array(
-                    'choices' => array(
+                [
+                    'choices' => [
                         'yes' => true,
                         'no' => false,
-                    ),
+                    ],
                     'label' => 'locked',
                     'mapped' => false,
                     'required' => true,
                     'choices_as_values' => true,
                     'data' => $this->locked,
-                )
+                ]
             );
             $builder->add(
                 'roles',
                 'entity',
-                array(
+                [
                     'label' => 'roles',
                     'class' => 'ClarolineCoreBundle:Role',
                     'choice_translation_domain' => true,
@@ -104,30 +104,30 @@ class HomeTabType extends AngularType
                     'expanded' => true,
                     'multiple' => true,
                     'required' => false,
-                )
+                ]
             );
         } elseif ($this->type === 'workspace' && !is_null($this->workspace)) {
             $builder->add(
                 'visible',
                 'choice',
-                array(
-                    'choices' => array(
+                [
+                    'choices' => [
                         'yes' => true,
                         'no' => false,
-                    ),
+                    ],
                     'label' => 'visible',
                     'required' => true,
                     'mapped' => false,
                     // *this line is important*
                     'choices_as_values' => true,
                     'data' => $this->visible,
-                )
+                ]
             );
             $workspace = $this->workspace;
             $builder->add(
                 'roles',
                 'entity',
-                array(
+                [
                     'label' => 'roles',
                     'class' => 'ClarolineCoreBundle:Role',
                     'choice_translation_domain' => true,
@@ -142,7 +142,7 @@ class HomeTabType extends AngularType
                     'expanded' => true,
                     'multiple' => true,
                     'required' => false,
-                )
+                ]
             );
         }
     }
@@ -154,7 +154,7 @@ class HomeTabType extends AngularType
 
     public function setDefaultOptions(OptionsResolverInterface $resolver)
     {
-        $default = array('translation_domain' => 'platform');
+        $default = ['translation_domain' => 'platform'];
 
         if ($this->forApi) {
             $default['csrf_protection'] = false;

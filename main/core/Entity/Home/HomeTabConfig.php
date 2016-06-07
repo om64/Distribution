@@ -181,11 +181,13 @@ class HomeTabConfig
         $this->type = $type;
     }
 
-    function getDetails() {
+    public function getDetails()
+    {
         return $this->details;
     }
 
-    function setDetails($details) {
+    public function setDetails($details)
+    {
         $this->details = $details;
     }
 }

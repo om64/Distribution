@@ -7,7 +7,8 @@
       "organization-management": "modules/organization/module",
       "plugin-management": "modules/plugins/module",
       "desktop-home": "modules/desktopHome/desktopHome",
-      "admin-home-tabs-config": "modules/adminHomeTabsConfig/adminHomeTabsConfig"
+      "admin-home-tabs-config": "modules/adminHomeTabsConfig/adminHomeTabsConfig",
+      "workspace-home": "modules/workspace/tools/home/workspaceHome"
     }
   }
 }

@@ -74,12 +74,11 @@ class HomeListener
      */
     public function onDisplayWorkspaceHome(DisplayToolEvent $event)
     {
-        $params = array(
-            '_controller' => 'ClarolineCoreBundle:Workspace:displayWorkspaceHomeTab',
+        $params = [
+            '_controller' => 'ClarolineCoreBundle:Tool\Home:workspaceHomeDisplay',
             'workspace' => $event->getWorkspace()->getId(),
-            'tabId' => -1,
-        );
-        $subRequest = $this->container->get('request')->duplicate(array(), null, $params);
+        ];
+        $subRequest = $this->container->get('request')->duplicate([], null, $params);
         $response = $this->httpKernel->handle($subRequest, HttpKernelInterface::SUB_REQUEST);
 
         $event->setContent($response->getContent());

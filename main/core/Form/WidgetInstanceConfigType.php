@@ -42,8 +42,7 @@ class WidgetInstanceConfigType extends AngularType
         $visible = true,
         $creationMode = true,
         $ngAlias = 'wfmc'
-    )
-    {
+    ) {
         $this->bundles = $bundles;
         $this->color = $color;
         $this->creationMode = $creationMode;
@@ -61,14 +60,14 @@ class WidgetInstanceConfigType extends AngularType
         $builder->add(
             'name',
             'text',
-            array(
+            [
                 'label' => 'name',
-                'constraints' => new NotBlank()
-            )
+                'constraints' => new NotBlank(),
+            ]
         );
 
         if ($this->creationMode) {
-            $datas = array();
+            $datas = [];
             $datas['is_desktop'] = $this->type === 'desktop' || $this->type === 'admin';
             $datas['with_role'] = $this->withRole;
             $datas['roles'] = $this->roles;
@@ -77,7 +76,7 @@ class WidgetInstanceConfigType extends AngularType
             $builder->add(
                 'widget',
                 'entity',
-                array(
+                [
                     'label' => 'type',
                     'class' => 'Claroline\CoreBundle\Entity\Widget\Widget',
                     'choice_translation_domain' => true,
@@ -91,13 +90,12 @@ class WidgetInstanceConfigType extends AngularType
                                 return $widgetRepo->createQueryBuilder('w')
                                     ->join('w.roles', 'r')
                                     ->where('w.isDisplayableInDesktop = true')
-                                    ->andWhere("r IN (:roles)")
+                                    ->andWhere('r IN (:roles)')
                                     ->leftJoin('w.plugin', 'p')
                                     ->andWhere('CONCAT(p.vendorName, p.bundleName) IN (:bundles)')
                                     ->orWhere('w.plugin is null')
                                     ->setParameter('roles', $datas['roles'])
                                     ->setParameter('bundles', $datas['bundles']);
-
                             } else {
                                 return $widgetRepo->createQueryBuilder('w')
                                     ->where('w.isDisplayableInDesktop = true')
@@ -114,8 +112,8 @@ class WidgetInstanceConfigType extends AngularType
                                 ->orWhere('w.plugin is null')
                                 ->setParameter('bundles', $datas['bundles']);
                         }
-                    }
-                )
+                    },
+                ]
             );
         }
 
@@ -123,72 +121,72 @@ class WidgetInstanceConfigType extends AngularType
             $builder->add(
                 'visible',
                 'choice',
-                array(
-                    'choices' => array(
+                [
+                    'choices' => [
                         'yes' => true,
                         'no' => false,
-                    ),
+                    ],
                     'label' => 'visible',
                     'required' => true,
                     'mapped' => false,
                     'choices_as_values' => true,
                     'data' => $this->visible,
-                )
+                ]
             );
             $builder->add(
                 'locked',
                 'choice',
-                array(
-                    'choices' => array(
+                [
+                    'choices' => [
                         'yes' => true,
                         'no' => false,
-                    ),
+                    ],
                     'label' => 'locked',
                     'mapped' => false,
                     'required' => true,
                     'choices_as_values' => true,
                     'data' => $this->locked,
-                )
+                ]
             );
         } elseif ($this->type === 'workspace') {
             $builder->add(
                 'visible',
                 'choice',
-                array(
-                    'choices' => array(
+                [
+                    'choices' => [
                         'yes' => true,
                         'no' => false,
-                    ),
+                    ],
                     'label' => 'visible',
                     'required' => true,
                     'mapped' => false,
                     'choices_as_values' => true,
                     'data' => $this->visible,
-                )
+                ]
             );
         }
 
         $builder->add(
             'color',
             'text',
-            array(
+            [
                 'required' => false,
                 'mapped' => false,
                 'label' => 'color',
                 'data' => $this->color,
-                'attr' => array('colorpicker' => 'hex')
-            )
+                'attr' => ['colorpicker' => 'hex'],
+            ]
         );
         $builder->add(
             'textTitleColor',
             'text',
-            array(
+            [
                 'required' => false,
                 'mapped' => false,
                 'label' => 'text_title_color',
                 'data' => $this->textTitleColor,
-                'attr' => array('colorpicker' => 'hex')
-            )
+                'attr' => ['colorpicker' => 'hex'],
+            ]
         );
     }
 
@@ -199,7 +197,7 @@ class WidgetInstanceConfigType extends AngularType
 
     public function setDefaultOptions(OptionsResolverInterface $resolver)
     {
-        $default = array('translation_domain' => 'platform');
+        $default = ['translation_domain' => 'platform'];
 
         if ($this->forApi) {
             $default['csrf_protection'] = false;

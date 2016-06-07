@@ -7,7 +7,7 @@
  * file that was distributed with this source code.
  */
 
-export default class DesktopWidgetInstanceCreationModalCtrl {
+export default class AdminWidgetInstanceCreationModalCtrl {
     constructor($http, $uibModal, $uibModalInstance, ClarolineAPIService, homeTabId, callback) {
         this.$http = $http
         this.$uibModal = $uibModal

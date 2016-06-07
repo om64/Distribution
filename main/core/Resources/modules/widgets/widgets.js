@@ -18,13 +18,12 @@ import DesktopWidgetInstanceCreationModalCtrl from './Controller/DesktopWidgetIn
 import DesktopWidgetInstanceEditionModalCtrl from './Controller/DesktopWidgetInstanceEditionModalCtrl'
 import AdminWidgetInstanceCreationModalCtrl from './Controller/AdminWidgetInstanceCreationModalCtrl'
 import AdminWidgetInstanceEditionModalCtrl from './Controller/AdminWidgetInstanceEditionModalCtrl'
+import WorkspaceWidgetInstanceCreationModalCtrl from './Controller/WorkspaceWidgetInstanceCreationModalCtrl'
+import WorkspaceWidgetInstanceEditionModalCtrl from './Controller/WorkspaceWidgetInstanceEditionModalCtrl'
 import WidgetService from './Service/WidgetService'
 import WidgetsDirective from './Directive/WidgetsDirective'
 import AdminWidgetsDirective from './Directive/AdminWidgetsDirective'
-
-//import Interceptors from '../interceptorsDefault'
-//import HtmlTruster from '../html-truster/module'
-//import bootstrap from 'angular-bootstrap'
+import WorkspaceWidgetsDirective from './Directive/WorkspaceWidgetsDirective'
 
 angular.module('WidgetsModule', [
   'ui.bootstrap',
@@ -38,6 +37,9 @@ angular.module('WidgetsModule', [
 .controller('DesktopWidgetInstanceEditionModalCtrl', DesktopWidgetInstanceEditionModalCtrl)
 .controller('AdminWidgetInstanceCreationModalCtrl', AdminWidgetInstanceCreationModalCtrl)
 .controller('AdminWidgetInstanceEditionModalCtrl', AdminWidgetInstanceEditionModalCtrl)
+.controller('WorkspaceWidgetInstanceCreationModalCtrl', WorkspaceWidgetInstanceCreationModalCtrl)
+.controller('WorkspaceWidgetInstanceEditionModalCtrl', WorkspaceWidgetInstanceEditionModalCtrl)
 .service('WidgetService', WidgetService)
 .directive('widgets', () => new WidgetsDirective)
 .directive('adminWidgets', () => new AdminWidgetsDirective)
+.directive('workspaceWidgets', () => new WorkspaceWidgetsDirective)

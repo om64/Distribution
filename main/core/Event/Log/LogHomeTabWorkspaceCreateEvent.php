@@ -35,6 +35,10 @@ class LogHomeTabWorkspaceCreateEvent extends LogGenericEvent
         $details['visible'] = $htc->isVisible();
         $details['tabOrder'] = $htc->getTabOrder();
         $details['details'] = $htc->getDetails();
+        $details['workspaceId'] = $workspace->getId();
+        $details['workspaceCode'] = $workspace->getCode();
+        $details['workspaceName'] = $workspace->getName();
+        $details['workspaceGuid'] = $workspace->getGuid();
 
         parent::__construct(
             self::ACTION,

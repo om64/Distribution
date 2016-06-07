@@ -325,19 +325,10 @@ class WidgetManager
 
                     if ($userTab[$id]->getColor() !== $adminTab[$id]->getColor() ||
                         $userTab[$id]->getDetails() !== $adminTab[$id]->getDetails()) {
-
                         $userTab[$id]->setColor($adminTab[$id]->getColor());
                         $userTab[$id]->setDetails($adminTab[$id]->getDetails());
                         $changed = true;
                     }
-
-//                    if ($mappedWHTCs[$id]->isLocked()) {
-//                        $userTab[$id]->setRow($adminTab[$id]->getRow());
-//                        $userTab[$id]->setColumn($adminTab[$id]->getColumn());
-//                        $userTab[$id]->setWidth($adminTab[$id]->getWidth());
-//                        $userTab[$id]->setHeight($adminTab[$id]->getHeight());
-//                        $changed = true;
-//                    }
 
                     if ($changed) {
                         $this->om->persist($userTab[$id]);
@@ -389,7 +380,6 @@ class WidgetManager
 
         foreach ($workspaceWDCs as $wdc) {
             $widgetInstanceId = $wdc->getWidgetInstance()->getId();
-
             $workspaceTab[$widgetInstanceId] = $wdc;
         }
 

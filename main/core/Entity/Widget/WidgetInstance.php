@@ -159,12 +159,12 @@ class WidgetInstance
         $this->icon = $icon;
     }
 
-    function getTemplate()
+    public function getTemplate()
     {
         return $this->template;
     }
 
-    function setTemplate($template)
+    public function setTemplate($template)
     {
         $this->template = $template;
     }

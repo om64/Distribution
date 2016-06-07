@@ -20,19 +20,26 @@ export default class HomeTabService {
       canEdit: false,
       selectedTabId: 0,
       selectedTabConfigId: 0,
-      selectedTabIsLocked: true
+      selectedTabIsLocked: true,
+      workspaceId: null
     }
     this._addUserHomeTabCallback = this._addUserHomeTabCallback.bind(this)
+    this._addWorkspaceHomeTabCallback = this._addWorkspaceHomeTabCallback.bind(this)
     this._addAdminHomeTabCallback = this._addAdminHomeTabCallback.bind(this)
     this._updateUserHomeTabCallback = this._updateUserHomeTabCallback.bind(this)
+    this._updateWorkspaceHomeTabCallback = this._updateWorkspaceHomeTabCallback.bind(this)
     this._updateAdminHomeTabCallback = this._updateAdminHomeTabCallback.bind(this)
     this._removeAdminHomeTabCallback = this._removeAdminHomeTabCallback.bind(this)
-    this._removeUserHomeTabCallback = this._removeUserHomeTabCallback.bind(this)
     this._removeWorkspaceHomeTabCallback = this._removeWorkspaceHomeTabCallback.bind(this)
+    this._removeUserHomeTabCallback = this._removeUserHomeTabCallback.bind(this)
   }
 
   _addUserHomeTabCallback(data) {
     this.userHomeTabs.push(data)
+  }
+
+  _addWorkspaceHomeTabCallback(data) {
+    this.workspaceHomeTabs.push(data)
   }
 
   _addAdminHomeTabCallback(data) {
@@ -46,6 +53,19 @@ export default class HomeTabService {
       if (index > -1) {
         this.userHomeTabs[index]['tabName'] = data['tabName']
         this.userHomeTabs[index]['color'] = data['color']
+      }
+    }
+  }
+
+  _updateWorkspaceHomeTabCallback(data) {
+    if (data['tabId']) {
+      const index = this.workspaceHomeTabs.findIndex(tab => data['tabId'] === tab['tabId'])
+
+      if (index > -1) {
+        this.workspaceHomeTabs[index]['tabName'] = data['tabName']
+        this.workspaceHomeTabs[index]['color'] = data['color']
+        this.workspaceHomeTabs[index]['locked'] = data['locked']
+        this.workspaceHomeTabs[index]['visible'] = data['visible']
       }
     }
   }
@@ -65,7 +85,6 @@ export default class HomeTabService {
   }
 
   _removeAdminHomeTabCallback(data) {
-
     if (data['tabId']) {
       const index = this.adminHomeTabs.findIndex(tab => data['tabId'] === tab['tabId'])
 
@@ -80,7 +99,6 @@ export default class HomeTabService {
   }
 
   _removeUserHomeTabCallback(data) {
-
     if (data['tabId']) {
       const index = this.userHomeTabs.findIndex(tab => data['tabId'] === tab['tabId'])
 
@@ -95,7 +113,6 @@ export default class HomeTabService {
   }
 
   _removeWorkspaceHomeTabCallback(data) {
-
     if (data['tabId']) {
       const index = this.workspaceHomeTabs.findIndex(tab => data['tabId'] === tab['tabId'])
 
@@ -153,6 +170,18 @@ export default class HomeTabService {
     })
   }
 
+  loadWorkspaceHomeTabs() {
+    const route = Routing.generate('api_get_workspace_home_tabs', {workspace: this.options['workspaceId']})
+
+    return this.$http.get(route).then(datas => {
+      if (datas['status'] === 200) {
+        this.workspaceHomeTabs.splice(0, this.workspaceHomeTabs.length)
+        angular.merge(this.workspaceHomeTabs, datas['data'])
+        this.selectDefaultWorkspaceHomeTab()
+      }
+    })
+  }
+
   selectDefaultAdminHomeTab() {
     this.options['selectedTabId'] = 0
     this.options['selectedTabConfigId'] = 0
@@ -162,6 +191,17 @@ export default class HomeTabService {
       this.options['selectedTabConfigId'] = this.adminHomeTabs[0]['configId']
     }
     this.WidgetService.loadAdminWidgets(this.options['selectedTabId'])
+  }
+
+  selectDefaultWorkspaceHomeTab() {
+    this.options['selectedTabId'] = 0
+    this.options['selectedTabConfigId'] = 0
+
+    if (this.workspaceHomeTabs.length > 0) {
+      this.options['selectedTabId'] = this.workspaceHomeTabs[0]['tabId']
+      this.options['selectedTabConfigId'] = this.workspaceHomeTabs[0]['configId']
+    }
+    this.WidgetService.loadWorkspaceWidgets(this.options['selectedTabId'])
   }
 
   selectDefaultHomeTab() {
@@ -318,6 +358,72 @@ export default class HomeTabService {
       this._removeAdminHomeTabCallback,
       Translator.trans('home_tab_delete_confirm_title', {}, 'platform'),
       Translator.trans('home_tab_delete_confirm_message', {}, 'platform')
+    )
+  }
+
+  createWorkspaceHomeTab() {
+    const modal = this.$uibModal.open({
+      templateUrl: Routing.generate('api_get_workspace_home_tab_creation_form', {workspace: this.options['workspaceId']}),
+      controller: 'WorkspaceHomeTabCreationModalCtrl',
+      controllerAs: 'htfmc',
+      resolve: {
+        workspaceId: () => { return this.options['workspaceId'] },
+        callback: () => { return this._addWorkspaceHomeTabCallback }
+      }
+    })
+
+    modal.result.then(result => {
+      if (!result) {
+        return
+      } else {
+        this._addWorkspaceHomeTabCallback(result)
+      }
+    })
+  }
+
+  editWorkspaceHomeTab(tabConfigId) {
+    const modal = this.$uibModal.open({
+      templateUrl: Routing.generate(
+        'api_get_workspace_home_tab_edition_form',
+        {homeTabConfig: tabConfigId}
+      ) + '?bust=' + Math.random().toString(36).slice(2),
+      controller: 'WorkspaceHomeTabEditionModalCtrl',
+      controllerAs: 'htfmc',
+      resolve: {
+        workspaceId: () => { return this.options['workspaceId'] },
+        homeTabConfigId: () => { return tabConfigId },
+        callback: () => { return this._updateWorkspaceHomeTabCallback }
+      }
+    })
+
+    modal.result.then(result => {
+      if (!result) {
+        return
+      } else {
+        this._updateWorkspaceHomeTabCallback(result)
+      }
+    })
+  }
+
+  deleteWorkspaceHomeTab(tabConfigId) {
+    const url = Routing.generate('api_delete_workspace_home_tab', {homeTabConfig: tabConfigId})
+
+    this.ClarolineAPIService.confirm(
+      {url, method: 'DELETE'},
+      this._removeWorkspaceHomeTabCallback,
+      Translator.trans('home_tab_delete_confirm_title', {}, 'platform'),
+      Translator.trans('home_tab_delete_confirm_message', {}, 'platform')
+    )
+  }
+
+  pinWorkspaceHomeTab(tabConfigId) {
+    const url = Routing.generate('api_post_workspace_home_tab_bookmark', {homeTabConfig: tabConfigId})
+
+    this.ClarolineAPIService.confirm(
+      {url, method: 'DELETE'},
+      () => {},
+      Translator.trans('home_tab_bookmark_confirm_title', {}, 'platform'),
+      Translator.trans('home_tab_bookmark_confirm_message', {}, 'platform')
     )
   }
 }

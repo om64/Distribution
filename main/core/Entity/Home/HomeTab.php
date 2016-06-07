@@ -19,7 +19,6 @@ use Doctrine\ORM\Mapping as ORM;
 use JMS\Serializer\Annotation\Groups;
 use JMS\Serializer\Annotation\SerializedName;
 
-
 /**
  * @ORM\Entity
  * @ORM\Table(name="claro_home_tab")

@@ -278,7 +278,8 @@ class HomeTabManager
         $this->om->flush();
     }
 
-    public function createWorkspaceVersion(HomeTabConfig $homeTabConfig, Workspace $workspace) {
+    public function createWorkspaceVersion(HomeTabConfig $homeTabConfig, Workspace $workspace)
+    {
         $newHomeTabConfig = new HomeTabConfig();
         $newHomeTabConfig->setHomeTab($homeTabConfig->getHomeTab());
         $newHomeTabConfig->setType($homeTabConfig->getType());
@@ -292,7 +293,8 @@ class HomeTabManager
         return $newHomeTabConfig;
     }
 
-    public function createUserVersion(HomeTabConfig $homeTabConfig, User $user) {
+    public function createUserVersion(HomeTabConfig $homeTabConfig, User $user)
+    {
         $newHomeTabConfig = new HomeTabConfig();
         $newHomeTabConfig->setHomeTab($homeTabConfig->getHomeTab());
         $newHomeTabConfig->setType($homeTabConfig->getType());
@@ -753,66 +755,41 @@ class HomeTabManager
 
     public function getWidgetConfigsByUser(HomeTab $homeTab, User $user)
     {
-        return $this->widgetHomeTabConfigRepo
-            ->findWidgetConfigsByUser($homeTab, $user);
+        return $this->widgetHomeTabConfigRepo->findWidgetConfigsByUser($homeTab, $user);
     }
 
     public function getVisibleWidgetConfigsByUser(HomeTab $homeTab, User $user)
     {
-        return $this->widgetHomeTabConfigRepo
-            ->findVisibleWidgetConfigsByUser($homeTab, $user);
+        return $this->widgetHomeTabConfigRepo->findVisibleWidgetConfigsByUser($homeTab, $user);
     }
 
-    public function getWidgetConfigsByWorkspace(
-        HomeTab $homeTab,
-        Workspace $workspace
-    ) {
-        return $this->widgetHomeTabConfigRepo
-            ->findWidgetConfigsByWorkspace($homeTab, $workspace);
+    public function getWidgetConfigsByWorkspace(HomeTab $homeTab, Workspace $workspace)
+    {
+        return $this->widgetHomeTabConfigRepo->findWidgetConfigsByWorkspace($homeTab, $workspace);
     }
 
-    public function getVisibleWidgetConfigsByWorkspace(
-        HomeTab $homeTab,
-        Workspace $workspace
-    ) {
-        return $this->widgetHomeTabConfigRepo
-            ->findVisibleWidgetConfigsByWorkspace($homeTab, $workspace);
+    public function getVisibleWidgetConfigsByWorkspace(HomeTab $homeTab, Workspace $workspace)
+    {
+        return $this->widgetHomeTabConfigRepo->findVisibleWidgetConfigsByWorkspace($homeTab, $workspace);
     }
 
-    public function getVisibleWidgetConfigsByTabIdAndWorkspace(
-        $homeTabId,
-        Workspace $workspace
-    ) {
-        return $this->widgetHomeTabConfigRepo
-            ->findVisibleWidgetConfigsByTabIdAndWorkspace($homeTabId, $workspace);
+    public function getVisibleWidgetConfigsByTabIdAndWorkspace($homeTabId, Workspace $workspace)
+    {
+        return $this->widgetHomeTabConfigRepo->findVisibleWidgetConfigsByTabIdAndWorkspace($homeTabId, $workspace);
     }
 
-    public function getVisibleWidgetConfigByWidgetIdAndTabIdAndWorkspace(
-        $widgetId,
-        $homeTabId,
-        Workspace $workspace
-    ) {
-        return $this->widgetHomeTabConfigRepo
-            ->findVisibleWidgetConfigByWidgetIdAndTabIdAndWorkspace($widgetId, $homeTabId, $workspace);
+    public function getVisibleWidgetConfigByWidgetIdAndTabIdAndWorkspace($widgetId, $homeTabId, Workspace $workspace)
+    {
+        return $this->widgetHomeTabConfigRepo->findVisibleWidgetConfigByWidgetIdAndTabIdAndWorkspace($widgetId, $homeTabId, $workspace);
     }
 
-    public function getUserAdminWidgetHomeTabConfig(
-        HomeTab $homeTab,
-        WidgetInstance $widgetInstance,
-        User $user
-    ) {
-        return $this->widgetHomeTabConfigRepo->findUserAdminWidgetHomeTabConfig(
-            $homeTab,
-            $widgetInstance,
-            $user
-        );
+    public function getUserAdminWidgetHomeTabConfig(HomeTab $homeTab, WidgetInstance $widgetInstance, User $user)
+    {
+        return $this->widgetHomeTabConfigRepo->findUserAdminWidgetHomeTabConfig($homeTab,  $widgetInstance, $user);
     }
 
     public function getWidgetHomeTabConfigsByHomeTabAndType(HomeTab $homeTab, $type)
     {
-        return $this->widgetHomeTabConfigRepo->findWidgetHomeTabConfigsByHomeTabAndType(
-            $homeTab,
-            $type
-        );
+        return $this->widgetHomeTabConfigRepo->findWidgetHomeTabConfigsByHomeTabAndType($homeTab, $type);
     }
 }
