@@ -39,6 +39,12 @@ help_modal_help_tab_label: Help available for the selected region
 # i
 innova_media_resource: Media Resource
 
+# l
+label_play_mode_live: Continuous live
+label_play_mode_pause: Continuous pause
+label_play_mode_free: Free
+label_play_mode_active: Continuous active
+
 #m
 move_backward: Go to previous marker
 move_forward: Go to next marker

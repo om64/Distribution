@@ -1,4 +1,4 @@
-// JAVASCRIPT HELPERS /OBJECTS
+// JAVASCRIPT HELPERS / OBJECTS
 var strUtils;
 var javascriptUtils;
 var domUtils;
@@ -177,7 +177,7 @@ $(document).ready(function() {
         var $this = $(this);
         $this.data('before', $this.html());
         // when focused skip to the start of the region
-        var start = $(this).closest(".row.form-row.region").find('input.hidden-start').val();
+        var start = $(this).closest(".region").find('input.hidden-start').val();
         goTo(start);
         isInRegionNoteRow = true;
         return $this;

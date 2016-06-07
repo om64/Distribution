@@ -5,7 +5,7 @@
         <div class="panel panel-default">
             <!-- PANEL HEADER -->
             <div class="panel-heading">
-                {% include "InnovaMediaResourceBundle:MediaResource/Partials:players-panel-header.html.twig" with {'mode': mode} %}
+                {% include "InnovaMediaResourceBundle:MediaResource/Partials:players-panel-header.html.twig" with {'name':_resource.name, 'mode': mode} %}
             </div>
             <div class="panel-body">
                 {% if mode == "active" %}
