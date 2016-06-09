@@ -6,6 +6,7 @@ accent_secondary: Secondary accent
 accent_weak_vowel: Weak vowel
 accent_no_accent: Normal text
 alert_only_one_region_left: Only one segment left. You can not delete it!
+annotation_panel_title: Annotations
 
 # b
 back: Quit
@@ -13,7 +14,6 @@ btn_auto_pause: Auto pause
 btn_active_listening: Active listening
 btn_live_listening: Live listening
 btn_exercise_view: Exercise view
-back_to_media_resource_details: Back to %s details
 
 # c
 close: Close
@@ -51,6 +51,7 @@ move_forward: Go to next marker
 media_resource_save_regions: Save resource regions and regions options
 media_resource_options_explain: At least one view type should be enabled
 marker_drag_title: Drag & Drop
+media_resource_save: Save
 
 #n
 none: None
@@ -59,15 +60,19 @@ no_media_resource: None found.
 #p
 play_pause: Play / Pause
 previous_segment: Previous region
+play_current_region: Play / Pause current region
+play_pause_region: Play / Pause region
 
 #r
-region_help: View the planned help (selected area)
+region_help_preview: Preview planned help for the current region
 region_config: Configure region
 region_delete: Delete region
 region_config_allow_rate: Allow playback rate change
 region_config_allow_bwb: Allow backward building playback
 region_config_allow_loop: Allow loop playback
 region_config_help_text: Help text
+region_config_help_text_place_holder: You can enter multiple texts elements semicolon separated
+region_config_help_add_link: Add an http link (up to 3 links are allowed)
 region_config_help_region_title: Help segment
 region_delete_confirm_base: Are you sure you want to delete this region?
 region_delete_confirm_sub: This region is related to one or more helps.<br/> Those helps will be automatically deleted.
@@ -81,7 +86,8 @@ region_help_segment_playback_loop: Play the region in loop
 region_help_segment_playback_rate: Play the region slower
 region_help_related_segment_playback: Play the related region
 region_help_no_help_available: No help available for this region.
-resource_zip_export: Export
+resource_zip_export: Export as zip file
 
 #s
 save: Save
+show_hide_annotation_panel: Show / Hide annotation panel

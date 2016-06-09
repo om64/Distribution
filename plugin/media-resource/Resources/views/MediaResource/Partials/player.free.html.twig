@@ -19,9 +19,11 @@
         <div class="my-flex-row">
             <div class="text-center player-col" style="width:10%;">
                 <!-- Play with sort of "auto pause" mode -->
+                <!--
                 <i style="height:20%;cursor:pointer;" id="btn-auto-pause" class="fa fa-step-forward big bordered-top bordered-left bordered-right" onclick="autoPause()"></i>
+              -->
                 <!-- Play / Pause -->
-                <i style="height:80%;cursor:pointer;" id="btn-play" title="{{'play_pause' | trans({}, 'media_resource')}}" onclick="play()" class="fa fa-play big bordered-top bordered-left bordered-right bordered-bottom"></i>
+                <i style="height:100%;cursor:pointer;" id="btn-play" title="{{'play_pause' | trans({}, 'media_resource')}}" onclick="play()" class="fa fa-play big bordered-top bordered-left bordered-right bordered-bottom"></i>
             </div>
             <div class="player-col" style="width:90%;">
                 <div id="wave-timeline"></div>
@@ -91,7 +93,7 @@
 
 {% block javascripts %}
     {% javascripts output = 'vendor/claroline/plugin/innovamediaresource/js/player-free.js'
-    '@InnovaMediaResourceBundle/Resources/public/js/play-free.js' %}
+    '@InnovaMediaResourceBundle/Resources/js/play-free.js' %}
     <script src="{{ asset_url }}"></script>
     {% endjavascripts %}
 {% endblock %}

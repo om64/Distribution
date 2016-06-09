@@ -116,14 +116,8 @@ class MediaResourceController extends Controller
         }
 
         $this->get('session')->getFlashBag()->add($flashMessageType, $msg);
-
-        return $this->render('InnovaMediaResourceBundle:MediaResource:administrate.html.twig', array(
-                    '_resource' => $resource,
-                    'regions' => $resource->getRegions(),
-                    'workspace' => $workspace,
-                    'form' => $form->createView(),
-          )
-        );
+        // redirect instead of render to avoid form (re)submition on F5
+        return $this->redirectToRoute('innova_media_resource_administrate', array('workspaceId' => $workspace->getId(), 'id' => $resource->getId()));
     }
 
     /**

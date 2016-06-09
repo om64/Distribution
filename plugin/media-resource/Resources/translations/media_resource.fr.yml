@@ -6,13 +6,13 @@ accent_secondary: Accent secondaire
 accent_weak_vowel: Voyelle faible
 accent_no_accent: Texte normal
 alert_only_one_region_left: Il n'y a qu'une seule region. Vous ne pouvez pas la supprimer!
+annotation_panel_title: Annotations
 
 # b
 back: Quitter
 btn_auto_pause: Pause automatique
 btn_active_listening: Ecoute active
 btn_live_listening: Ecoute live
-back_to_media_resource_details: Retour aux details de %s
 btn_exercise_view: Vue Exercice
 
 # c
@@ -51,6 +51,7 @@ move_forward: Aller au marqueur suivant
 media_resource_save_regions: Sauvegarder les regions et leur configuration pour le ressource
 media_resource_options_explain: Au moins un type de vue doit être actif.
 marker_drag_title: Drag & Drop
+media_resource_save: Sauvegarder
 
 #n
 none: Aucune
@@ -59,15 +60,19 @@ no_media_resource: Aucune resource trouvée.
 #p
 play_pause: Play / Pause
 previous_segment: Région précédente
+play_current_region: Play / Pause pour la région courante
+play_pause_region: Play / Pause pour la région
 
 #r
-region_help: Visualiser les aides prévues (région sélectionnée)
+region_help_preview: Prévisualiser les aides prévues pour la région courante
 region_config: Configurer la région
 region_delete: Supprimer la région
 region_config_allow_rate: Autoriser le changement de vitesse de lecture
 region_config_allow_bwb: Autoriser la lecture en backward building
 region_config_allow_loop: Autoriser la lecture en boucle
 region_config_help_text: Texte d'aide
+region_config_help_text_place_holder: Vous pouvez renseigner plusieurs mots séparés par des points virgules
+region_config_help_add_link: Ajouter un lien http (jusqu'à 3 liens autorisés)
 region_config_help_region_title: Région d'aide
 region_delete_confirm_base: Etes vous sur de vouloir supprimer la région?
 region_delete_confirm_sub: Cette région est affectée à une ou plusieurs aides.<br/> Ces aides seront supprimées automatiquement.
@@ -81,7 +86,8 @@ region_help_segment_playback_loop: Lire la région en boucle
 region_help_segment_playback_rate: Lire la région plus lentement
 region_help_related_segment_playback: Lire la région connexe
 region_help_no_help_available: Aucune aide disponible pour la région.
-resource_zip_export: Exporter
+resource_zip_export: Exporter comme fichier zip
 
 #s
 save: Sauvegarder
+show_hide_annotation_panel: Montrer / Cacher le panel d'annotation

@@ -129,14 +129,23 @@ var actions = {
         }
     },
     zip: function() {
-
         var url = Routing.generate('mediaresource_zip_export', {
             workspaceId: wId,
             id: mrId,
             data: regions
         });
-
         location.href = url;
+    },
+    toggleOptionsPanel: function() {
+        $('.options-panel').find('.panel-body').toggle();
+        $('.btn-options-toggle').hasClass('fa-chevron-down') ? $('.btn-options-toggle').removeClass('fa-chevron-down').addClass('fa-chevron-up') : $('.btn-options-toggle').removeClass('fa-chevron-up').addClass('fa-chevron-down');
+    },
+    toggleAnnotationPanel: function(){
+      $('.annotation-panel').find('.panel-body').toggle();
+      $('.btn-annotation-toggle').hasClass('fa-chevron-down') ? $('.btn-annotation-toggle').removeClass('fa-chevron-down').addClass('fa-chevron-up') : $('.btn-annotation-toggle').removeClass('fa-chevron-up').addClass('fa-chevron-down');
+    },
+    previewCurrentRegion: function() {
+        playRegionFrom(currentRegion.start);
     }
 };
 
@@ -153,7 +162,7 @@ $(document).ready(function() {
     mrId = $('input[name="mrId"]').val();
 
     // toggle color on config region buttons if needed (if there are some help available on a region the button must be colored)
-    toggleConfigButtonColor();
+    updateConfigButtonColor();
 
     // bind data-action events
     $("button[data-action]").click(function() {
@@ -165,11 +174,11 @@ $(document).ready(function() {
 
 
     /* SWITCHES INPUTS */
-    var toggleAnnotationCheck = $("[name='toggle-annotation-checkbox']").bootstrapSwitch('state', true);
+  /*  var toggleAnnotationCheck = $("[name='toggle-annotation-checkbox']").bootstrapSwitch('state', true);
     $(toggleAnnotationCheck).on('switchChange.bootstrapSwitch', function(event, state) {
         $('.annotation-buttons-container').toggle(transitionType);
         $(this).trigger('blur'); // remove focus to avoid spacebar interraction
-    });
+    });*/
 
 
     // CONTENT EDITABLE CHANGE EVENT MAPPING
@@ -303,50 +312,6 @@ $(document).ready(function() {
     });
     /* /WAVESURFER */
 
-    /* SAVE REGIONS FORM SUBMIT */
-    /*$('#media-resource-regions-form').on('submit', function(e) {
-        e.preventDefault();
-        var url = $(this).attr('action');
-        var type = $(this).attr('method');
-        var data = $(this).serialize();
-        $.ajax({
-            url: url,
-            type: type,
-            data: data,
-            success: function(response) {
-                showSuccessFlashBag(response);
-            },
-            error: function(reponse) {
-                showErrorFlashBag(response);
-            }
-        });
-    });*/
-    /* END SAVE REGIONS FORM SUBMIT */
-
-    /* SAVE OPTIONS FORM SUBMIT */
-    /*$('#mr-options-form').on('submit', function(e) {
-        e.preventDefault();
-        var url = $(this).attr('action');
-        var type = $(this).attr('method');
-        var data = $(this).serialize();
-        $.ajax({
-            url: url,
-            type: type,
-            data: data,
-            success: function(response) {
-                $('#mr-options-modal').modal('hide');
-                showSuccessFlashBag(response);
-                var lang = $('#media_resource_options_ttsLanguage').val();
-                $('input[name=tts]').val(lang);
-            },
-            error: function(reponse) {
-                $('#mr-options-modal').modal('hide');
-                showErrorFlashBag(response);
-            }
-        });
-    });*/
-    /* /SAVE OPTIONS FORM SUBMIT */
-
 });
 // ======================================================================================================== //
 // DOCUMENT READY END
@@ -363,31 +328,7 @@ $('body').on('change', '#media_resource_options_mode', function(e) {
         $('#transcription-row').hide();
     }
 });
-/*
-function showSuccessFlashBag(message) {
-    var template = '<div class="alert alert-dismissable alert-success">';
-    template += '<button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>';
-    template += message;
-    template += '</div>';
-    $('.alert-messages').empty();
-    $('.alert-messages').append(template);
-    $("html, body").animate({
-        scrollTop: 0
-    }, "slow");
-}
 
-function showErrorFlashBag(message) {
-    $('.alert-messages').empty();
-    var template = '<div class="alert alert-dismissable alert-danger">';
-    template += '<button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>';
-    template += message;
-    template += '</div>';
-    $('.alert-messages').append(template);
-    $("html, body").animate({
-        scrollTop: 0
-    }, "slow");
-}
-*/
 function getRegionFromTime(time) {
     var currentTime = time ? time : wavesurfer.getCurrentTime();
     var region;
@@ -490,9 +431,17 @@ function initRegionsAndMarkers() {
         var regionRow = domUtils.addRegionToDom(region, javascriptUtils, $appendTo);
         var btn = $(regionRow).find('button.fa-trash-o');
         $(btn).attr('data-uuid', region.uuid);
-        // @TODO add a message : "a default region has been created. Please save the changes before leaving the page"
+        updateRegionRowIndexes();
     }
     return true;
+}
+
+function updateRegionRowIndexes(){
+  var index = 1;
+  $('.row-index').each(function(){
+    $(this).text(index);
+    index++;
+  });
 }
 
 function loadAudio(data) {
@@ -654,7 +603,7 @@ function configRegion(elem) {
             playing = false;
         }
         // color the config button if any value in config parameters
-        toggleConfigButtonColor();
+        updateConfigButtonColor();
     });
 
     configModal.modal("show");
@@ -1040,6 +989,7 @@ function deleteRegion(elem) {
                             markers.splice(i, 1);
                         }
                     }
+                    updateRegionRowIndexes();
                 }
             });
         }
@@ -1054,6 +1004,10 @@ function playRegion(elem) {
     var start = Number($(elem).closest('.region').find('.hidden-start').val());
     playRegionFrom(start + 0.1);
 }
+
+/*function playCurrentRegion(){
+  playRegionFrom(currentRegion.start);
+}*/
 
 function playRegionFrom(start) {
     var region = getRegionFromTime(start);
@@ -1110,12 +1064,12 @@ function getTimeFromPosition(position) {
 /**
  * Add a color to region config button if any config parameter found for the row
  */
-function toggleConfigButtonColor() {
+function updateConfigButtonColor() {
     $('.region').each(function() {
         if (checkIfRowHasConfigValue($(this))) {
-            $(this).find('.fa.fa-cog').addClass('btn-warning').removeClass('btn-default');
+            $(this).find('.fa.fa-cog').closest('.btn').addClass('btn-warning').removeClass('btn-default');
         } else {
-            $(this).find('.fa.fa-cog').removeClass('btn-warning').addClass('btn-default');
+            $(this).find('.fa.fa-cog').closest('.btn').removeClass('btn-warning').addClass('btn-default');
         }
     });
 }
