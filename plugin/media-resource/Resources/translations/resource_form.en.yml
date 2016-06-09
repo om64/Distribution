@@ -1,6 +1,6 @@
 
 # o
-options_form_modal_title: Resource options
+options_panel_title: Resource options
 options_form_view_mode: Play mode
 options_form_enable_text_transcription: Display textual transcription
 options_form_tts_language: Text to speech language
@@ -14,3 +14,6 @@ options_form_view_mode_choices_live: Continuous live
 options_form_view_mode_choices_pause: Continuous pause
 options_form_view_mode_choices_free: Free
 options_form_view_mode_choices_active: Continuous active
+
+# s
+show_hide_options_panel: Show / Hide options panel

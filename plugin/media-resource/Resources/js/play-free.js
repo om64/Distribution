@@ -22,6 +22,8 @@ var isInAutoPause = false;
 var showTextTranscription;
 var currentHelpTextIndex = 0;
 var currentAutoPauseRegion;
+var bbbTimeout; // timeout for backward building
+var autoPauseTimeOut;
 
 var wavesurferOptions = {
     container: '#waveform',
@@ -144,7 +146,7 @@ $(document).ready(function() {
             helpRegion = current;
             // hide any previous help info
             $('.region-highlight').remove();
-            $('.help-container').hide();
+            hideHelp();
             // show current help infos
             currentHelpTextIndex = 0;
             showHelp();
@@ -152,7 +154,7 @@ $(document).ready(function() {
         } else {
             if (helpRegion && current && current.id != helpRegion.id) {
                 $('.region-highlight').remove();
-                $('.help-container').hide();
+                hideHelp();
                 currentHelpTextIndex = 0;
             }
             wavesurfer.play();
@@ -226,8 +228,7 @@ function play() {
     if (playing) {
         $('#btn-play').removeClass('fa-play').addClass('fa-pause');
         $('.region-highlight').remove();
-        $('.help-container').hide();
-        hideHelpText();
+        hideHelp();
     } else {
         // show available help if any
         $('#btn-play').removeClass('fa-pause').addClass('fa-play');
@@ -242,9 +243,12 @@ function autoPause() {
         helpAudioPlayer.pause();
         if (wavesurfer.isPlaying()) wavesurfer.pause();
         $('#btn-auto-pause').removeClass('fa-pause').addClass('fa-step-forward');
+        window.clearTimeout(autoPauseTimeOut);
         isInAutoPause = false;
         playing = false;
+        $('#waveform').prop('disabled', false);
     } else {
+        $('#waveform').prop('disabled', true);
         $('#btn-auto-pause').removeClass('fa-step-forward').addClass('fa-pause');
         $('#btn-auto-pause');
         isInAutoPause = true;
@@ -252,17 +256,6 @@ function autoPause() {
         var region = getRegionFromTime(wavesurfer.getCurrentTime());
         playAutoPause(region);
     }
-
-    /*var region = wavesurfer.createRegion(options);
-    region.play();
-    wavesurefer.once('pause', function(){
-
-    });*/
-    // get region from current time
-    // play the region from current time until the end of the region
-    // get next region if any
-    // play the region from current time until the end of the region
-
 }
 
 function getRegionFromTime(time) {
@@ -287,19 +280,15 @@ function playAutoPause(region) {
   };
   var wRegion = wavesurfer.addRegion(options);
   wRegion.play();
-  console.log(region);
   wavesurfer.once('pause', function(){
       wavesurfer.clearRegions();
       var nextRegion = getNextRegion(region.end);
       if (nextRegion) {
-          window.setTimeout(function() {
-              console.log('nextRegion');
-              console.log(nextRegion);
+          autoPauseTimeOut = window.setTimeout(function() {
               playAutoPause(nextRegion);
           }, 2000);
       } else {
           isInAutoPause = false;
-          $('#btn-auto-pause').removeClass('fa-pause').addClass('fa-step-forward');
       }
   });
 }
@@ -349,6 +338,7 @@ function playSlowly() {
         color: 'rgba(0,0,0,0)' //invisible
     }
     var region = wavesurfer.addRegion(options);
+    // stop playing if playing
     if (playing) {
         playing = false;
         wavesurfer.pause();
@@ -364,6 +354,7 @@ function playSlowly() {
         region.play();
         helpAudioPlayer.play();
         playing = true;
+        // at the end of the region stop every audio readers
         wavesurfer.once('pause', function() {
             playing = false;
             //wavesurfer.pause();
@@ -407,7 +398,7 @@ function sayIt(text, callback) {
     var voices = window.speechSynthesis.getVoices();
     if (voices.length === 0) {
         // chrome hack...
-        window.setTimeout(function() {
+        bbbTimeout = window.setTimeout(function() {
             voices = window.speechSynthesis.getVoices();
             continueToSay(utterance, voices, lang, callback);
         }, 200);
@@ -472,10 +463,16 @@ function showHelp() {
         } else {
             $('#btn-text').prop('disabled', true);
             $('.my-label').hide();
-
         }
         $root.show();
     }
+}
+
+function hideHelp(){
+  $('.help-container').hide();
+  currentHelpTextIndex = 0;
+  // hide the help text container
+  hideHelpText();
 }
 
 function showHelpText() {
@@ -504,6 +501,7 @@ function showHelpText() {
 
 function hideHelpText() {
     currentHelpTextIndex = 0;
+    $('.my-label').text('1');
     $('.help-text-container').hide();
 }
 

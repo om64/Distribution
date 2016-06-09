@@ -117,6 +117,8 @@ var DomUtils = {
         //text
         var text = $(elem).closest('div.region').find('.hidden-config-text');
 
+        //var links = $(elem).closest('div.region').find('.hidden-config-links');
+
         var html = '';
         html += '<div class="row">';
         html += '   <div class="col-md-12">';
@@ -145,16 +147,23 @@ var DomUtils = {
             html += '               <input type="checkbox" name="rate" value="rate" checked>';
         else
             html += '               <input type="checkbox" name="rate" value="rate">';
-        html += Translator.trans('region_config_allow_rate', {}, 'media_resource');
+        html += Translator.trans('region_config_allow_rate', {}, 'media_resource');//'               Autoriser le changement de la vitesse de lecture';
         html += '               </label>';
         html += '           </div>';
         html += '           <hr/>';
         // help text
         html += '           <div class="form-group">';
-        html += '               <label class="col-md-4 control-label" for="help-text">' + Translator.trans('region_config_help_text', {}, 'media_resource') + '</label>';
-        html += '               <input type="text" name="help-text" placeholder="' + Translator.trans('region_config_help_text_place_holder', {}, 'media_resource') + '" class="form-control" value="' + text.val() + '">';
+        html += '               <label class="control-label" for="help-text">' + Translator.trans('region_config_help_text', {}, 'media_resource') + '</label>';
+        html += '               <input type="text" name="help-text" class="form-control" placeholder="'+Translator.trans('region_config_help_text_place_holder', {}, 'media_resource')+'" value="' + text.val() + '">';
         html += '           </div>';
         html += '           <hr/>';
+        // help links
+        /*html += '           <div class="form-group">';
+        html += '               <label class="control-label" for="help-text">' + Translator.trans('region_config_help_text', {}, 'media_resource') + '</label>';
+        html += '               <span class="btn btn-default fa fa-plus" title="' + Translator.trans('region_config_help_add_link', {}, 'media_resource') + '"></span>';
+        html += '               <input type="text" name="help-text" class="form-control" placeholder="'+Translator.trans('region_config_help_text_place_holder', {}, 'media_resource')+'" value="' + text.val() + '">';
+        html += '           </div>';
+        html += '           <hr/>';*/
         // region dropdown
         html += '           <div class="form-group">';
         html += '               <label class="col-md-4 control-label" for="has-rate">' + Translator.trans('region_config_help_region_title', {}, 'media_resource') + '</label>';

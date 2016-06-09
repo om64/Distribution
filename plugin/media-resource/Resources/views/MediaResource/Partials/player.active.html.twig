@@ -37,11 +37,9 @@
                     <div class="col-xs-1">
                         <div class="time-text end">{{ region.end | hmsTime }}</div>
                     </div>
-
                     <div class="col-xs-10">
                         <div class="text-left note">{{ region.note | raw }}</div>
                     </div>
-
                     <input type="hidden" class="hidden-start" name="start[]" value="{{ region.start }}" required="required">
                     <input type="hidden" class="hidden-end" name="end[]" value="{{ region.end }}" required="required">
                     <input type="hidden" class="hidden-note" name="note[]" value="{{ region.note }}">
@@ -62,7 +60,7 @@
 {% block javascripts %}
 
 {% javascripts output='vendor/claroline/plugin/innovamediaresource/js/player-active.js'
-'@InnovaMediaResourceBundle/Resources/public/js/play.active.js'
+'@InnovaMediaResourceBundle/Resources/js/play.active.js'
  %}
 
 <script src="{{ asset_url }}"></script>
