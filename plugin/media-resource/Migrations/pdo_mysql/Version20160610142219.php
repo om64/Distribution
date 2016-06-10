@@ -8,9 +8,9 @@ use Doctrine\DBAL\Schema\Schema;
 /**
  * Auto-generated migration based on mapping information: modify it with caution
  *
- * Generation date: 2016/06/01 09:21:16
+ * Generation date: 2016/06/10 02:22:20
  */
-class Version20160601092114 extends AbstractMigration
+class Version20160610142219 extends AbstractMigration
 {
     public function up(Schema $schema)
     {
@@ -21,6 +21,15 @@ class Version20160601092114 extends AbstractMigration
                 url VARCHAR(255) NOT NULL, 
                 type VARCHAR(255) NOT NULL, 
                 INDEX IDX_E0A22F7E7E5AEFB6 (media_resource_id), 
+                PRIMARY KEY(id)
+            ) DEFAULT CHARACTER SET utf8 COLLATE utf8_unicode_ci ENGINE = InnoDB
+        ");
+        $this->addSql("
+            CREATE TABLE media_resource_help_link (
+                id INT AUTO_INCREMENT NOT NULL, 
+                region_config_id INT NOT NULL, 
+                url VARCHAR(510) NOT NULL, 
+                INDEX IDX_F1D62D0C771B52B7 (region_config_id), 
                 PRIMARY KEY(id)
             ) DEFAULT CHARACTER SET utf8 COLLATE utf8_unicode_ci ENGINE = InnoDB
         ");
@@ -63,9 +72,17 @@ class Version20160601092114 extends AbstractMigration
                 has_loop TINYINT(1) NOT NULL, 
                 has_backward TINYINT(1) NOT NULL, 
                 has_rate TINYINT(1) NOT NULL, 
-                help_text VARCHAR(255) NOT NULL, 
                 help_region_uuid VARCHAR(255) NOT NULL, 
                 UNIQUE INDEX UNIQ_2EEE09F098260155 (region_id), 
+                PRIMARY KEY(id)
+            ) DEFAULT CHARACTER SET utf8 COLLATE utf8_unicode_ci ENGINE = InnoDB
+        ");
+        $this->addSql("
+            CREATE TABLE media_resource_help_text (
+                id INT AUTO_INCREMENT NOT NULL, 
+                region_config_id INT NOT NULL, 
+                text VARCHAR(255) NOT NULL, 
+                INDEX IDX_FCF1133A771B52B7 (region_config_id), 
                 PRIMARY KEY(id)
             ) DEFAULT CHARACTER SET utf8 COLLATE utf8_unicode_ci ENGINE = InnoDB
         ");
@@ -73,6 +90,11 @@ class Version20160601092114 extends AbstractMigration
             ALTER TABLE media_resource_media 
             ADD CONSTRAINT FK_E0A22F7E7E5AEFB6 FOREIGN KEY (media_resource_id) 
             REFERENCES media_resource (id)
+        ");
+        $this->addSql("
+            ALTER TABLE media_resource_help_link 
+            ADD CONSTRAINT FK_F1D62D0C771B52B7 FOREIGN KEY (region_config_id) 
+            REFERENCES media_resource_region_config (id)
         ");
         $this->addSql("
             ALTER TABLE media_resource 
@@ -95,6 +117,11 @@ class Version20160601092114 extends AbstractMigration
             ADD CONSTRAINT FK_2EEE09F098260155 FOREIGN KEY (region_id) 
             REFERENCES media_resource_region (id)
         ");
+        $this->addSql("
+            ALTER TABLE media_resource_help_text 
+            ADD CONSTRAINT FK_FCF1133A771B52B7 FOREIGN KEY (region_config_id) 
+            REFERENCES media_resource_region_config (id)
+        ");
     }
 
     public function down(Schema $schema)
@@ -116,7 +143,18 @@ class Version20160601092114 extends AbstractMigration
             DROP FOREIGN KEY FK_2EEE09F098260155
         ");
         $this->addSql("
+            ALTER TABLE media_resource_help_link 
+            DROP FOREIGN KEY FK_F1D62D0C771B52B7
+        ");
+        $this->addSql("
+            ALTER TABLE media_resource_help_text 
+            DROP FOREIGN KEY FK_FCF1133A771B52B7
+        ");
+        $this->addSql("
             DROP TABLE media_resource_media
+        ");
+        $this->addSql("
+            DROP TABLE media_resource_help_link
         ");
         $this->addSql("
             DROP TABLE media_resource_options
@@ -129,6 +167,9 @@ class Version20160601092114 extends AbstractMigration
         ");
         $this->addSql("
             DROP TABLE media_resource_region_config
+        ");
+        $this->addSql("
+            DROP TABLE media_resource_help_text
         ");
     }
 }

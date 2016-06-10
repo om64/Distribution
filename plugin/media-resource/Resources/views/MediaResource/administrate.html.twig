@@ -109,6 +109,9 @@
                             <div class="col-md-12 text-center regions-container">
                                 {% if regions | length > 0 %}
                                     {% for region in regions %}
+                                    <!--
+                                        <div class="row region {% if loop.index is odd %} region-odd {% else %} region-even {% endif %}" id="{{region.uuid}}" data-uuid="{{region.uuid}}">
+-->                                     <!-- Visible Region data  -->
                                         <div class="row region" id="{{region.uuid}}" data-uuid="{{region.uuid}}">
                                             <div class="col-xs-1 text-center">
                                                 <div class="time-text start">{{ region.start | hmsTime }}</div>
@@ -130,25 +133,30 @@
                                                     <button role="button" type="button" class="btn btn-default" title="{{'region_config' | trans({}, 'media_resource')}}" onclick="configRegion(this);">
                                                       <i class="fa fa-cog"></i>
                                                     </button>
-                                                    <button role="button" type="button" class="btn btn-danger" title="{{'region_delete' | trans({}, 'media_resource')}}" onclick="deleteRegion(this);">
+                                                    <button role="button" type="button" class="btn btn-danger" data-uuid="{{ region.uuid }}" title="{{'region_delete' | trans({}, 'media_resource')}}" onclick="deleteRegion(this);">
                                                       <i class="fa fa-trash-o"></i>
                                                     </button>
                                                 </div>
                                             </div>
+                                            <!-- Hidden Region data  -->
                                             <input type="hidden" class="hidden-start" name="start[]" value="{{ region.start }}" required="required">
                                             <input type="hidden" class="hidden-end" name="end[]" value="{{ region.end }}" required="required">
                                             <input type="hidden" class="hidden-note" name="note[]" value="{{ region.note }}">
                                             <input type="hidden" class="hidden-region-id" name="region-id[]" value="{{ region.id }}">
                                             <input type="hidden" class="hidden-region-uuid" name="region-uuid[]" value="{{ region.uuid }}">
-                                            <!-- Region config  -->
+                                            <!-- Hidden Region Config data  -->
                                             <input type="hidden" class="hidden-config-help-region-uuid" name="help-region-uuid[]" value="{{ region.regionConfig.helpRegionUuid ? region.regionConfig.helpRegionUuid : '' }}">
                                             <input type="hidden" class="hidden-config-loop" name="loop[]" value="{{ region.regionConfig.hasLoop ? '1' : '0' }}">
                                             <input type="hidden" class="hidden-config-backward" name="backward[]" value="{{ region.regionConfig.hasBackward ? '1' : '0' }}">
                                             <input type="hidden" class="hidden-config-rate" name="rate[]" value="{{ region.regionConfig.hasRate ? '1' : '0' }}">
-                                            <input type="hidden" class="hidden-config-text" name="text[]" value="{{ region.regionConfig.helpText ? region.regionConfig.helpText : '' }}">
 
+                                            {% for i in 0..2 %}
+                                              <input type="hidden" class="hidden-help-texts" name="help-texts[]" value="{{ region.regionConfig.helpTexts[i] is defined ? region.regionConfig.helpTexts[i].text : '' }}">
+                                            {% endfor %}
+                                            {% for i in 0..2 %}
+                                              <input type="hidden" class="hidden-help-links" name="help-links[]" value="{{region.regionConfig.helpLinks[i] is defined ? region.regionConfig.helpLinks[i].url : '' }}">
+                                            {% endfor %}
                                         </div>
-                                        <hr/>
                                     {% endfor %}
                                 {% endif %}
 

@@ -204,7 +204,6 @@ $(document).ready(function() {
         initRegions();
         if (regions.length > 0) {
             currentRegion = regions[0];
-            //domUtils.highlightRegionRow(currentRegion);
         }
     });
 
@@ -213,8 +212,6 @@ $(document).ready(function() {
         if (current && currentRegion && current.uuid != currentRegion.uuid) {
             // update current region
             currentRegion = current;
-            // highlight region dom row
-            //domUtils.highlightRegionRow(currentRegion);
         }
     });
 
@@ -224,8 +221,6 @@ $(document).ready(function() {
         if (current && currentRegion && current.uuid != currentRegion.uuid) {
             // update current region
             currentRegion = current;
-            // show help text
-            //domUtils.highlightRegionRow(currentRegion);
         }
     });
     /* /WAVESURFER */
@@ -262,10 +257,22 @@ function initRegions() {
         var loop = $(this).find('input.hidden-config-loop').val() === '1';
         var backward = $(this).find('input.hidden-config-backward').val() === '1';
         var rate = $(this).find('input.hidden-config-rate').val() === '1';
-        var texts = $(this).find('input.hidden-config-text').val() !== '' ? $(this).find('input.hidden-config-text').val().split(';') : false;
-        var hasHelp = rate || backward || (texts && texts.length > 0) || loop || helpUuid !== '';
+        var texts = [];
+        var links = [];
+        $(this).find('.hidden-help-texts').each(function() {
+            if ($(this).val() !== '') {
+                texts.push($(this).val());
+            }
+        });
+        $(this).find('.hidden-help-links').each(function() {
+            if ($(this).val() !== '') {
+                links.push($(this).val());
+            }
+        });
+        //  var texts = $(this).find('input.hidden-config-text').val() !== '' ? $(this).find('input.hidden-config-text').val().split(';') : false;
+        var hasHelp = rate || backward || texts.length > 0 || links.length > 0 || loop || helpUuid !== '';
         var region = {
-            id: id,// @TODO check if still usefull
+            id: id,
             uuid: uuid,
             start: Number(start),
             end: Number(end),
@@ -275,7 +282,8 @@ function initRegions() {
             loop: loop,
             backward: backward,
             rate: rate,
-            texts: texts
+            texts: texts,
+            links: links
         };
         regions.push(region);
 

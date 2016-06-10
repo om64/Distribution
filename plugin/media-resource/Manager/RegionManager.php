@@ -5,6 +5,8 @@ namespace Innova\MediaResourceBundle\Manager;
 use Doctrine\ORM\EntityManager;
 use Innova\MediaResourceBundle\Entity\MediaResource;
 use Innova\MediaResourceBundle\Entity\Region;
+use Innova\MediaResourceBundle\Entity\HelpLink;
+use Innova\MediaResourceBundle\Entity\HelpText;
 use Innova\MediaResourceBundle\Entity\RegionConfig;
 use JMS\DiExtraBundle\Annotation as DI;
 
@@ -67,7 +69,8 @@ class RegionManager
         $entity->setUuid($region->getUuid());
 
         $oldConfig = $region->getRegionConfig();
-        $regionConfig->setHelpText($oldConfig->getHelpText());
+        $regionConfig->setHelpTexts($oldConfig->getHelpTexts());
+        $regionConfig->setHelpLinks($oldConfig->getHelpLinks());
         $regionConfig->setHasLoop($oldConfig->getHasLoop());
         $regionConfig->setHasRate($oldConfig->getHasRate());
         $regionConfig->setHasBackward($oldConfig->getHasBackward());
@@ -86,8 +89,15 @@ class RegionManager
     {
         $regions = $this->getRegionsFromData($data);
 
+        //print_r($regions);
+        //die;
+
         $this->deleteUnusedRegions($mr, $regions);
-        // update or create
+
+        // 3 help texts and 3 help links per region ()
+        $helpTextsOrLinksIndex = 0;
+
+        // update or create région
         foreach ($regions as $region) {
             // update
             if ($region['id']) {
@@ -102,21 +112,53 @@ class RegionManager
                 $entity->setRegionConfig($regionConfig);
             }
 
-            if ($entity) {
-                $entity->setStart($region['start']);
-                $entity->setEnd($region['end']);
-                $entity->setNote($region['note']);
-                $entity->setUuid($region['uuid']);
+            $entity->setStart($region['start']);
+            $entity->setEnd($region['end']);
+            $entity->setNote($region['note']);
+            $entity->setUuid($region['uuid']);
 
-                $config = $entity->getRegionConfig();
-                $config->setHelpText($region['text']);
-                $config->setHasLoop($region['loop']);
-                $config->setHasRate($region['rate']);
-                $config->setHasBackward($region['backward']);
-                $config->setHelpRegionUuid($region['help-region-uuid']);
+            $config = $entity->getRegionConfig();
 
-                $this->save($entity);
+            $config->setHasLoop($region['loop']);
+            $config->setHasRate($region['rate']);
+            $config->setHasBackward($region['backward']);
+            $config->setHelpRegionUuid($region['help-region-uuid']);
+            $helpTexts = $config->getHelpTexts();
+            if (count($helpTexts) > 0) {
+                $i = 0;
+                foreach ($helpTexts as $helpText) {
+                    $helpText->setText($region['helpTexts'][$i]);
+                    ++$i;
+                }
+            } else {
+                $i = 0;
+                foreach ($region['helpTexts'] as $helpText) {
+                    $help = new HelpText();
+                    $help->setText($region['helpTexts'][$i]);
+                    $help->setRegionConfig($config);
+                    $config->addHelpText($help);
+                    ++$i;
+                }
             }
+            $helpLinks = $config->getHelpLinks();
+            if (count($helpLinks) > 0) {
+                $i = 0;
+                foreach ($helpLinks as $helpLink) {
+                    $helpLink->setUrl($region['helpLinks'][$i]);
+
+                    ++$i;
+                }
+            } else {
+                $i = 0;
+                foreach ($region['helpLinks'] as $helpText) {
+                    $help = new HelpLink();
+                    $help->setUrl($region['helpLinks'][$i]);
+                    $help->setRegionConfig($config);
+                    $config->addHelpLink($help);
+                    ++$i;
+                }
+            }
+            $this->save($entity);
         }
 
         return $mr;
@@ -141,9 +183,23 @@ class RegionManager
         $loops = $data['loop'];
         $backwards = $data['backward'];
         $rates = $data['rate'];
-        $texts = $data['text'];
+        $texts = $data['help-texts'];
+        $links = $data['help-links'];
 
         $nbData = count($starts);
+
+        $helpTexts = [];
+        $helpLinks = [];
+        // always 3 texts / links per region ... but each one might be empty
+        $nbHelpTextsOrLinks = $nbData * 3;
+
+        // set region texts and links
+        $index = 0;
+        for ($i = 0; $i < $nbHelpTextsOrLinks; $i += 3) {
+            $helpTexts[$index] = [$texts[$i], $texts[$i + 1], $texts[$i + 2]];
+            $helpLinks[$index] = [$links[$i], $links[$i + 1], $links[$i + 2]];
+            ++$index;
+        }
 
         for ($i = 0; $i < $nbData; ++$i) {
             $regions[] = array(
@@ -156,7 +212,8 @@ class RegionManager
                 'loop' => $loops[$i],
                 'backward' => $backwards[$i],
                 'rate' => $rates[$i],
-                'text' => $texts[$i],
+                'helpTexts' => $helpTexts[$i],
+                'helpLinks' => $helpLinks[$i],
             );
         }
 

@@ -65,20 +65,22 @@ play_pause_region: Play / Pause region
 
 #r
 region_help_preview: Preview planned help for the current region
-region_config: Configure region
+region_config: Configure help for the region
 region_delete: Delete region
 region_config_allow_rate: Allow playback rate change
 region_config_allow_bwb: Allow backward building playback
 region_config_allow_loop: Allow loop playback
-region_config_help_text: Help text
-region_config_help_text_place_holder: You can enter multiple texts elements semicolon separated
-region_config_help_add_link: Add an http link (up to 3 links are allowed)
-region_config_help_region_title: Help segment
+region_config_help_texts: Help texts
+region_config_help_texts_placeholder: Add a help text or leave empty
+region_config_help_links: Help links
+region_config_help_links_placeholder: Add a help link or leave empty
+region_config_help_region_title: Related region
 region_delete_confirm_base: Are you sure you want to delete this region?
 region_delete_confirm_sub: This region is related to one or more helps.<br/> Those helps will be automatically deleted.
 resource_update_success: Resource update successfull.
 resource_update_error: An error occured while updating resource.
 region_help_help_text_label: Show me the textual element
+region_help_help_links_label: Links
 region_help_segment_playback_label: Region playback
 region_help_segment_playback: Play the region
 region_help_segment_playback_backward: Play the region with backward building

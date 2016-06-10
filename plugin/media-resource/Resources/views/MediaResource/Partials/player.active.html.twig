@@ -45,12 +45,18 @@
                     <input type="hidden" class="hidden-note" name="note[]" value="{{ region.note }}">
                     <input type="hidden" class="hidden-region-id" name="region-id[]" value="{{ region.id }}">
                     <input type="hidden" class="hidden-region-uuid" name="region-uuid[]" value="{{ region.uuid }}">
-                    <!-- Region config  -->
+                    <!-- Region Help config  -->
                     <input type="hidden" class="hidden-config-help-region-uuid" name="help-region-uuid[]" value="{{ region.regionConfig.helpRegionUuid ? region.regionConfig.helpRegionUuid : '' }}">
                     <input type="hidden" class="hidden-config-loop" name="loop[]" value="{{ region.regionConfig.hasLoop ? '1' : '0' }}">
                     <input type="hidden" class="hidden-config-backward" name="backward[]" value="{{ region.regionConfig.hasBackward ? '1' : '0' }}">
                     <input type="hidden" class="hidden-config-rate" name="rate[]" value="{{ region.regionConfig.hasRate ? '1' : '0' }}">
-                    <input type="hidden" class="hidden-config-text" name="text[]" value="{{ region.regionConfig.helpText ? region.regionConfig.helpText : '' }}">
+
+                    {% for helpText in region.regionConfig.helpTexts %}
+                      <input type="hidden" class="hidden-help-texts" name="help-texts[]" value="{{ helpText.text }}">
+                    {% endfor %}
+                    {% for helpLink in region.regionConfig.helpLinks %}
+                      <input type="hidden" class="hidden-help-links" name="help-links[]" value="{{helpLink.url}}">
+                    {% endfor %}
                 </div>
             {% endfor %}
         {% endif %}

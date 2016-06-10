@@ -65,20 +65,23 @@ play_pause_region: Play / Pause pour la région
 
 #r
 region_help_preview: Prévisualiser les aides prévues pour la région courante
-region_config: Configurer la région
+region_config: Configurer l'aide pour la région
 region_delete: Supprimer la région
 region_config_allow_rate: Autoriser le changement de vitesse de lecture
 region_config_allow_bwb: Autoriser la lecture en backward building
 region_config_allow_loop: Autoriser la lecture en boucle
-region_config_help_text: Texte d'aide
-region_config_help_text_place_holder: Vous pouvez renseigner plusieurs mots séparés par des points virgules
+region_config_help_texts: Textes d'aide
+region_config_help_texts_placeholder: Ajoutez un texte d'aide ou laissez vide
+region_config_help_links: Liens d'aide
+region_config_help_links_placeholder: Ajoutez un lien d'aide ou laissez vide
 region_config_help_add_link: Ajouter un lien http (jusqu'à 3 liens autorisés)
-region_config_help_region_title: Région d'aide
+region_config_help_region_title: Région connexe
 region_delete_confirm_base: Etes vous sur de vouloir supprimer la région?
 region_delete_confirm_sub: Cette région est affectée à une ou plusieurs aides.<br/> Ces aides seront supprimées automatiquement.
 resource_update_success: La ressource a bien été mise à jour.
 resource_update_error: Une erreur est survenue lors de la mise à jour de la ressource.
 region_help_help_text_label: Voir l'élément textuel
+region_help_help_links_label: Liens
 region_help_segment_playback_label: Lecture de la région
 region_help_segment_playback: Jouer la région
 region_help_segment_playback_backward: Lire la région en backward building

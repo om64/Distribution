@@ -1,8 +1,7 @@
-innova_media_resource: Media Ressource
-innova_media_resource_administrate: Edit Media Resource
+innova_media_resource: Enriched active listening
+innova_media_resource_administrate: Administrate resource
 
 #m
 media_resource_name: Name
 media_resource_medias: File
 media_resource_file: File
-
