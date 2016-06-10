@@ -1,0 +1,16 @@
+<div class="panel-body step-list">
+  <step data-ng-repeat="step in $ctrl.steps"
+        data-id="step.id"
+        data-meta="step.meta"
+        data-items="step.items"
+        data-index="$index + 1"/>
+  <div class="alert alert-info"
+       data-ng-if="0 === $ctrl.steps.length">
+    <span class="fa fa-warning"></span> {{ 'no_question_found'|trans:{}:'ujm_exo' }}
+  </div>
+  <button type="button"
+          class="btn btn-primary"
+          data-ng-click="$ctrl.dispatch('addStep')">
+    <span class="fa fa-plus"></span> {{ 'add_step'|trans:{}:'ujm_exo' }}
+  </button>
+</div>

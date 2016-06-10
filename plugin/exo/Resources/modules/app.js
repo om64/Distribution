@@ -12,6 +12,8 @@ import './exercise/module'
 import './step/module'
 import './paper/module'
 
+import './editor'
+
 import player from './exercise/Partials/player.html'
 import overview from './exercise/Partials/overview.html'
 import metadata from './exercise/Partials/metadata.html'
@@ -27,7 +29,9 @@ angular
         'mgcrea.ngStrap.datepicker',
         'Exercise',
         'Step',
-        'Paper'
+        'Paper',
+
+        'editor'
     ])
 
     // Configure application
@@ -158,6 +162,12 @@ angular
 
                     // Active tab
                     tab: 'play'
+                })
+
+
+                .when('/alt-editor', {
+                    template: '<editor></editor>',
+                    tab: 'alt-editor'
                 })
 
                 // Otherwise redirect User on Overview

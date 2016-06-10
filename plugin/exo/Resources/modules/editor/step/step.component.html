@@ -1,0 +1,39 @@
+<div class="panel panel-default">
+  <div class="panel-heading">
+    <div class="row">
+      <h3 class="col-md-10 panel-title">
+        <span class="handle">
+          <span class="fa fa-lg fa-ellipsis-v"></span>
+        </span>
+        <span>
+          {{ 'step'|trans:{}:'ujm_exo' }} <b>#{{ $ctrl.index }}</b>
+          <small>({{ 'step_items_count'|transChoice:$ctrl.items.length:{ count: $ctrl.items.length }:'ujm_exo' }})</small>
+        </span>
+      </h3>
+      <div class="col-md-2 step-actions text-right">
+        <a role="button" href="{{ 'ujm_question_new' | path:{ exoID: $ctrl.exerciseId, stepID: step.id } }}" class="btn btn-sm btn-default" data-toggle="tooltip" title="{{ 'add_question' | trans:{}:'ujm_exo' }}">
+          <span class="fa fa-plus"></span>
+          <span class="sr-only">{{ 'add_question'|trans:{}:'ujm_exo' }}</span>
+        </a>
+        <button type="button" class="btn btn-sm btn-default" data-ng-click="$ctrl.editMetadata(step)" data-toggle="tooltip" title="{{ 'edit_step' | trans:{}:'ujm_exo' }}">
+          <span class="fa fa-pencil"></span>
+          <span class="sr-only">{{ 'edit_step'|trans:{}:'ujm_exo' }}</span>
+        </button>
+
+        <button class="btn btn-sm btn-danger"
+                title="{{ 'delete_question' | trans:{}:'ujm_exo' }}"
+                data-toggle="tooltip"
+                data-confirm-modal="{{ 'delete_of_my_exercise'|trans:{}:'ujm_exo'}}"
+                data-confirm-modal-action="$ctrl.dispatch('removeStep', $ctrl.id)">
+          <span class="fa fa-trash-o"></span>
+          <span class="sr-only">{{ 'delete_question'|trans:{}:'ujm_exo' }}</span>
+        </button>
+      </div>
+    </div>
+  </div>
+  <div class="panel-body">
+    <item-box data-ng-repeat="item in $ctrl.items"
+              data-item="item">
+    </item-box>
+  </div>
+</div>
