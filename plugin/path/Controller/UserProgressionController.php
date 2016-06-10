@@ -13,8 +13,9 @@ use Innova\PathBundle\Entity\Step;
  *
  * @Route(
  *      "/progression",
- *      name    = "innova_path_progression",
- *      service = "innova_path.controller.user_progression"
+ *      service = "innova_path.controller.user_progression",
+ *      requirements = {"id" = "\d+"},
+ *      options      = { "expose" = true }
  * )
  */
 class UserProgressionController
@@ -37,7 +38,7 @@ class UserProgressionController
     }
 
     /**
-     * Log a new action from User (mark the the  step as to do).
+     * Log a new action from User (mark the step as to do).
      *
      * @param \Innova\PathBundle\Entity\Step $step
      * @param string                         $status
@@ -45,10 +46,8 @@ class UserProgressionController
      * @return \Symfony\Component\HttpFoundation\JsonResponse
      *
      * @Route(
-     *     "/create/{id}/{authorized}/{status}",
-     *     name         = "innova_path_progression_create",
-     *     requirements = {"id" = "\d+"},
-     *     options      = { "expose" = true }
+     *     "/step/{id}/{authorized}/{status}",
+     *     name = "innova_path_progression_create"
      * )
      * @Method("POST")
      */
@@ -69,9 +68,7 @@ class UserProgressionController
      *
      * @Route(
      *     "/step/{id}/{status}/{authorized}",
-     *     name         = "innova_path_progression_update",
-     *     requirements = {"id" = "\d+"},
-     *     options      = { "expose" = true }
+     *     name = "innova_path_progression_update"
      * )
      * @Method("PUT")
      */
