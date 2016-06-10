@@ -53,7 +53,7 @@ StepShowCtrl.prototype.filterDate = {};
 StepShowCtrl.prototype.progression = {};
 
 StepShowCtrl.prototype.isAccessible = function () {
-    var now = this.filterDate(new Date(), 'yyyy-MM-dd HH:mm:ss')
+    var now = this.filterDate(new Date(), 'yyyy-MM-dd HH:mm:ss');
 
     var from = null;
     if (this.step.accessibleFrom != null && this.step.accessibleFrom.length !== 0) {
@@ -74,7 +74,7 @@ StepShowCtrl.prototype.isAccessible = function () {
 };
 
 StepShowCtrl.prototype.updateProgression = function (newStatus) {
-    this.userProgressionService.update(this.step, newStatus);
+    this.userProgressionService.update(this.step, newStatus, 1);
 };
 
 // Register controller into Angular

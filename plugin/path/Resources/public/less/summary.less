@@ -20,11 +20,12 @@
 
 // Default state
 .path-summary-container {
-    margin-top: @navbar-height;
+    /*margin-top: @navbar-height;*/
     height: auto !important;
     z-index: 9 !important;
     background: @navbar-default-bg;
-    box-shadow: 3px 0 3px rgba(0,0,0,.25);
+    /*box-shadow: 3px 0 3px rgba(0,0,0,.25);*/
+    position: relative;
 
     /* Sidebar close button */
     .ps-close {
@@ -49,10 +50,11 @@
         left: 0;
         height: 100%;
         width: 100%;
-        padding-top: @navbar-height - 3;
+        /*padding-top: @navbar-height - 3;*/
+        position: relative;
 
         /* Sidebar title */
-        h2 {
+        /*h2 {
             font-size: 16px;
             font-weight: bold;
             color: darken(@navbar-default-link-color, 10%);
@@ -73,7 +75,7 @@
             .fa {
                 margin-right: 5px;
             }
-        }
+        }*/
 
         em {
             display: block;
@@ -258,21 +260,21 @@
 }
 
 // Opened state
-.path-summary-opened {
+/*.path-summary-opened {*/
     .path-summary-container {
         overflow: visible !important;
-        width: @path-summary-width !important; // Override pageslideDirective width to make it a little more responsive
+        /*width: @path-summary-width !important;*/ // Override pageslideDirective width to make it a little more responsive
     }
-}
+/*}*/
 
 /* Shift content when sidebar is present */
 @media (min-width: @screen-sm) {
     .path-summary-container {
-        margin-left: 40px;
+        /*margin-left: 40px;*/
     }
 
     .path-summary-opened {
-        margin-left: @path-summary-width + 40px !important;
+        /*margin-left: @path-summary-width + 40px !important;*/
     }
 }
 
@@ -283,6 +285,6 @@
     }
 
     .path-summary-opened {
-        margin-left: @path-summary-width !important;
+        /*margin-left: @path-summary-width !important;*/
     }
 }

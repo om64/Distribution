@@ -9,7 +9,7 @@ var StepEditCtrl = function StepEditCtrl(step, inheritedResources, PathService, 
     this.scope       = $scope;
     this.stepService = StepService;
     this.pathService = PathService;
-    this.nextstep = this.pathService.getNext(step);
+    this.nextStep = this.pathService.getNext(step);
     this.tinymceOptions = tinymceConfig;
 
     /**
