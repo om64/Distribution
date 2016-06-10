@@ -103,21 +103,31 @@ var DomUtils = {
             rRows.push(row);
 
         });
+        var $regionRow = $(elem).closest('.region');
         // get current region row start text
-        var currentStart = $(elem).closest('div.region').find('.time-text.start').text();
+        var currentStart = $regionRow.find('.time-text.start').text();
         // find region config hidden inputs
         //help-region-id -> problem is that the id might not exist (for newly created regions) -> need to select a region by time ?
-        var helpRegionUuid = $(elem).closest('div.region').find('.hidden-config-help-region-uuid');
+        var helpRegionUuid = $regionRow.find('.hidden-config-help-region-uuid');
         //loop elem
-        var loop = $(elem).closest('div.region').find('.hidden-config-loop');
+        var loop = $regionRow.find('.hidden-config-loop');
         //backward
-        var backward = $(elem).closest('div.region').find('.hidden-config-backward'); //$('input[name=backward]').is(':checked');
+        var backward = $regionRow.find('.hidden-config-backward'); //$('input[name=backward]').is(':checked');
         //rate
-        var rate = $(elem).closest('div.region').find('.hidden-config-rate');
-        //text
-        var text = $(elem).closest('div.region').find('.hidden-config-text');
+        var rate = $regionRow.find('.hidden-config-rate');
 
-        //var links = $(elem).closest('div.region').find('.hidden-config-links');
+        var texts = [];
+        // retrieve existing texts
+        $regionRow.find('.hidden-help-texts').each(function(){
+          var val = $(this).val() ? $(this).val():'';
+          texts.push(val);
+        });
+        var links = [];
+        // retrieve existing links
+        $regionRow.find('.hidden-help-links').each(function(){
+          var val = $(this).val() ? $(this).val():'';
+          links.push(val);
+        });
 
         var html = '';
         html += '<div class="row">';
@@ -147,27 +157,51 @@ var DomUtils = {
             html += '               <input type="checkbox" name="rate" value="rate" checked>';
         else
             html += '               <input type="checkbox" name="rate" value="rate">';
-        html += Translator.trans('region_config_allow_rate', {}, 'media_resource');//'               Autoriser le changement de la vitesse de lecture';
+        html += Translator.trans('region_config_allow_rate', {}, 'media_resource');
         html += '               </label>';
         html += '           </div>';
         html += '           <hr/>';
-        // help text
-        html += '           <div class="form-group">';
-        html += '               <label class="control-label" for="help-text">' + Translator.trans('region_config_help_text', {}, 'media_resource') + '</label>';
-        html += '               <input type="text" name="help-text" class="form-control" placeholder="'+Translator.trans('region_config_help_text_place_holder', {}, 'media_resource')+'" value="' + text.val() + '">';
-        html += '           </div>';
+        // help texts
+        html += '           <div class="row">';
+        html += '             <div class="col-md-12">';
+        html += '               <h4>' + Translator.trans('region_config_help_texts', {}, 'media_resource') + '</h4>';
+        for(var i = 0 ; i < 3; i++){
+          if(texts[i] !== ''){
+            html += '                 <input type="text" name="modal-help-texts[]" class="form-control modal-help-texts" value="' + texts[i] + '">';
+          } else {
+            html += '                 <input type="text" name="modal-help-texts[]" placeholder="'+Translator.trans('region_config_help_texts_placeholder', {}, 'media_resource')+'" class="form-control modal-help-texts" value="">';
+          }
+          if(i < 2){
+            html += '                 <hr/>';
+          }
+        }
+        html += '             </div>';
+        html += '           </div>';// help texts end
         html += '           <hr/>';
         // help links
-        /*html += '           <div class="form-group">';
-        html += '               <label class="control-label" for="help-text">' + Translator.trans('region_config_help_text', {}, 'media_resource') + '</label>';
-        html += '               <span class="btn btn-default fa fa-plus" title="' + Translator.trans('region_config_help_add_link', {}, 'media_resource') + '"></span>';
-        html += '               <input type="text" name="help-text" class="form-control" placeholder="'+Translator.trans('region_config_help_text_place_holder', {}, 'media_resource')+'" value="' + text.val() + '">';
-        html += '           </div>';
-        html += '           <hr/>';*/
-        // region dropdown
-        html += '           <div class="form-group">';
-        html += '               <label class="col-md-4 control-label" for="has-rate">' + Translator.trans('region_config_help_region_title', {}, 'media_resource') + '</label>';
-        html += '               <select name="region" id="select-help-related-region">';
+        html += '           <div class="row">';
+        html += '             <div class="col-md-12">';
+        html += '               <h4>' + Translator.trans('region_config_help_links', {}, 'media_resource') + '</h4>';
+        for(var i = 0 ; i < 3; i++){
+          if(links[i] !== ''){
+            html += '                 <input type="text" name="modal-help-links[]" class="form-control modal-help-links" value="' + links[i] + '">';
+          } else {
+            html += '                 <input type="text" name="modal-help-links[]" placeholder="'+Translator.trans('region_config_help_links_placeholder', {}, 'media_resource')+'" class="form-control modal-help-links" value="">';
+          }
+          if(i < 2){
+            html += '                 <hr/>';
+          }
+        }
+        html += '             </div>';
+        html += '           </div>';// help links end
+
+        html += '           <hr/>';
+        // related region dropdown
+        html += '           <h4>' + Translator.trans('region_config_help_region_title', {}, 'media_resource') + '</h4>';
+        html += '           <div class="row">';
+        html += '             <div class="col-md-10">';
+
+        html += '               <select name="region" class="form-control" id="select-help-related-region">';
         html += '                   <option value="-1">' + Translator.trans('none', {}, 'media_resource') + '</option>';
         // loop
         for (var i = 0; i < rRows.length; i++) {
@@ -182,12 +216,15 @@ var DomUtils = {
             }
         }
         html += '               </select>';
+        html += '             </div>';
+        html += '             <div class="col-md-2">';
         html += '               <button class="btn btn-default" id="btn-help-related-region-play" style="margin:5px;">';
         html += '               <i class="fa fa-play"></i> ';
         html += '                / ';
         html += '               <i class="fa fa-pause"></i>';
         html += '               </button>';
-        html += '           </div>';
+        html += '             </div>';
+        html += '           </div>'; // end select row
         html += '       </div>'; // end form
         html += '   </div>'; // end col
         html += '</div>'; // end row
@@ -201,14 +238,34 @@ var DomUtils = {
                     className: "btn-default",
                     show: false,
                     callback: function () {
-                        // get form values
-                        var helpText = $('input[name=help-text]').val();
+                        // get modal "form" values
+                        //var helpText = $('input[name=help-text]').val();
                         var hasLoop = $('input[name=loop]').is(':checked');
                         var hasBackward = $('input[name=backward]').is(':checked');
                         var hasRate = $('input[name=rate]').is(':checked');
                         var helpId = $("#region-select").val();
+
+                        var helpTexts = [];
+                        $('.modal-help-texts').each(function(){
+                          var text = $(this).val() ? $(this).val() : '';
+                          helpTexts.push(text);
+                        });
+                        // set values in main page (ie administrate.html.twig) hidden inputs
+                        $regionRow.find('.hidden-help-texts').each(function($index){
+                          $(this).val(helpTexts[$index]);
+                        });
+
+                        var helpLinks = [];
+                        $('.modal-help-links').each(function(){
+                          var link = $(this).val() ? $(this).val() : '';
+                          helpLinks.push(link);
+                        });
+                        // set values in main page (ie administrate.html.twig) hidden inputs
+                        $regionRow.find('.hidden-help-links').each(function($index){
+                          $(this).val(helpLinks[$index]);
+                        });
+
                         // set proper hidden inputs values
-                        text.val(helpText);
                         rate.val(hasRate ? '1' : '0');
                         backward.val(hasBackward ? '1' : '0');
                         loop.val(hasLoop ? '1' : '0');
@@ -262,12 +319,26 @@ var DomUtils = {
                 html += '<hr/>';
                 html += '<div class="row">';
                 html += '   <div class="col-md-12">';
-                html += '       <button id="btn-show-help-text" class="btn btn-default" title="' + Translator.trans('region_help_related_segment_playback', {}, 'media_resource') + '" style="margin:5px;">';
+                html += '       <button id="btn-show-help-text" class="btn btn-default" title="' + Translator.trans('region_help_help_text_label', {}, 'media_resource') + '" style="margin:5px;">';
                 html += Translator.trans('region_help_help_text_label', {}, 'media_resource');
                 html += '       </button>';
                 html += '       <label id="help-modal-help-text" style="margin:5px;display:none;"></label>';
                 html += '   </div>';
                 html += '</div>';
+            }
+
+            if(region.links.length > 0){
+              html +=  '<hr/>';
+              html +=  '<h4>' + Translator.trans('region_help_help_links_label', {}, 'media_resource') + '</h4>';
+              html +=  '<hr/>';
+              for (var i = 0; i < region.links.length ; i++) {
+                  html += '<div class="row">';
+                  html += '   <div class="col-md-12">';
+                  html += '       <a target="_blank" href="'+region.links[i]+'">lien '+i+'</a>';
+                  html += '   </div>';
+                  html += '</div>';
+                  html += '<hr/>';
+              }
             }
             if (region.relatedRegionUuid) {
                 var helpRegionStart = this.getHelpRelatedRegionStart(region.relatedRegionUuid);
@@ -329,7 +400,7 @@ var DomUtils = {
         html += '             <span class="badge row-index"></span>';
         html += '       </div>';
         // region config buttons
-        html += '       <div class="col-xs-2">';
+        html += '       <div class="col-xs-2 text-right">';
         html += '           <div class="btn-group" role="group">';
         html += '               <button type="button" class="btn btn-default" title="' + Translator.trans('play_pause_region', {}, 'media_resource') + '" onclick="playRegion(this);">';
         html += '                 |-&nbsp;<i class="fa fa-play"></i>&nbsp;-|';
@@ -353,7 +424,14 @@ var DomUtils = {
         html += '       <input type="hidden" class="hidden-config-loop" name="loop[]" value="0" >';
         html += '       <input type="hidden" class="hidden-config-backward" name="backward[]" value="0" >';
         html += '       <input type="hidden" class="hidden-config-rate" name="rate[]" value="0" >';
-        html += '       <input type="hidden" class="hidden-config-text" name="text[]" value="" >';
+
+        html += '       <input type="hidden" class="hidden-help-texts" name="help-texts[]" value="">';
+        html += '       <input type="hidden" class="hidden-help-texts" name="help-texts[]" value="">';
+        html += '       <input type="hidden" class="hidden-help-texts" name="help-texts[]" value="">';
+
+        html += '       <input type="hidden" class="hidden-help-links" name="help-links[]" value="">';
+        html += '       <input type="hidden" class="hidden-help-links" name="help-links[]" value="">';
+        html += '       <input type="hidden" class="hidden-help-links" name="help-links[]" value="">';
         html += '</div>';
 
         // append the row in the right place

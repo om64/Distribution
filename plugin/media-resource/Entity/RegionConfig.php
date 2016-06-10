@@ -3,6 +3,7 @@
 namespace Innova\MediaResourceBundle\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
+use Doctrine\Common\Collections\ArrayCollection;
 
 /**
  * RegionConfig.
@@ -43,18 +44,21 @@ class RegionConfig
     private $hasRate;
 
     /**
-     * @var helpText
-     *
-     * @ORM\Column(name="help_text", type="string", length=255)
-     */
-    private $helpText;
-
-    /**
      * @var region
      * @ORM\OneToOne(targetEntity="Innova\MediaResourceBundle\Entity\Region", inversedBy="regionConfig")
      * @ORM\JoinColumn(nullable=false)
      */
     private $region;
+
+    /**
+     * @ORM\OneToMany(targetEntity="Innova\MediaResourceBundle\Entity\HelpText", cascade={"remove", "persist"}, mappedBy="regionConfig")
+     */
+    private $helpTexts;
+
+    /**
+     * @ORM\OneToMany(targetEntity="Innova\MediaResourceBundle\Entity\HelpLink", cascade={"remove", "persist"}, mappedBy="regionConfig")
+     */
+    private $helpLinks;
 
     /**
      * @var related region for help
@@ -63,18 +67,12 @@ class RegionConfig
      */
     private $helpRegionUuid;
 
-    public function setId($id)
+    public function __construct()
     {
-        $this->id = $id;
-
-        return $this;
+        $this->helpTexts = new ArrayCollection();
+        $this->helpLinks = new ArrayCollection();
     }
 
-    /**
-     * Get id.
-     *
-     * @return int
-     */
     public function getId()
     {
         return $this->id;
@@ -116,16 +114,42 @@ class RegionConfig
         return $this->hasRate;
     }
 
-    public function setHelpText($helpText)
+    public function addHelpText(HelpText $helpText)
     {
-        $this->helpText = $helpText;
+        $this->helpTexts[] = $helpText;
 
         return $this;
     }
 
-    public function getHelpText()
+    public function removeHelpText(HelpText $helpText)
     {
-        return $this->helpText;
+        $this->helpTexts->removeElement($helpText);
+
+        return $this;
+    }
+
+    public function getHelpTexts()
+    {
+        return $this->helpTexts;
+    }
+
+    public function addHelpLink(HelpLink $helpLink)
+    {
+        $this->helpLinks[] = $helpLink;
+
+        return $this;
+    }
+
+    public function removeHelpLink(HelpLink $helpLink)
+    {
+        $this->helpLinks->removeElement($helpLink);
+
+        return $this;
+    }
+
+    public function getHelpLinks()
+    {
+        return $this->helpLinks;
     }
 
     public function setRegion(Region $region)

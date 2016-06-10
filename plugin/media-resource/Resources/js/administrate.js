@@ -140,9 +140,9 @@ var actions = {
         $('.options-panel').find('.panel-body').toggle();
         $('.btn-options-toggle').hasClass('fa-chevron-down') ? $('.btn-options-toggle').removeClass('fa-chevron-down').addClass('fa-chevron-up') : $('.btn-options-toggle').removeClass('fa-chevron-up').addClass('fa-chevron-down');
     },
-    toggleAnnotationPanel: function(){
-      $('.annotation-panel').find('.panel-body').toggle();
-      $('.btn-annotation-toggle').hasClass('fa-chevron-down') ? $('.btn-annotation-toggle').removeClass('fa-chevron-down').addClass('fa-chevron-up') : $('.btn-annotation-toggle').removeClass('fa-chevron-up').addClass('fa-chevron-down');
+    toggleAnnotationPanel: function() {
+        $('.annotation-panel').find('.panel-body').toggle();
+        $('.btn-annotation-toggle').hasClass('fa-chevron-down') ? $('.btn-annotation-toggle').removeClass('fa-chevron-down').addClass('fa-chevron-up') : $('.btn-annotation-toggle').removeClass('fa-chevron-up').addClass('fa-chevron-down');
     },
     previewCurrentRegion: function() {
         playRegionFrom(currentRegion.start);
@@ -174,11 +174,11 @@ $(document).ready(function() {
 
 
     /* SWITCHES INPUTS */
-  /*  var toggleAnnotationCheck = $("[name='toggle-annotation-checkbox']").bootstrapSwitch('state', true);
-    $(toggleAnnotationCheck).on('switchChange.bootstrapSwitch', function(event, state) {
-        $('.annotation-buttons-container').toggle(transitionType);
-        $(this).trigger('blur'); // remove focus to avoid spacebar interraction
-    });*/
+    /*  var toggleAnnotationCheck = $("[name='toggle-annotation-checkbox']").bootstrapSwitch('state', true);
+      $(toggleAnnotationCheck).on('switchChange.bootstrapSwitch', function(event, state) {
+          $('.annotation-buttons-container').toggle(transitionType);
+          $(this).trigger('blur'); // remove focus to avoid spacebar interraction
+      });*/
 
 
     // CONTENT EDITABLE CHANGE EVENT MAPPING
@@ -287,6 +287,13 @@ $(document).ready(function() {
         if (regions.length > 0) {
             currentRegion = regions[0];
             domUtils.highlightRegionRow(currentRegion);
+            var wRegion = wavesurfer.addRegion({
+                start: currentRegion.start,
+                end: currentRegion.end,
+                color: 'rgba(255,0,0,0.5)',
+                drag: false,
+                resize: false
+            });
         }
     });
 
@@ -297,6 +304,14 @@ $(document).ready(function() {
             currentRegion = current;
             // highlight region dom row
             domUtils.highlightRegionRow(currentRegion);
+            wavesurfer.clearRegions();
+            var wRegion = wavesurfer.addRegion({
+                start: currentRegion.start,
+                end: currentRegion.end,
+                color: 'rgba(255,0,0,0.5)',
+                drag: false,
+                resize: false
+            });
         }
     });
 
@@ -308,6 +323,14 @@ $(document).ready(function() {
             currentRegion = current;
             // show help text
             domUtils.highlightRegionRow(currentRegion);
+            wavesurfer.clearRegions();
+            var wRegion = wavesurfer.addRegion({
+                start: currentRegion.start,
+                end: currentRegion.end,
+                color: 'rgba(255,0,0,0.5)',
+                drag: false,
+                resize: false
+            });
         }
     });
     /* /WAVESURFER */
@@ -371,6 +394,7 @@ function createRegion(time) {
     // add the "right" region row in the dom
     domUtils.addRegionToDom(region, javascriptUtils, $regionRow);
     regions.push(region);
+    updateRegionRowIndexes();
 }
 
 // build markers, regions from existing ones
@@ -385,8 +409,20 @@ function initRegionsAndMarkers() {
         var loop = $(this).find('input.hidden-config-loop').val() === '1';
         var backward = $(this).find('input.hidden-config-backward').val() === '1';
         var rate = $(this).find('input.hidden-config-rate').val() === '1';
-        var texts = $(this).find('input.hidden-config-text').val() !== '' ? $(this).find('input.hidden-config-text').val().split(';') : false;
-        var hasHelp = rate || backward || (texts && texts.length > 0) || loop || helpUuid !== '';
+        var texts = [];
+        var links = [];
+        $(this).find('.hidden-help-texts').each(function() {
+            if ($(this).val() !== '') {
+                texts.push($(this).val());
+            }
+        });
+        $(this).find('.hidden-help-links').each(function() {
+            if ($(this).val() !== '') {
+                links.push($(this).val());
+            }
+        });
+        //  var texts = $(this).find('input.hidden-config-text').val() !== '' ? $(this).find('input.hidden-config-text').val().split(';') : false;
+        var hasHelp = rate || backward || texts.length > 0 || links.length > 0 || loop || helpUuid !== '';
         var region = {
             id: id, // @TODO check if still usefull
             uuid: uuid,
@@ -398,7 +434,8 @@ function initRegionsAndMarkers() {
             loop: loop,
             backward: backward,
             rate: rate,
-            texts: texts
+            texts: texts,
+            links: links
         };
         regions.push(region);
         // create marker for each existing region
@@ -422,7 +459,8 @@ function initRegionsAndMarkers() {
             loop: false,
             backward: false,
             rate: false,
-            texts: false
+            texts: false,
+            links: false
         };
         regions.push(region);
         // no region row yet so happend the new row to regions container
@@ -431,17 +469,18 @@ function initRegionsAndMarkers() {
         var regionRow = domUtils.addRegionToDom(region, javascriptUtils, $appendTo);
         var btn = $(regionRow).find('button.fa-trash-o');
         $(btn).attr('data-uuid', region.uuid);
-        updateRegionRowIndexes();
     }
+
+    updateRegionRowIndexes();
     return true;
 }
 
-function updateRegionRowIndexes(){
-  var index = 1;
-  $('.row-index').each(function(){
-    $(this).text(index);
-    index++;
-  });
+function updateRegionRowIndexes() {
+    var index = 1;
+    $('.row-index').each(function() {
+        $(this).text(index);
+        index++;
+    });
 }
 
 function loadAudio(data) {
@@ -585,7 +624,9 @@ function handleUtterancePlayback(index, textArray) {
  */
 function configRegion(elem) {
     var configModal = domUtils.openConfigRegionModal(elem);
+    var $row = $(elem).closest('.region');
 
+    var region = getRegionByUuid($row.data('uuid'));
     if (playing) {
         wavesurfer.pause();
         playing = false;
@@ -597,6 +638,7 @@ function configRegion(elem) {
     });
 
     configModal.on('hidden.bs.modal', function() {
+
         currentHelpRelatedRegion = null;
         if (playing) {
             htmlAudioPlayer.pause();
@@ -604,9 +646,31 @@ function configRegion(elem) {
         }
         // color the config button if any value in config parameters
         updateConfigButtonColor();
+        updateRegionObjectHelp(region, $row);
     });
 
     configModal.modal("show");
+}
+
+function updateRegionObjectHelp(region, $row){
+  region.texts = [];
+  region.links = [];
+  $row.find('.hidden-help-texts').each(function() {
+      if ($(this).val() !== '') {
+          region.texts.push($(this).val());
+      }
+  });
+  $row.find('.hidden-help-links').each(function() {
+      if ($(this).val() !== '') {
+          region.links.push($(this).val());
+      }
+  });
+
+  region.helpUuid = $row.find('.hidden-config-help-region-uuid').val() !== '' ? true : false;
+  region.loop = $row.find('.hidden-config-loop').val() === '1' ? true : false;
+  region.backward = $row.find('.hidden-config-backward').val() === '1' ? true : false;
+  region.rate = $row.find('.hidden-config-rate').val() === '1' ? true : false;
+  region.hasHelp = region.rate || region.backward || region.texts.length > 0 || region.links.length > 0 || region.loop || region.helpUuid !== '';
 }
 
 
@@ -641,8 +705,19 @@ function checkIfRowHasConfigValue(row) {
     var loop = $(row).find('.hidden-config-loop').val() === '1' ? true : false;
     var backward = $(row).find('.hidden-config-backward').val() === '1' ? true : false;
     var rate = $(row).find('.hidden-config-rate').val() === '1' ? true : false;
-    var text = $(row).find('.hidden-config-text').val() !== '' ? true : false;
-    return helpRegion || loop || backward || rate || text;
+    var texts = [];
+    $(row).find('.hidden-help-texts').each(function(){
+      if($(this).val() !== ''){
+        texts.push($(this).val());
+      }
+    });
+    var links = [];
+    $(row).find('.hidden-help-links').each(function(){
+      if($(this).val() !== ''){
+        links.push($(this).val());
+      }
+    });
+    return helpRegion || loop || backward || rate || texts.length > 0 || links.length > 0;
 }
 
 // ======================================================================================================== //
@@ -912,7 +987,6 @@ function getPrevRegion(time) {
  * @param elem the source of the event
  */
 function deleteRegion(elem) {
-
     // can not delete region if just one ( = the default one) -> or not...
     if (regions.length === 1) {
         bootbox.alert(Translator.trans('alert_only_one_region_left', {}, 'media_resource'));
@@ -1005,10 +1079,6 @@ function playRegion(elem) {
     playRegionFrom(start + 0.1);
 }
 
-/*function playCurrentRegion(){
-  playRegionFrom(currentRegion.start);
-}*/
-
 function playRegionFrom(start) {
     var region = getRegionFromTime(start);
     var wRegion = wavesurfer.addRegion({
@@ -1024,7 +1094,7 @@ function playRegionFrom(start) {
         wavesurfer.once('pause', function() {
             playing = false;
             // remove all wavesurfer regions as we do not use them elsewhere
-            wavesurfer.clearRegions();
+            //wavesurfer.clearRegions();
         });
     } else {
         wavesurfer.pause();
