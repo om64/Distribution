@@ -11,27 +11,25 @@
                 replace: true,
                 controller: ResourcesPrimaryShowCtrl,
                 controllerAs: 'resourcesPrimaryShowCtrl',
-                templateUrl: AngularApp.webDir + 'bundles/innovapath/js/ResourcePrimary/Partial/show.html',
+                template: '<iframe style="min-height: {{ resourcesPrimaryShowCtrl.height }}px;" data-ng-src="{{ resourcesPrimaryShowCtrl.resourceUrl.url }}" allowfullscreen></iframe>',
                 scope: {
                     resources : '=', // Resources of the Step
                     height    : '='  // Min height for Resource display
                 },
                 bindToController: true,
-                link: function (scope, element, attrs) {
+                link: function (scope, element, attr) {
                     var iframeChangeTimeout = null;
 
-                    var activityFrame = element.find('iframe');
-
-                    var resizeIframe = function (activityFrame) {
-                        var height = $(activityFrame).contents().find('body').first().height();
+                    var resizeIframe = function (element) {
+                        var height = element.find('body').first().height();
 
                         if (height) {
-                            $(activityFrame).css('height', height + 15);
+                            element.css('height', height + 15);
                         }
                     };
 
                     // Manage the height of the iFrame
-                    $(activityFrame).load(function () {
+                    element.on('load', function () {
                         var iframe = this;
                         setTimeout(function () {
                             resizeIframe(iframe);
@@ -41,16 +39,16 @@
                     $(window).on('resize', function () {
                         clearTimeout(iframeChangeTimeout);
                         iframeChangeTimeout = setTimeout(function () {
-                            $(activityFrame).each(function () {
-                                resizeIframe(this);
+                            element.each(function (el) {
+                                resizeIframe(el);
                             });
                         }, 300);
                     });
 
                     clearTimeout(iframeChangeTimeout);
                     iframeChangeTimeout = setTimeout(function () {
-                        $(activityFrame).each(function () {
-                            resizeIframe(activityFrame);
+                        element.each(function () {
+                            resizeIframe(element);
                         });
                     }, 300);
                 }
