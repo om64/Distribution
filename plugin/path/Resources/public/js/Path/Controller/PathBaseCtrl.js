@@ -9,7 +9,6 @@ var PathBaseCtrl = function PathBaseCtrl($window, $route, $routeParams, PathServ
     this.pathService = PathService;
 
     // Store path to make it available by all UI components
-    this.pathService.setId(this.id);
     this.pathService.setPath(this.path);
     this.pathService.setCompleteBlockingCondition(this.path.completeBlockingCondition);
 
@@ -17,9 +16,6 @@ var PathBaseCtrl = function PathBaseCtrl($window, $route, $routeParams, PathServ
 
     this.summaryState = this.pathService.getSummaryState();
     this.completeBlockingCondition = this.pathService.isCompleteBlockingCondition();
-
-    //triggering of promise
-    this.pathService.userteampromise(this.id);
 
     // Force reload of the route (as ng-view is deeper in the directive tree, route resolution is deferred and it causes issues)
     $route.reload();
