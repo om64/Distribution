@@ -82,7 +82,13 @@ class PathController
     /**
      * Publish path
      * Create all needed resources for path to be played.
-     * 
+     *
+     * @param Path $path
+     * @param boolean $redirect
+     * @param Request $request
+     *
+     * @return RedirectResponse|JsonResponse
+     *
      * @Route(
      *     "/publish/{id}/{redirect}",
      *     name         = "innova_path_publish",
