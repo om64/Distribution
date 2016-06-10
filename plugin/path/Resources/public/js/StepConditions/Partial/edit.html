@@ -7,13 +7,13 @@
 
         <div class="btns">
             <!-- Initialize conditions button -->
-            <button type="button" role="button" class="btn btn-sm btn-primary" data-ng-click="stepConditionsEditCtrl.createCondition(stepConditionsEditCtrl.current.stepId)" data-ng-if="stepConditionsEditCtrl.conditionstructure.length === 0">
+            <button type="button" role="button" class="btn btn-sm btn-primary" data-ng-click="stepConditionsEditCtrl.createCondition()" data-ng-if="stepConditionsEditCtrl.conditionstructure.length === 0">
                 <span class="fa fa-fw fa-pencil"></span>
                 {{ 'condition_init_conditionstructure'|trans:{}:'path_wizards' }}
             </button>
 
             <!-- Remove conditions button -->
-            <button type="button" class="btn btn-sm btn-danger" data-ng-click="stepConditionsEditCtrl.deleteCondition(stepConditionsEditCtrl.current.stepId)" data-ng-if="stepConditionsEditCtrl.conditionstructure.length !== 0">
+            <button type="button" class="btn btn-sm btn-danger" data-ng-click="stepConditionsEditCtrl.deleteCondition()" data-ng-if="stepConditionsEditCtrl.conditionstructure.length !== 0">
                 <span class="fa fa-trash"></span>
                 <span>{{ 'condition_condition_delete'|trans:{}:'path_wizards' }}</span>
             </button>

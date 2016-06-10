@@ -1,67 +1,97 @@
 /**
- * Class constructor
- * @returns {StepConditionsEditCtrl}
+ *
+ * @param {StepConditionsService} StepConditionsService
+ * @param {CriterionService} CriterionService
+ * @param {ConfirmService} ConfirmService
+ *
  * @constructor
  */
-    //StepService
-var StepConditionsEditCtrl = function StepConditionsEditCtrl($route, $routeParams, PathService, StepConditionsService, $scope, ConfirmService, IdentifierService) {
-    StepConditionsBaseCtrl.apply(this, arguments);
+var StepConditionsEditCtrl = function StepConditionsEditCtrl(StepConditionsService, CriterionService, ConfirmService) {
+    console.log('initialize condition');
+    this.webDir = AngularApp.webDir;
 
     // Inject service
-    this.scope                  = $scope;
     this.confirmService         = ConfirmService;
-    this.identifierService      = IdentifierService;
     this.stepConditionsService  = StepConditionsService;
-    this.pathService            = PathService;
+    this.CriterionService       = CriterionService;
 
-    //list of all groups a user s registered to
-    this.useringroup = this.pathService.getUseringroupData();
+    //    this.evaluation[step.id] = this.stepConditionsService.getEvaluationFromController(step.activityId);
 
-    //default values for conditions
-    //values for user group list
-    this.criterionUsergroup = this.pathService.getUsergroupData();
-    //values for user team list
-    this.criterionUserteam = this.pathService.getUserteamData();
+    //get the current condition
+    this.conditionstructure = [];
+    if (angular.isObject(this.step.condition)) {
+        this.conditionstructure = [this.step.condition];
+    }
 
-    //values for activity statuses (here got from AJAX request, +(maybe hardcode the list in partial for better performance...)
-    this.criterionActivitystatuses=this.pathService.getEvaluationStatusesData();
+    //TODO : Make it work, to use in conditions
+    //    this.CriteriaService.getEvaluations();
 
-    this.criterionActivitystatus = 'passed';
-    this.criterionActivityrepetition = 1;
-    this.criterion = {};
-    this.criterion.type = 'activitystatus';
+    this.CriterionService.getUserGroups().then(function(result) {
+        this.useringroup = result;
+    }.bind(this));
 
-    return this;
+    this.CriterionService.getGroups().then(function(result) {
+        this.criterionUsergroup = result;
+    }.bind(this));
+
+    this.CriterionService.getTeams().then(function(result) {
+        this.criterionUserteam = result;
+    }.bind(this));
+
+    this.CriterionService.getActivityStatuses().then(function(result) {
+        this.criterionActivitystatuses = result;
+    }.bind(this));
 };
 
-// Extends the base controller
-StepConditionsEditCtrl.prototype = Object.create(StepConditionsBaseCtrl.prototype);
-StepConditionsEditCtrl.prototype.constructor = StepConditionsEditCtrl;
+// Set up dependency injection
+StepConditionsEditCtrl.$inject = [
+    'StepConditionsService',
+    'CriterionService',
+    'ConfirmService'
+];
 
-// Show action buttons for a step in the tree (contains the ID of the step)
-StepConditionsEditCtrl.prototype.showButtons = null;
+/**
+ * Current step
+ * @type {object}
+ */
+StepConditionsEditCtrl.prototype.step = null;
+
+/**
+ * Path to the symfony web directory (where are stored our partials)
+ * @type {null}
+ */
+StepConditionsEditCtrl.prototype.webDir = null;
+
+/**
+ * Structure of the current condition
+ * @type {object}
+ */
+StepConditionsEditCtrl.prototype.conditionstructure = [];
+
+/**
+ * Current Step
+ * @type {Object}
+ */
+StepConditionsEditCtrl.prototype.step = {};
 
 /**
  * Step which will be locked
- * @type {null}
+ * @type {Object}
  */
-StepConditionsEditCtrl.prototype.next = null;
+StepConditionsEditCtrl.prototype.next = {};
 
 /**
  * Create a new condition for a given step
- * @param step
  */
-StepConditionsEditCtrl.prototype.createCondition = function (stepId) {
-    var step = this.pathService.getStep(stepId);
+StepConditionsEditCtrl.prototype.createCondition = function createCondition() {
     this.conditionstructure = [];
-    this.conditionstructure.push(this.stepConditionsService.initialize(step));
+    this.conditionstructure.push(this.stepConditionsService.initialize(this.step));
 };
 
 /**
  * Delete a condition
  */
-StepConditionsEditCtrl.prototype.deleteCondition = function(stepId) {
-    var step = this.pathService.getStep(stepId);
+StepConditionsEditCtrl.prototype.deleteCondition = function deleteCondition() {
     this.confirmService.open(
         // Confirm options
         {
@@ -73,7 +103,7 @@ StepConditionsEditCtrl.prototype.deleteCondition = function(stepId) {
         // Confirm success callback
         function () {
             //remove the condition (needs to be step.condition to trigger change and allow path save)
-            step.condition = null;
+            this.step.condition = null;
             this.conditionstructure = [];
         }.bind(this)
     );
@@ -91,7 +121,7 @@ StepConditionsEditCtrl.prototype.addCriteriagroup = function(criteriagroup) {
 /**
  * Adds a criterion to the condition
  */
-StepConditionsEditCtrl.prototype.addCriterion = function(criteriagroup) {
+StepConditionsEditCtrl.prototype.addCriterion = function addCriterion(criteriagroup) {
     //use the service method to add a new criterion
     this.stepConditionsService.addCriterion(criteriagroup);
 };
@@ -99,7 +129,7 @@ StepConditionsEditCtrl.prototype.addCriterion = function(criteriagroup) {
 /**
  * Delete a criteria group (and its children)
  */
-StepConditionsEditCtrl.prototype.removeCriteriagroup = function(group) {
+StepConditionsEditCtrl.prototype.removeCriteriagroup = function removeCriteriagroup(group) {
     this.confirmService.open(
         // Confirm options
         {
@@ -119,7 +149,7 @@ StepConditionsEditCtrl.prototype.removeCriteriagroup = function(group) {
 /**
  * Delete a criterion
  */
-StepConditionsEditCtrl.prototype.removeCriterion = function(group, index) {
+StepConditionsEditCtrl.prototype.removeCriterion = function removeCriterion(group, index) {
     this.confirmService.open(
         // Confirm options
         {

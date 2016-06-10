@@ -9,14 +9,16 @@
         '$q',
         'IdentifierService',
         'PathService',
-        function StepConditionsService($http, $q, IdentifierService, PathService) {
-            var useringroup = null;
+        'CriterionService',
+        function StepConditionsService($http, $q, IdentifierService, PathService, CriterionService) {
             /**
              * Evaluation data from \CoreBundle\Entity\Activity\Evaluation
              * @type {null}
              */
             var evaluation = null;
-            var criterialist = new Array();
+
+            var criterialist = [];
+
             /**
              * StepConditions object
              *
@@ -72,25 +74,6 @@
                     return this.evaluation;
                 },
                 /**
-                 * Retrieve usergroup list from DB
-                 *
-                 * @returns {*|usergrouplist}
-                 */
-                getUseringroupFromController: function getUseringroupFromController(){
-                    this.getUseringroup();
-                    return this.useringroup;
-                },
-                setUseringroup: function setUseringroup(uig){
-                    this.useringroup = uig;
-                },
-                /**
-                 * Retrieve the groups in which the user is registered to
-                 *
-                 */
-                getUserBelongsTo: function getUserBelongsTo() {
-                    this.useringroup = [];
-                },
-                /**
                  * Generates a new empty stepConditions
                  *
                  * @param {object} [step]
@@ -105,6 +88,7 @@
                     newStepConditions.criteriagroups.push(newCriteriaGroup);
                     //attach condition to step
                     step.condition = newStepConditions;
+
                     return newStepConditions;
                 },
                 /**
@@ -122,11 +106,12 @@
                         //if this is root
                         cgroup.criteriagroups.push(newCriteriaGroup);
                     }
+
                     return newCriteriaGroup;
                 },
                 /**
                  * Adds a new criterion
-                 * @param {object} [criterion]
+                 * @param {object} cgroup
                  * @returns {Criterion}
                  */
                 addCriterion: function (cgroup) {
@@ -134,28 +119,10 @@
                     var newCriterion = new Criterion(cgroup);
                     //adds the criterion to the criteriagroup
                     cgroup.criterion.push(newCriterion);
+
                     return newCriterion;
                 },
-                /**
-                 * Get the list of group the user is registered in
-                 *
-                 * @returns {object}
-                 */
-                getUseringroup: function getUseringroup() {
-                    var deferred = $q.defer();
-                    var params = {};
-                    $http
-                        .get(Routing.generate('innova_path_criteria_groupsforuser', params))
-                        .success(function (response) {
-                            this.setUseringroup(response);
-                            deferred.resolve(response);
-                        }
-                            .bind(this)) //to access StepConditionsService object method and attributes
-                        .error(function (response) {
-                            deferred.reject(response);
-                        });
-                    return deferred.promise;
-                },
+
                 /**
                  * Retrieve activity evaluation data from a activity
                  *
@@ -182,17 +149,18 @@
                  * @returns {boolean}
                  */
                 testCondition: function testCondition(step, evaluation) {
-                    var result=false;
+                    var result = false;
                     //get root criteriagroup
                     var criteriagroups=step.condition.criteriagroups;
                     this.evaluation = evaluation;
-                    criterialist = new Array();
+                    criterialist = [];
                     criterialist.push("<ul>");
                     //criteriagroup : OR test
-                    for(var i=0;i<criteriagroups.length;i++){
-                        result=this.testCriteriagroup(criteriagroups[i])||result;
+                    for(var i = 0; i < criteriagroups.length; i++){
+                        result = this.testCriteriagroup(criteriagroups[i])||result;
                     }
                     criterialist.push("</ul>");
+
                     return result;
                 },
                 /**
@@ -234,6 +202,7 @@
                  * @returns {boolean}
                  */
                 testCriterion: function testCriterion(criterion) {
+                    console.log('test criterion');
                     var test=false;
                     var isok=Translator.trans('no', {}, 'path_wizards');
                     var data="";
@@ -260,13 +229,13 @@
                             case"usergroup":
                                 var test_tmp;
                                 //group names the user IS registered to
-                                var groupis = new Array();
+                                var groupis = [];
                                 //group names the user SHOULD BE registered to
-                                var groupshould = new Array();
+                                var groupshould = [];
                                 //the groups the user is registered to
-                                var uig = PathService.getUseringroupData();
+                                var uig = CriterionService.getUserGroups();
                                 //the groups available
-                                var ug=PathService.getUsergroupData();
+                                var ug=CriterionService.getGroups();
                                 //to retrieve group names the user SHOULD BE registered to
                                 if (angular.isObject(ug)){
                                     for (var k in ug){
@@ -276,28 +245,39 @@
                                         }
                                     }
                                 }
+
+                                /*var groups = CriterionService.getGroups();
+                                if (groups && groups[criterion.data]) {
+
+                                }*/
+
+
                                 //to test user group names
                                 for (var g in uig) {
                                     groupis.push(uig[g]);
-                                    test_tmp=(criterion.data===g);
-                                    if (test_tmp == true){test = true;isok=Translator.trans('yes', {}, 'path_wizards');}
+                                    test_tmp = (criterion.data === g);
+                                    if (test_tmp === true){
+                                        test = true;
+                                        isok = Translator.trans('yes', {}, 'path_wizards');
+                                    }
                                 }
                                 if (groupis.length == 0){
                                     data=Translator.trans('condition_criterion_test_usergroup_nogroup', {activityGroup:groupshould}, 'path_wizards')+" : "+isok;
                                 } else {
                                     data=Translator.trans('condition_criterion_test_usergroup', {activityGroup:groupshould, userGroup:groupis.join(",")}, 'path_wizards')+" : "+isok;
                                 }
+
                                 break;
                             case"userteam":
                                 var test_tmp;
                                 //team names the user IS registered to
-                                var teamis = new Array();
+                                var teamis = [];
                                 //team names the user SHOULD BE registered to
-                                var teamshould = new Array();
+                                var teamshould = [];
                                 //the teams the user is registered to
-                                var uit = PathService.getUserinteamData();
+                                var uit = CriterionService.getUserTeams();
                                 //the teams available
-                                var ut=PathService.getUserteamData();
+                                var ut=CriterionService.getTeams();
                                 //to retrieve team names the user SHOULD BE registered to
                                 if (angular.isObject(ut)){
                                     for (var k in ut){

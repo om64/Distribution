@@ -2,22 +2,24 @@
 
 namespace Innova\PathBundle\Controller;
 
+use Claroline\CoreBundle\Entity\User;
 use Claroline\TeamBundle\Manager\TeamManager;
+use Innova\PathBundle\Entity\Path\Path;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
+use Sensio\Bundle\FrameworkExtraBundle\Configuration\ParamConverter;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Claroline\CoreBundle\Persistence\ObjectManager;
 use Claroline\CoreBundle\Manager\GroupManager;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
-use Claroline\CoreBundle\Entity\Activity\AbstractEvaluation;
 
 /**
  * Class StepConditionController.
  *
  * @Route(
- *      "/stepconditions",
- *      name    = "innova_path_stepcondition",
+ *      "/condition",
+ *      options = {"expose" = true},
  *      service = "innova_path.controller.step_condition"
  * )
  */
@@ -30,7 +32,6 @@ class StepConditionController extends Controller
      */
     private $om;
     private $groupManager;
-    private $evaluationRepo;
     private $teamManager;
 
     /**
@@ -65,21 +66,22 @@ class StepConditionController extends Controller
      * @return \Symfony\Component\HttpFoundation\JsonResponse
      *
      * @Route(
-     *     "/usergroup",
-     *     name         = "innova_path_criteria_usergroup",
-     *     options      = { "expose" = true }
+     *     "/group",
+     *     name = "innova_path_criteria_groups"
      * )
      * @Method("GET")
      */
-    public function getUserGroups()
+    public function listGroupsAction()
     {
-        $data = array();
+        $data = [];
 
-        $usergroup = $this->groupManager->getAll();
-        if ($usergroup != null) {
-            //data needs to be explicitly set because Group does not extends Serializable
-            foreach ($usergroup as $ug) {
-                $data[$ug->getId()] = $ug->getName();
+        $groups = $this->groupManager->getAll();
+        if ($groups) {
+            // data needs to be explicitly set because Group does not extends Serializable
+
+            /** @var \Claroline\CoreBundle\Entity\Group $group */
+            foreach ($groups as $group) {
+                $data[$group->getId()] = $group->getName();
             }
         }
 
@@ -89,26 +91,28 @@ class StepConditionController extends Controller
     /**
      * Get list of groups a user belongs to.
      *
+     * @param User $user
+     *
      * @return \Symfony\Component\HttpFoundation\JsonResponse
      *
      * @Route(
-     *     "/groupsforuser",
-     *     name         = "innova_path_criteria_groupsforuser",
-     *     options      = { "expose" = true }
+     *     "/group/current_user",
+     *     name = "innova_path_criteria_user_groups"
      * )
      * @Method("GET")
+     * @ParamConverter("user", converter="current_user", options={"allowAnonymous"=true})
      */
-    public function getGroupsForUser()
+    public function listUserGroupsAction(User $user = null)
     {
-        // Retrieve the current User
-        $user = $this->securityToken->getToken()->getUser();
-        // Retrieve Groups of the User
-        $groups = $user->getGroups();
+        $data = [];
+        if ($user) {
+            // Retrieve Groups of the User
+            $groups = $user->getGroups();
 
-        // data needs to be explicitly set because Group does not extends Serializable
-        $data = array();
-        foreach ($groups as $group) {
-            $data[$group->getId()] = $group->getName();
+            // data needs to be explicitly set because Group does not extends Serializable
+            foreach ($groups as $group) {
+                $data[$group->getId()] = $group->getName();
+            }
         }
 
         return new JsonResponse($data);
@@ -128,17 +132,20 @@ class StepConditionController extends Controller
      */
     public function getActivityEvaluation($activityId)
     {
-        $data = array(
+        $data = [
             'status' => 'NA',
             'attempts' => 0,
-        );
+        ];
+
         //retrieve activity
-        $this->activityRepo = $this->om->getRepository('ClarolineCoreBundle:Resource\Activity');
-        $activity = $this->activityRepo->findOneBy(array('id' => $activityId));
+        $activity = $this->om->getRepository('ClarolineCoreBundle:Resource\Activity')
+            ->findOneBy(array('id' => $activityId));
+
         if ($activity !== null) {
             //retrieve evaluation data for this activity
-            $this->evaluationRepo = $this->om->getRepository('ClarolineCoreBundle:Activity\Evaluation');
-            $evaluation = $this->evaluationRepo->findOneBy(array('activityParameters' => $activity->getParameters()));
+            $evaluation = $this->om->getRepository('ClarolineCoreBundle:Activity\Evaluation')
+                ->findOneBy(array('activityParameters' => $activity->getParameters()));
+
             //return relevant data
             if ($evaluation !== null) {
                 $data = array(
@@ -156,33 +163,22 @@ class StepConditionController extends Controller
      * (data from \CoreBundle\Entity\Activity\AbstractEvaluation.php).
      *
      * @Route(
-     *     "/activitystatuses",
-     *     name         = "innova_path_criteria_activitystatuses",
-     *     options      = { "expose" = true }
+     *     "/activity/statuses",
+     *     name = "innova_path_criteria_activity_statuses",
      * )
      * @Method("GET")
      *
-     * @return \Symfony\Component\HttpFoundation\JsonResponse
+     * @return JsonResponse
      */
-    public function getEvaluationStatuses()
+    public function listActivityStatusesAction()
     {
-        /*
-        $statuses = array(
-            AbstractEvaluation::STATUS_COMPLETED,
-            AbstractEvaluation::STATUS_FAILED,
-            AbstractEvaluation::STATUS_INCOMPLETE,
-            AbstractEvaluation::STATUS_NOT_ATTEMPTED,
-            AbstractEvaluation::STATUS_PASSED,
-            AbstractEvaluation::STATUS_UNKNOWN
-        );
-*/
-
         $r = new \ReflectionClass('Claroline\CoreBundle\Entity\Activity\AbstractEvaluation');
-        //Get class constants
+
+        // Get class constants
         $const = $r->getConstants();
-        $statuses = array();
+        $statuses = [];
         foreach ($const as $k => $v) {
-            //Only get constants beginning with STATUS
+            // Only get constants beginning with STATUS
             if (strpos($k, 'STATUS') !== false) {
                 $statuses[] = $v;
             }
@@ -190,50 +186,29 @@ class StepConditionController extends Controller
 
         return new JsonResponse($statuses);
     }
+
     /**
-     * Get activities of steps of a path.
+     * Get evaluation for all Activities of a path.
+     *
+     * @param Path $path
      *
      * @return \Symfony\Component\HttpFoundation\JsonResponse
      *
      * @Route(
-     *     "/activitylist/{path}",
-     *     name         = "innova_path_activities",
-     *     options      = { "expose" = true }
+     *     "/{id}/evaluation",
+     *     name = "innova_path_evaluation"
      * )
      * @Method("GET")
      */
-    public function getActivityList(Path $path)
-    {
-        $activitylist = array();
-        $steps = $this->om->getRepository('InnovaPathBundle:Path')->findById($path);
-
-        foreach ($steps as $step) {
-            $activitylist[$step->getId()] = self::getActivityEvaluation($step->getActivity());
-        }
-
-        return new JsonResponse($activitylist);
-    }
-
-    /**
-     * Get evaluation for all steps of a path.
-     *
-     * @return \Symfony\Component\HttpFoundation\JsonResponse
-     *
-     * @Route(
-     *     "/allevaluations/{path}",
-     *     name         = "innova_path_evaluation",
-     *     options      = { "expose" = true }
-     * )
-     * @Method("GET")
-     */
-    public function getAllEvaluationsByUserByPath($path)
+    public function getAllEvaluationsByUserByPath(Path $path)
     {
         $user = $this->securityToken->getToken()->getUser();
-        $results = $this->om->getRepository('InnovaPathBundle:StepCondition')->findAllEvaluationsByUserAndByPath((int) $path, $user->getId());
+        $results = $this->om->getRepository('InnovaPathBundle:StepCondition')
+            ->findAllEvaluationsByUserAndByPath($path, $user);
 
-        $jsonresults = array();
+        $data = [];
         foreach ($results as $r) {
-            $jsonresults[] = array(
+            $data[] = array(
                 'eval' => array(
                     'id' => $r->getId(),
                     'attempts' => $r->getAttemptsCount(),
@@ -250,35 +225,34 @@ class StepConditionController extends Controller
             );
         }
 
-        return new JsonResponse($jsonresults);
+        return new JsonResponse($data);
     }
 
     /**
-     * Get list of teams for current WS.
+     * Get list of teams available in the Workspace of the current Path
      *
-     * @param $id path_id
+     * @param Path $path
      *
      * @return \Symfony\Component\HttpFoundation\JsonResponse
      *
      * @Route(
-     *     "/teamsforws/{id}",
-     *     name         = "innova_path_criteria_teamsforws",
-     *     options      = { "expose" = true }
+     *     "/team/{id}",
+     *     name = "innova_path_criteria_teams"
      * )
      * @Method("GET")
      */
-    public function getTeamsForWs($id)
+    public function listTeamsAction(Path $path)
     {
-        //retrieve current workspace
-        $workspace = $this->om->getRepository("InnovaPathBundle:Path\Path")->findOneById($id)->getWorkspace();
-        //$workspace = $this->om->getRepository("ClarolineCoreBundle:Resource\ResourceNode")->findOneById($id)->getWorkspace();
-        $data = array();
-        //retrieve list of groups object for this user
-        $teamsforws = $this->teamManager->getTeamsByWorkspace($workspace);
-        if ($teamsforws != null) {
-            //data needs to be explicitly set because Team does not extends Serializable
-            foreach ($teamsforws as $tw) {
-                $data[$tw->getId()] = $tw->getName();
+        $data = [];
+
+        // retrieve list of groups object for this user
+        $teams = $this->teamManager->getTeamsByWorkspace($path->getWorkspace());
+        if ($teams) {
+            // data needs to be explicitly set because Team does not extends Serializable
+
+            /** @var \Claroline\TeamBundle\Entity\Team $team */
+            foreach ($teams as $team) {
+                $data[$team->getId()] = $team->getName();
             }
         }
 
@@ -288,27 +262,30 @@ class StepConditionController extends Controller
     /**
      * Get list of teams a user belongs to.
      *
+     * @param User $user
+     *
      * @return \Symfony\Component\HttpFoundation\JsonResponse
      *
      * @Route(
-     *     "/teamsforuser",
-     *     name         = "innova_path_criteria_teamsforuser",
-     *     options      = { "expose" = true }
+     *     "/team/current_user",
+     *     name = "innova_path_criteria_user_teams"
      * )
      * @Method("GET")
+     * @ParamConverter("user", converter="current_user", options={"allowAnonymous"=true})
      */
-    public function getTeamsForUser()
+    public function listUserTeamsAction(User $user = null)
     {
-        //retrieve current user
-        $user = $this->securityToken->getToken()->getUser();
-        $userId = $user->getId();
-        $data = array();
-        //retrieve list of team object for this user
-        $teamforuser = $this->teamManager->getTeamsByUser($user, 'name', 'ASC', true);
-        if ($teamforuser != null) {
-            //data needs to be explicitly set because Team does not extends Serializable
-            foreach ($teamforuser as $tu) {
-                $data[$tu->getId()] = $tu->getName();
+        $data = [];
+        if ($user) {
+            // retrieve list of team object for this user
+            $teams = $this->teamManager->getTeamsByUser($user, 'name', 'ASC', true);
+            if ($teams) {
+                // data needs to be explicitly set because Team does not extends Serializable
+
+                /** @var \Claroline\TeamBundle\Entity\Team $team */
+                foreach ($teams as $team) {
+                    $data[$team->getId()] = $team->getName();
+                }
             }
         }
 
