@@ -133,7 +133,6 @@
         "innova/audio-recorder-bundle": "*",
         "ujm/exo-bundle": "*",
         "innova/media-resource-bundle": "*",
-        "innova/media-resource-bundle": "*",
         "icap/lesson-bundle": "*"
     },
     "autoload": {
