@@ -94,7 +94,7 @@ var actions = {
 
             // by default the current region is selected so we append to modal help tab the current region help options
             var currentDomRow = domUtils.getRegionRow(currentRegion.start + 0.1, currentRegion.end - 0.1);
-            domUtils.appendHelpModalConfig(hModal, helpCurrentRegion);
+            domUtils.appendHelpModal(hModal, helpCurrentRegion);
 
             helpRegion = {
                 start: currentRegion.start + 0.1,
@@ -102,7 +102,7 @@ var actions = {
             };
 
             // listen to tab click event
-            $('#help-tab-panel a').click(function(e) {
+            $('#help-tab-panel a[role=tab]').click(function(e) {
                 e.preventDefault();
                 if (playing) {
                     htmlAudioPlayer.pause();
@@ -213,13 +213,13 @@ $(document).ready(function() {
 
         var selectedValue = e.target.value;
         if (selectedValue === 'previous') {
-            domUtils.appendHelpModalConfig(hModal, helpPreviousRegion);
+            domUtils.appendHelpModal(hModal, helpPreviousRegion);
             helpRegion = {
                 start: helpPreviousRegion.start + 0.1,
                 end: helpPreviousRegion.end - 0.1
             };
         } else if (selectedValue === 'current') {
-            domUtils.appendHelpModalConfig(hModal, currentRegion);
+            domUtils.appendHelpModal(hModal, currentRegion);
             helpRegion = {
                 start: currentRegion.start + 0.1,
                 end: currentRegion.end - 0.1

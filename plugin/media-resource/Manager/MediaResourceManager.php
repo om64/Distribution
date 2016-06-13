@@ -160,6 +160,17 @@ class MediaResourceManager
         }
     }
 
+    public function copyOptions(MediaResource $new, MediaResource $original)
+    {
+        $originalOptions = $original->getOptions();
+        $newOptions = new Options();
+        $newOptions->setMode($originalOptions->getMode());
+        $newOptions->setTtsLanguage($originalOptions->getTtsLanguage());
+        $newOptions->setShowTextTranscription($originalOptions->getShowTextTranscription());
+        $new->setOptions($newOptions);
+        $this->em->persist($new);
+    }
+
     public function removeUpload($url)
     {
         $fullPath = $this->container->getParameter('claroline.param.files_directory')

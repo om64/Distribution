@@ -68,19 +68,24 @@ class RegionManager
         $entity->setNote($region->getNote());
         $entity->setUuid($region->getUuid());
 
-        $oldConfig = $region->getRegionConfig();
-        $regionConfig->setHelpTexts($oldConfig->getHelpTexts());
-        $regionConfig->setHelpLinks($oldConfig->getHelpLinks());
-        $regionConfig->setHasLoop($oldConfig->getHasLoop());
-        $regionConfig->setHasRate($oldConfig->getHasRate());
-        $regionConfig->setHasBackward($oldConfig->getHasBackward());
-        $regionConfig->setHelpRegionUuid($oldConfig->getHelpRegionUuid());
-
+        $oldRegionConfig = $region->getRegionConfig();
+        $helpTexts = $oldRegionConfig->getHelpTexts();
+        foreach ($helpTexts as $helpText) {
+            $regionConfig->addHelpText($helpText);
+        }
+        $helpLinks = $oldRegionConfig->getHelpLinks();
+        foreach ($helpLinks as $helpLink) {
+            $regionConfig->addHelpLink($helpLink);
+        }
+        $regionConfig->setHasLoop($oldRegionConfig->getHasLoop());
+        $regionConfig->setHasRate($oldRegionConfig->getHasRate());
+        $regionConfig->setHasBackward($oldRegionConfig->getHasBackward());
+        $regionConfig->setHelpRegionUuid($oldRegionConfig->getHelpRegionUuid());
         $this->save($entity);
     }
 
     /**
-     * Create/Update MediaResource region (title).
+     * Create/Update MediaResource regions and there config.
      *
      * @param MediaResource $mr
      * @param array of data
@@ -88,9 +93,6 @@ class RegionManager
     public function handleMediaResourceRegions(MediaResource $mr, $data)
     {
         $regions = $this->getRegionsFromData($data);
-
-        //print_r($regions);
-        //die;
 
         $this->deleteUnusedRegions($mr, $regions);
 
@@ -118,7 +120,6 @@ class RegionManager
             $entity->setUuid($region['uuid']);
 
             $config = $entity->getRegionConfig();
-
             $config->setHasLoop($region['loop']);
             $config->setHasRate($region['rate']);
             $config->setHasBackward($region['backward']);
@@ -145,7 +146,6 @@ class RegionManager
                 $i = 0;
                 foreach ($helpLinks as $helpLink) {
                     $helpLink->setUrl($region['helpLinks'][$i]);
-
                     ++$i;
                 }
             } else {

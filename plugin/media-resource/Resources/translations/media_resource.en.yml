@@ -64,7 +64,9 @@ play_current_region: Play / Pause current region
 play_pause_region: Play / Pause region
 
 #r
+region_help: Help
 region_help_preview: Preview planned help for the current region
+region_help_view: See availbale help
 region_config: Configure help for the region
 region_delete: Delete region
 region_config_allow_rate: Allow playback rate change
@@ -79,7 +81,7 @@ region_delete_confirm_base: Are you sure you want to delete this region?
 region_delete_confirm_sub: This region is related to one or more helps.<br/> Those helps will be automatically deleted.
 resource_update_success: Resource update successfull.
 resource_update_error: An error occured while updating resource.
-region_help_help_text_label: Show me the textual element
+region_help_help_text_label: Show textual(s) help
 region_help_help_links_label: Links
 region_help_segment_playback_label: Region playback
 region_help_segment_playback: Play the region

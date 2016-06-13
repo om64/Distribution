@@ -14,17 +14,20 @@
 <!-- media controls -->
 <div class="row">
     <div class="col-md-12 text-center">
+      <div class="btn-group">
         <button type="button" class="btn btn-default" onclick="play()" title="{{'play_pause' | trans({}, 'media_resource')}}">
             <i class="fa fa-play"></i>
             /
             <i class="fa fa-pause"></i>
         </button>
-        <button type="button" id="help-btn" disabled class="btn btn-default" onclick="toggleHelp()">
+        <button type="button" id="help-btn" disabled class="btn btn-primary" onclick="toggleHelp()">
             <i class="fa fa-question"></i>
         </button>
-        <button type="button" class="btn btn-default" onclick="deleteRegions()">
+        <button type="button" class="btn btn-default btn-warning" onclick="deleteRegions()">
             <i class="fa fa-trash-o"></i>
         </button>
+      </div>
+
     </div>
 </div>
 
