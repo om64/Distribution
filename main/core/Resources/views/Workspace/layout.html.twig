@@ -90,6 +90,28 @@
             window.Workspace.id = null;
         {% endif %}
     </script>
+
+    <script>
+        var postHeight = function postHeight() {
+            if (parent) {
+                console.log('child = ' + document.body.scrollHeight);
+
+                var message = 'documentHeight:'+document.body.scrollHeight;
+
+                parent.postMessage(message, "*");
+            }
+        };
+
+        postHeight();
+        window.onresize = function(event) {
+            console.log('child resize');
+            postHeight();
+        }
+
+        $(document).ready(function () {
+            postHeight();
+        });
+    </script>
 {% endblock %}
 
 {% block stylesheets %}
