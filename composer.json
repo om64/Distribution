@@ -132,8 +132,11 @@
         "claroline/dev-bundle": "*",
         "innova/video-recorder-bundle": "*",
         "innova/audio-recorder-bundle": "*",
-"innova/media-resource-bundle": "*",
+<<<<<<< cf7187ac7baff9b0abcca268f07de35cb4b93d77
         "ujm/exo-bundle": "*",
+=======
+        "innova/media-resource-bundle": "*",
+>>>>>>> first commit
         "icap/lesson-bundle": "*"
     },
     "autoload": {
@@ -185,9 +188,13 @@
             "UJM\\ExoBundle\\": "plugin/exo",
             "Innova\\VideoRecorderBundle\\": "plugin/video-recorder",
             "Innova\\AudioRecorderBundle\\": "plugin/audio-recorder",
-"Innova\\MediaResourceBundle\\": "plugin/media-resource",
+<<<<<<< cf7187ac7baff9b0abcca268f07de35cb4b93d77
             "Icap\\LessonBundle\\": "plugin/lesson",
             "Claroline\\FlashCardBundle\\": "plugin/flashcard"
+=======
+            "Innova\\MediaResourceBundle\\": "plugin/media-resource",
+            "Icap\\LessonBundle\\": "plugin/lesson"
+>>>>>>> first commit
         }
     },
     "extra": {
@@ -236,10 +243,13 @@
             "Icap\\WebsiteBundle\\IcapWebsiteBundle",
             "Innova\\VideoRecorderBundle\\InnovaVideoRecorderBundle",
             "Innova\\AudioRecorderBundle\\InnovaAudioRecorderBundle",
+<<<<<<< cf7187ac7baff9b0abcca268f07de35cb4b93d77
             "Icap\\LessonBundle\\IcapLessonBundle",
             "Claroline\\FlashCardBundle\\ClarolineFlashCardBundle",
- "Innova\\MediaResourceBundle\\InnovaMediaResourceBundle",
             "UJM\\ExoBundle\\UJMExoBundle",
+=======
+            "Innova\\MediaResourceBundle\\InnovaMediaResourceBundle",
+>>>>>>> first commit
             "Icap\\LessonBundle\\IcapLessonBundle"
         ]
     }
