@@ -64,7 +64,9 @@ play_current_region: Play / Pause pour la région courante
 play_pause_region: Play / Pause pour la région
 
 #r
+region_help: Aide
 region_help_preview: Prévisualiser les aides prévues pour la région courante
+region_help_view: Voir l'aide disponible
 region_config: Configurer l'aide pour la région
 region_delete: Supprimer la région
 region_config_allow_rate: Autoriser le changement de vitesse de lecture
@@ -80,7 +82,7 @@ region_delete_confirm_base: Etes vous sur de vouloir supprimer la région?
 region_delete_confirm_sub: Cette région est affectée à une ou plusieurs aides.<br/> Ces aides seront supprimées automatiquement.
 resource_update_success: La ressource a bien été mise à jour.
 resource_update_error: Une erreur est survenue lors de la mise à jour de la ressource.
-region_help_help_text_label: Voir l'élément textuel
+region_help_help_text_label: Montrer les aides textuelles
 region_help_help_links_label: Liens
 region_help_segment_playback_label: Lecture de la région
 region_help_segment_playback: Jouer la région

@@ -30,15 +30,15 @@ var DomUtils = {
         html += '               <div class="form-inline">';
         html += '                   <div class="form-group">';
         html += '                       <div class="input-group">';
-        html += '                           <label class="input-group-addon" style="width:250px;">' + Translator.trans('current_segment', {}, 'media_resource') + '</label>';
-        html += '                           <div class="input-group-addon">';
-        html += '                               <input type="radio" name="segment" value="current" checked>';
-        html += '                           </div>';
-        html += '                           <button class="btn btn-default" title="' + Translator.trans('region_help_segment_playback', {}, 'media_resource') + '"  onclick="playHelp(' + current.start + ', ' + current.end + ', ' + false + ',' + false + ')" style="margin:5px;">';
-        html += '                               <i class="fa fa-play"></i> ';
-        html += '                               / ';
-        html += '                               <i class="fa fa-pause"></i>';
-        html += '                           </button>';
+        html += '                         <label class="input-group-addon" style="width:250px;">' + Translator.trans('current_segment', {}, 'media_resource') + '</label>';
+        html += '                         <div class="input-group-addon">';
+        html += '                           <input type="radio" name="segment" value="current" checked>';
+        html += '                         </div>';
+        html += '                         <button class="btn btn-default" style="margin:5px;" title="' + Translator.trans('region_help_segment_playback', {}, 'media_resource') + '"  onclick="playHelp(' + current.start + ', ' + current.end + ', ' + false + ',' + false + ')">';
+        html += '                           <i class="fa fa-play"></i> ';
+        html += '                             / ';
+        html += '                           <i class="fa fa-pause"></i>';
+        html += '                         </button>';
         html += '                       </div>';
         html += '                   </div>';
         html += '               </div>';
@@ -52,7 +52,7 @@ var DomUtils = {
             html += '                       <div class="input-group-addon">';
             html += '                           <input type="radio" name="segment" value="previous">';
             html += '                       </div>';
-            html += '                       <button disabled class="btn btn-default" title="' + Translator.trans('region_help_segment_playback', {}, 'media_resource') + '" onclick="playHelp(' + previous.start + ', ' + previous.end + ', ' + false + ',' + false + ')" style="margin:5px;">';
+            html += '                       <button disabled style="margin:5px;" class="btn btn-default" title="' + Translator.trans('region_help_segment_playback', {}, 'media_resource') + '" onclick="playHelp(' + previous.start + ', ' + previous.end + ', ' + false + ',' + false + ')">';
             html += '                           <i class="fa fa-play"></i> ';
             html += '                           / ';
             html += '                           <i class="fa fa-pause"></i>';
@@ -86,6 +86,7 @@ var DomUtils = {
     },
     /**
      * Allow author to set witch help will be available for the region
+     * this methoid build the modal and open it
      * @param {type} elem current clicked config button
      */
     openConfigRegionModal: function (elem) {
@@ -218,7 +219,7 @@ var DomUtils = {
         html += '               </select>';
         html += '             </div>';
         html += '             <div class="col-md-2">';
-        html += '               <button class="btn btn-default" id="btn-help-related-region-play" style="margin:5px;">';
+        html += '               <button class="btn btn-default" id="btn-help-related-region-play">';
         html += '               <i class="fa fa-play"></i> ';
         html += '                / ';
         html += '               <i class="fa fa-pause"></i>';
@@ -280,10 +281,13 @@ var DomUtils = {
         });
         return modal;
     },
-    appendHelpModalConfig: function (modal, region) {
+    /**
+    * append available help in the help modal
+    */
+    appendHelpModal: function (modal, region) {
         var root = $(modal).find('#region-help-available');
         $(root).empty();
-        var html = '<hr/>';
+        var html = '';
         if (region.hasHelp) {
             if (region.loop) {
                 html += '<div class="row">';
@@ -322,23 +326,26 @@ var DomUtils = {
                 html += '       <button id="btn-show-help-text" class="btn btn-default" title="' + Translator.trans('region_help_help_text_label', {}, 'media_resource') + '" style="margin:5px;">';
                 html += Translator.trans('region_help_help_text_label', {}, 'media_resource');
                 html += '       </button>';
-                html += '       <label id="help-modal-help-text" style="margin:5px;display:none;"></label>';
+                html += '       <label id="help-modal-help-text" style="display:none;"></label>';
                 html += '   </div>';
                 html += '</div>';
             }
 
             if(region.links.length > 0){
-              html +=  '<hr/>';
-              html +=  '<h4>' + Translator.trans('region_help_help_links_label', {}, 'media_resource') + '</h4>';
-              html +=  '<hr/>';
+              html += '<hr/>';
+              html += '<h4>' + Translator.trans('region_help_help_links_label', {}, 'media_resource') + '</h4>';
+              html += '<div class="row">';
+              html += '   <div class="col-md-12">';
+              html += '       <ul class="help-links-ul">';
               for (var i = 0; i < region.links.length ; i++) {
-                  html += '<div class="row">';
-                  html += '   <div class="col-md-12">';
-                  html += '       <a target="_blank" href="'+region.links[i]+'">lien '+i+'</a>';
-                  html += '   </div>';
-                  html += '</div>';
-                  html += '<hr/>';
+                  var index = i+1;
+                  html += '       <li>';
+                  html += '         <a target="_blank" href="'+region.links[i]+'">lien '+index+'</a>';
+                  html += '       </li>';
               }
+              html += '       </ul>';
+              html += '   </div>';
+              html += '</div>';
             }
             if (region.relatedRegionUuid) {
                 var helpRegionStart = this.getHelpRelatedRegionStart(region.relatedRegionUuid);

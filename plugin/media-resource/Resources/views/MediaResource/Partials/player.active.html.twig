@@ -14,13 +14,18 @@
 <!-- media controls -->
 <div class="row">
     <div class="col-md-12 text-center">
+        <div class="btn-group">
+          <button type="button" class="btn btn-default" data-action="play" title="{{'play_pause' | trans({}, 'media_resource')}}">
+              <i class="fa fa-play"></i>
+              /
+              <i class="fa fa-pause"></i>
+          </button>
+          <button type="button" class="btn btn-primary" data-action="help" title="{{'region_help_view' | trans({}, 'media_resource')}}">
+            <i class="fa fa-question"></i>
+          </button>
+        </div>
 
-        <button type="button" class="btn btn-default" data-action="play" title="{{'play_pause' | trans({}, 'media_resource')}}">
-            <i class="fa fa-play"></i>
-            /
-            <i class="fa fa-pause"></i>
-        </button>
-        <button type="button" class="btn btn-default fa fa-question" data-action="help" title="{{'region_help' | trans({}, 'media_resource')}}"></button>
+
     </div>
 </div>
 <hr/>

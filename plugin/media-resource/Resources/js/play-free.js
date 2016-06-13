@@ -82,30 +82,6 @@ $(document).ready(function() {
     helpAudioPlayer.src = audioUrl;
     wavesurfer.load(audioUrl);
 
-    // used for the "auto-pause" playback
-    /*helpAudioPlayer.addEventListener('timeupdate', function() {
-        if (isInAutoPause && helpAudioPlayer.currentTime >= currentAutoPauseRegion.end) {
-            helpAudioPlayer.pause();
-            wavesurfer.pause();
-            var nextRegion = getRegionFromTime(currentAutoPauseRegion.end + 0.1);
-            if (nextRegion) {
-                window.setTimeout(function() {
-                    currentAutoPauseRegion = nextRegion;
-                    var progress = currentAutoPauseRegion.start / wavesurfer.getDuration();
-                    wavesurfer.seekTo(progress);
-                    console.log('currentAutoPauseRegion.start');
-                    console.log(currentAutoPauseRegion.start);
-                    playAutoPause(currentAutoPauseRegion.start);
-                }, 2000);
-            } else {
-                wavesurfer.seekTo(0);
-                helpAudioPlayer.pause();
-                wavesurfer.setVolume(1);
-                isInAutoPause = false;
-            }
-        }
-    });*/
-
     createRegions();
     if (regions.length > 0) {
         currentRegion = regions[0];
@@ -125,12 +101,14 @@ $(document).ready(function() {
 
     wavesurfer.on('seek', function() {
         if (playing) {
-            wavesurfer.pause();
+            if (wavesurfer.isPlaying()) {
+              wavesurfer.pause();
+              wavesurfer.setVolume(1);
+              wavesurfer.setPlaybackRate(1);
+            }
             // pause help
             helpAudioPlayer.pause();
             helpAudioPlayer.currentTime = 0;
-            wavesurfer.setVolume(1);
-            wavesurfer.setPlaybackRate(1);
         }
         var current = getRegionFromCurrentTime();
         if (current && currentRegion && current.id != currentRegion.id) {
@@ -487,6 +465,7 @@ function showHelpText() {
     }
     var current = getRegionFromCurrentTime();
 
+
     $('.help-text-item').text(current.texts[currentHelpTextIndex]);
     if (currentHelpTextIndex < current.texts.length - 1) {
         currentHelpTextIndex++;
@@ -528,8 +507,13 @@ function createRegions() {
         var loop = $(this).find('input.hidden-config-loop').val() === '1';
         var backward = $(this).find('input.hidden-config-backward').val() === '1';
         var rate = $(this).find('input.hidden-config-rate').val() === '1';
-        var texts = $(this).find('input.hidden-config-text').val() !== '' ? $(this).find('input.hidden-config-text').val().split(';') : false;
-        var hasHelp = rate || backward || (texts && texts.length > 0) || loop || helpUuid !== '';
+        var texts = [];
+        $(this).find('.hidden-help-texts').each(function() {
+            if ($(this).val() !== '') {
+                texts.push($(this).val());
+            }
+        });
+        var hasHelp = rate || backward || texts.length > 0 || loop || helpUuid !== '';
         var region = {
             id: id,
             uuid: uuid,

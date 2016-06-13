@@ -147,6 +147,8 @@ class MediaResourceListener extends ContainerAware
         $new = new MediaResource();
         $new->setName($toCopy->getName());
 
+        // copy options
+        $this->container->get('innova_media_resource.manager.media_resource')->copyOptions($new, $toCopy);
         // duplicate media resource media(s) (=file(s))
         $medias = $toCopy->getMedias();
         foreach ($medias as $media) {
