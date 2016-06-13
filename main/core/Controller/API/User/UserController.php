@@ -255,7 +255,6 @@ class UserController extends FOSRestController
     }
 
     /**
-     * @View(serializerGroups={"api_user"})
      * @ApiDoc(
      *     description="Returns a user",
      *     views = {"user"}
@@ -264,7 +263,41 @@ class UserController extends FOSRestController
      */
     public function getPublicUserAction(User $user)
     {
-        return $user;
+        $settingsProfile = $this->profilePropertyManager->getAccessesForCurrentUser();
+        $publicUser = [];
+
+        foreach ($settingsProfile as $property => $isEditable) {
+            if ($isEditable || $user === $this->container->get('security.token_storage')->getToken()->getUser()) {
+                switch ($property) {
+                    case 'administrativeCode':
+                        $publicUser['administrativeCode'] = $user->getAdministrativeCode();
+                        break;
+                    case 'description':
+                        $publicUser['description'] = $user->getAdministrativeCode();
+                        break;
+                    case 'email':
+                        $publicUser['email'] = $user->getMail();
+                        break;
+                    case 'firstName':
+                        $publicUser['firstName'] = $user->getFirstName();
+                        break;
+                    case 'lastName':
+                        $publicUser['lastName'] = $user->getLastName();
+                        break;
+                    case 'phone':
+                        $publicUser['phone'] = $user->getPhone();
+                        break;
+                    case 'picture':
+                        $publicUser['picture'] = $user->getPicture();
+                        break;
+                    case 'username':
+                        $publicUser['username'] = $user->getUsername();
+                        break;
+                }
+            }
+        }
+
+        return $publicUser;
     }
 
     /**

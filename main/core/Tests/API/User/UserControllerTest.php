@@ -15,7 +15,7 @@ class UserControllerTest extends TransactionalTestCase
         parent::setUp();
         $this->persister = $this->client->getContainer()->get('claroline.library.testing.persister');
     }
-
+/*
     public function testGetUsersAction()
     {
         //initialization
@@ -494,6 +494,39 @@ class UserControllerTest extends TransactionalTestCase
     public function testCsvImportFacetsAction()
     {
         $this->markTestIncomplete('This test has not been implemented yet.');
+    }
+*/
+    public function testGetPublicUserAction()
+    {
+        $admin = $this->createAdmin();
+        $user = $this->persister->user('user');
+
+        $this->logIn($user);
+        $this->client->request('GET', "/api/user/{$user->getId()}/public");
+        $data = json_decode($this->client->getResponse()->getContent(), true);
+        $this->assertEquals(
+            ['email' => 'user@mail.com', 'firstName' => 'user', 'lastName' => 'user', 'username' => 'user'],
+            $data
+        );
+
+        $this->client->request('GET', "/api/user/{$admin->getId()}/public");
+        $data = json_decode($this->client->getResponse()->getContent(), true);
+        $this->assertEquals([], $data);
+
+        //add a few profileProperty
+        $prop = $this->persister->profileProperty('username', 'ROLE_USER');
+        $this->persister->flush();
+        $this->client->request('GET', "/api/user/{$admin->getId()}/public");
+        $data = json_decode($this->client->getResponse()->getContent(), true);
+        $this->assertEquals(['username' => 'admin'], $data);
+
+        $this->logIn($admin);
+        $this->client->request('GET', "/api/user/{$user->getId()}/public");
+        $data = json_decode($this->client->getResponse()->getContent(), true);
+        $this->assertEquals(
+            ['email' => 'user@mail.com', 'firstName' => 'user', 'lastName' => 'user', 'username' => 'user'],
+            $data
+        );
     }
 
     private function createAdmin()
