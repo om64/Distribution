@@ -240,7 +240,6 @@
             "Claroline\\FlashCardBundle\\ClarolineFlashCardBundle",
             "UJM\\ExoBundle\\UJMExoBundle",
             "Innova\\MediaResourceBundle\\InnovaMediaResourceBundle",
-            "Innova\\MediaResourceBundle\\InnovaMediaResourceBundle",
             "Icap\\LessonBundle\\IcapLessonBundle"
         ]
     }
