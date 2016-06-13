@@ -1,8 +1,8 @@
 <div>
     <!-- Angular can't initialize 2 directives on same element (here, PathSummaryDirective & NgPageslideDirective) so we need a container -->
-    <div data-ng-if="pathSummaryShowCtrl.state.opened" class="path-summary-container panel panel-default">
+    <div class="path-summary-container panel panel-default" data-ng-if="pathSummaryShowCtrl.state.opened">
         <!-- List title -->
-        <div class="panel-heading">
+        <!--<div class="panel-heading">
             <h3 class="panel-title">
                 <span class="fa fa-sitemap"></span>
                 {{ pathSummaryShowCtrl.title }}
@@ -11,7 +11,7 @@
                 <span class="fa fa-angle-double-left"></span>
                 <span class="sr-only">{{ 'sidebar_close'|trans:{}:'path_wizards' }}</span>
             </a>
-        </div>
+        </div>-->
 
         <div class="path-summary">
             <!-- Block to display where there is no structure -->
@@ -25,6 +25,20 @@
                     <li data-ui-tree-node="" data-ng-repeat="step in pathSummaryShowCtrl.structure" data-ng-include="pathSummaryShowCtrl.webDir + 'bundles/innovapath/js/PathSummary/Partial/show-item.html'"></li>
                 </ul>
             </div>
+        </div>
+
+        <div class="panel-body">
+            <div class="progress" style="margin-bottom: 0px;">
+                <div class="progress-bar" role="progressbar" aria-valuenow="60" aria-valuemin="0" aria-valuemax="100" style="width: 60%;">
+                    <span class="fa fa-angle-double-right"></span>
+                    Progression: <b>60%</b>
+                </div>
+            </div>
+        </div>
+
+        <div class="panel-footer" data-ng-click="pathSummaryShowCtrl.close()">
+            <span class="fa fa-fw fa-times"></span>
+            close summary
         </div>
     </div>
 </div>

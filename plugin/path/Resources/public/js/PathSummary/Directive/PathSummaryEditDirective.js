@@ -12,7 +12,16 @@
                 scope: {
                     title: '='
                 },
-                bindToController: true
+                bindToController: true,
+                link: function (scopre, element, attr) {
+                    /*element.affix({
+                        offset: {
+                            bottom: function () {
+                                return (this.bottom = $('#footer').outerHeight(true))
+                            }
+                        }
+                    })*/
+                }
             };
         }
     ]);

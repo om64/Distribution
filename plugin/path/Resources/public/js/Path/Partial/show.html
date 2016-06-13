@@ -1,39 +1,33 @@
-<div class="path-show">
+<div class="path-container path-show">
+    <div class="path-header clearfix">
+        <h1 class="h4">
+            <!--<button type="button" role="button" style="margin-right: 5px;" class="btn btn-sm btn-primary btn-path-edit" data-ng-if="pathShowCtrl.path.steps.length !== 0 && pathShowCtrl.editEnabled" data-ng-click="pathShowCtrl.edit()" data-placement="top" data-toggle="tooltip" data-original-title="{{ 'edit'|trans:{}:'path_wizards' }}">
+                <span class="fa fa-fw fa-pencil"></span>
+                <span class="sr-only">{{ 'edit'|trans:{}:'path_wizards' }}</span>
+            </button>-->
+
+            {{ pathShowCtrl.path.name }}
+        </h1>
+
+        <!-- Toggle summary button -->
+        <button type="button" role="button" class="path-summary-toggle btn btn-default pull-left" data-ng-click="pathShowCtrl.toggleSummary()" data-placement="top" data-toggle="tooltip" data-original-title="{{ 'toggle_summary'|trans:{}:'path_wizards' }}" data-ng-class="{ 'opened': pathShowCtrl.summaryState.opened }">
+            <span class="fa fa-list"></span>
+            <span class="sr-only">{{ 'toggle_summary'|trans:{}:'path_wizards' }}</span>
+        </button>
+
+        <!-- Path description -->
+        <div data-ng-if="pathShowCtrl.path.description" data-ng-bind-html="pathShowCtrl.path.description | trustAsHtml"></div>
+    </div>
+
     <div class="row">
-        <div class="col-md-4">
-            <!-- Summary of the Path-->
-            <path-summary-show data-title="pathShowCtrl.path.name" data-ng-if="pathShowCtrl.path.steps.length !== 0"></path-summary-show>
-        </div>
+        <!-- Summary of the Path-->
+        <path-summary-show
+                data-ng-class="{ 'col-md-4': pathShowCtrl.summaryState.opened }"
+                data-ng-if="pathShowCtrl.path.steps.length !== 0"></path-summary-show>
 
-        <div class="col-md-8">
-            <div class="path-header">
-                <h1 class="h2" style="margin-top: 0;">
-                    <!-- Toggle summary button -->
-                    <button type="button" role="button" class="btn btn-sm btn-default" data-ng-click="pathShowCtrl.toggleSummary()" data-placement="top" data-toggle="tooltip" data-original-title="{{ 'toggle_summary'|trans:{}:'path_wizards' }}" data-ng-class="{ 'active': pathShowCtrl.summaryState.opened }">
-                        <span class="fa fa-sitemap"></span>
-                        <span class="sr-only">{{ 'toggle_summary'|trans:{}:'path_wizards' }}</span>
-                    </button>
-
-                    <button type="button" role="button" style="margin-right: 5px;" class="btn btn-sm btn-primary btn-path-edit" data-ng-if="pathShowCtrl.path.steps.length !== 0 && pathShowCtrl.editEnabled" data-ng-click="pathShowCtrl.edit()" data-placement="top" data-toggle="tooltip" data-original-title="{{ 'edit'|trans:{}:'path_wizards' }}">
-                        <span class="fa fa-fw fa-pencil"></span>
-                        <span class="sr-only">{{ 'edit'|trans:{}:'path_wizards' }}</span>
-                    </button>
-
-                    {{ pathShowCtrl.path.name }}
-
-
-                    <!--<div class="pull-right">
-                        <button type="button" role="button" class="btn btn-sm btn-primary btn-path-edit" data-ng-if="pathShowCtrl.path.steps.length !== 0 && pathShowCtrl.editEnabled" data-ng-click="pathShowCtrl.edit()">
-                            <span class="fa fa-fw fa-pencil"></span>
-                            <span class="sr-only">{{ 'edit'|trans:{}:'path_wizards' }}</span>
-                        </button>
-                    </div>-->
-                </h1>
-                <div data-ng-if="pathShowCtrl.path.description" data-ng-bind-html="pathShowCtrl.path.description | trustAsHtml"></div>
-
-                <!-- Breadcrumbs -->
-                <path-navigation data-ng-if="pathShowCtrl.path.breadcrumbs && pathShowCtrl.path.steps.length !== 0"></path-navigation>
-            </div>
+        <div data-ng-class="{ 'col-md-8': pathShowCtrl.summaryState.opened, 'col-md-12': !pathShowCtrl.summaryState.opened }">
+            <!-- Breadcrumbs -->
+            <path-navigation class="hidden-xs" data-ng-if="pathShowCtrl.path.breadcrumbs && pathShowCtrl.path.steps.length !== 0"></path-navigation>
 
             <!-- Current step -->
             <div data-ng-view="" data-ng-if="pathShowCtrl.path.steps.length !== 0"></div>

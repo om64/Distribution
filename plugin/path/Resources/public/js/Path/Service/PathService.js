@@ -474,7 +474,7 @@ PathService.prototype.reorderSteps = function reorderSteps(steps) {
  * @param {Boolean} displayNew - If true, the router will redirect to the created step
  */
 PathService.prototype.addStep = function addStep(parent, displayNew) {
-    if (parent.lvl < maxDepth) {
+    if (parent.lvl < this.maxDepth) {
         // Create a new step
         var step = this.StepService.new(parent);
 

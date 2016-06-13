@@ -1,6 +1,6 @@
-<li class="step-item lvl lvl-{{ pathNavigationItemCtrl.element.lvl }} lvl-zindex-reverse lvl-hover lvl-border" data-ng-class="{ 'dropdown': 1 < pathNavigationItemCtrl.parent.children.length, 'current': pathNavigationItemCtrl.element.id == pathNavigationItemCtrl.current.id  }">
+<li class="step-item lvl lvl-{{ pathNavigationItemCtrl.element.lvl }} lvl-zindex-reverse lvl-border" data-ng-class="{ 'dropdown': 1 < pathNavigationItemCtrl.parent.children.length, 'current': pathNavigationItemCtrl.element.id == pathNavigationItemCtrl.current.id  }">
     <!-- Step level -->
-    <div class="lvl-indicator lvl lvl-{{ pathNavigationItemCtrl.element.lvl }} lvl-bg"></div>
+    <!--<div class="lvl-indicator lvl lvl-{{ pathNavigationItemCtrl.element.lvl }} lvl-bg"></div>-->
 
     <!-- Step link (if `element` is not the current step) -->
     <a data-ng-if="pathNavigationItemCtrl.element.id != pathNavigationItemCtrl.current.id" href="#/{{ pathNavigationItemCtrl.element.id }}">{{ pathNavigationItemCtrl.element.name | truncate }}</a>
