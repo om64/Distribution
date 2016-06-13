@@ -15,7 +15,7 @@ class UserControllerTest extends TransactionalTestCase
         parent::setUp();
         $this->persister = $this->client->getContainer()->get('claroline.library.testing.persister');
     }
-/*
+
     public function testGetUsersAction()
     {
         //initialization
@@ -495,7 +495,7 @@ class UserControllerTest extends TransactionalTestCase
     {
         $this->markTestIncomplete('This test has not been implemented yet.');
     }
-*/
+
     public function testGetPublicUserAction()
     {
         $admin = $this->createAdmin();
