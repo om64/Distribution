@@ -44,6 +44,14 @@ class InteractionGraphicHandler extends QuestionHandler
         $interGraph->getQuestion()->setUser($this->user); // add the user to the question
 
         if ($this->request != null) {
+            $width = $this->request->get('imagewidth'); // Get the width of the image
+            $height = $this->request->get('imageheight'); // Get the height of the image
+
+            $picture = $this->em->getRepository('UJMExoBundle:Picture')->findOneBy(array('id' => $interGraph->getPicture()));
+
+            $picture->setHeight($height);
+            $picture->setWidth($width);
+
             $coords = $this->request->get('coordsZone'); // Get the answer zones
 
             $coord = preg_split('[##]', $coords); // Split all informations of one answer zones into a cell
