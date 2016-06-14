@@ -222,4 +222,20 @@ class QcmImport extends QtiImport
         $val = $reponseEsle->getElementsByTagName('baseValue')->item(0)->nodeValue;
         $this->interactionQCM->setScoreFalseResponse($val);
     }
+
+    /**
+     * Implements the abstract method.
+     */
+    protected function qtiValidate()
+    {
+        if ($this->assessmentItem->getElementsByTagName('responseDeclaration')->item(0) == null) {
+            return false;
+        }
+        $ib = $this->assessmentItem->getElementsByTagName('itemBody')->item(0);
+        if ($ib->getElementsByTagName('choiceInteraction')->item(0) == null) {
+            return false;
+        }
+
+        return true;
+    }
 }
