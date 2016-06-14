@@ -181,12 +181,12 @@
             "Claroline\\DevBundle\\": "main/dev",
             "Claroline\\WebInstaller\\": "main/web-installer/",
             "Icap\\WebsiteBundle\\": "plugin/website",
+            "UJM\\ExoBundle\\": "plugin/exo",
             "Innova\\VideoRecorderBundle\\": "plugin/video-recorder",
             "Innova\\AudioRecorderBundle\\": "plugin/audio-recorder",
             "Icap\\LessonBundle\\": "plugin/lesson",
             "Claroline\\FlashCardBundle\\": "plugin/flashcard",
-            "Innova\\MediaResourceBundle\\": "plugin/media-resource",
-            "Icap\\LessonBundle\\": "plugin/lesson"
+            "Innova\\MediaResourceBundle\\": "plugin/media-resource"
         }
     },
     "extra": {
@@ -238,8 +238,7 @@
             "Icap\\LessonBundle\\IcapLessonBundle",
             "Claroline\\FlashCardBundle\\ClarolineFlashCardBundle",
             "UJM\\ExoBundle\\UJMExoBundle",
-            "Innova\\MediaResourceBundle\\InnovaMediaResourceBundle",
-            "Icap\\LessonBundle\\IcapLessonBundle"
+            "Innova\\MediaResourceBundle\\InnovaMediaResourceBundle"
         ]
     }
 }
