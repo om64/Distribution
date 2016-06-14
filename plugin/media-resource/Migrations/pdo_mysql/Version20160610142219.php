@@ -37,7 +37,7 @@ class Version20160610142219 extends AbstractMigration
             CREATE TABLE media_resource_options (
                 id INT AUTO_INCREMENT NOT NULL,
                 mode VARCHAR(255) NOT NULL,
-                showTextTranscription TINYINT(1) DEFAULT '0' NOT NULL,
+                showTextTranscription TINYINT(1) DEFAULT 0 NOT NULL,
                 ttsLanguage VARCHAR(5) NOT NULL,
                 PRIMARY KEY(id)
             ) DEFAULT CHARACTER SET utf8 COLLATE utf8_unicode_ci ENGINE = InnoDB
