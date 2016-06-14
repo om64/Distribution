@@ -435,12 +435,26 @@ class UserManager
                 $groupName = null;
             }
 
+            if (isset($user[9])) {
+                $organizationName = trim($user[9]) === '' ? null : $user[9];
+            } else {
+                $organizationName = null;
+            }
+
             if ($modelName) {
                 $model = $this->objectManager
                     ->getRepository('Claroline\CoreBundle\Entity\Model\WorkspaceModel')
                     ->findOneByName($modelName);
             } else {
                 $model = null;
+            }
+
+            if ($organizationName) {
+                $organization = $this->objectManager
+                    ->getRepository('Claroline\CoreBundle\Entity\Organization\Organization')
+                    ->findOneByName($organizationName);
+            } else {
+                $organization = null;
             }
 
             $group = $groupName ? $this->groupManager->getGroupByName($groupName) : null;
@@ -462,6 +476,10 @@ class UserManager
 
             if ($group) {
                 $this->groupManager->addUsersToGroup($group, array($newUser));
+            }
+
+            if ($organization) {
+                $user->addOrganization($organization);
             }
 
             if ($logger) {
