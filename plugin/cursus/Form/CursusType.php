@@ -11,44 +11,47 @@
 
 namespace Claroline\CursusBundle\Form;
 
+use Claroline\CoreBundle\Form\Angular\AngularType;
 use Claroline\CursusBundle\Entity\Cursus;
-use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolverInterface;
 
-class CursusType extends AbstractType
+class CursusType extends AngularType
 {
     private $cursus;
+    private $forApi = false;
+    private $ngAlias;
 
-    public function __construct(Cursus $cursus = null)
+    public function __construct(Cursus $cursus = null, $ngAlias = 'cmc')
     {
         $this->cursus = $cursus;
+        $this->ngAlias = $ngAlias;
     }
 
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
-        $details = is_null($this->cursus) ? array() : $this->cursus->getDetails();
+        $details = is_null($this->cursus) ? [] : $this->cursus->getDetails();
         $color = isset($details['color']) ? $details['color'] : null;
 
         $builder->add(
             'title',
             'text',
-            array('required' => true)
+            ['required' => true]
         );
         $builder->add(
             'code',
             'text',
-            array('required' => false)
+            ['required' => false]
         );
         $builder->add(
             'description',
-            'tinymce',
-            array('required' => false)
+            'textarea',
+            ['required' => false]
         );
         $builder->add(
             'workspace',
             'entity',
-            array(
+            [
                 'class' => 'Claroline\CoreBundle\Entity\Workspace\Workspace',
                 'choice_translation_domain' => true,
                 'required' => false,
@@ -62,23 +65,30 @@ class CursusType extends AbstractType
                 },
                 'label' => 'workspace',
                 'translation_domain' => 'platform',
-            )
+            ]
         );
         $builder->add(
             'blocking',
-            'checkbox',
-            array('required' => true)
+            'choice',
+            [
+                'choices' => ['yes' => true, 'no' => false],
+                'label' => 'blocking',
+                'required' => true,
+                'choices_as_values' => true,
+                'data' => is_null($this->cursus) ? false : $this->cursus->isBlocking(),
+            ]
         );
         $builder->add(
             'color',
             'text',
-            array(
+            [
                 'required' => false,
                 'mapped' => false,
                 'data' => $color,
                 'label' => 'color',
                 'translation_domain' => 'platform',
-            )
+                'attr' => ['colorpicker' => 'hex'],
+            ]
         );
     }
 
@@ -89,6 +99,18 @@ class CursusType extends AbstractType
 
     public function setDefaultOptions(OptionsResolverInterface $resolver)
     {
-        $resolver->setDefaults(array('translation_domain' => 'cursus'));
+        $default = ['translation_domain' => 'cursus'];
+
+        if ($this->forApi) {
+            $default['csrf_protection'] = false;
+        }
+        $default['ng-model'] = 'cursus';
+        $default['ng-controllerAs'] = $this->ngAlias;
+        $resolver->setDefaults($default);
+    }
+
+    public function enableApi()
+    {
+        $this->forApi = true;
     }
 }

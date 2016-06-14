@@ -1,7 +1,8 @@
 {
   "webpack": {
     "entry": {
-      "registration": "modules/Registration/module"
+      "registration": "modules/Registration/module",
+      "management": "modules/Management/management"
     }
   }
 }

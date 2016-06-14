@@ -22,12 +22,13 @@ use Claroline\CursusBundle\Entity\CourseSession;
 use Claroline\CursusBundle\Entity\CourseSessionRegistrationQueue;
 use Claroline\CursusBundle\Entity\CourseSessionUser;
 use Claroline\CursusBundle\Manager\CursusManager;
+use FOS\RestBundle\Controller\Annotations\Get;
 use FOS\RestBundle\Controller\Annotations\NamePrefix;
 use FOS\RestBundle\Controller\Annotations\View;
 use FOS\RestBundle\Controller\FOSRestController;
 use JMS\DiExtraBundle\Annotation as DI;
 use Nelmio\ApiDocBundle\Annotation\ApiDoc;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\ParamConverter;
+use Sensio\Bundle\FrameworkExtraBundle\Configuration as EXT;
 use Symfony\Component\Form\FormFactory;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\RequestStack;
@@ -59,6 +60,10 @@ class CursusController extends FOSRestController
     }
 
     /**
+     * @EXT\Route(
+     *     "/root/cursus/all",
+     *     name="api_get_all_root_cursus"
+     * )
      * @View(serializerGroups={"api_cursus"})
      * @ApiDoc(
      *     description="Returns root cursus list",
@@ -68,6 +73,22 @@ class CursusController extends FOSRestController
     public function getAllRootCursusAction()
     {
         return $this->cursusManager->getAllRootCursus('', 'cursusOrder');
+    }
+
+    /**
+     * @EXT\Route(
+     *     "/cursus/{cursus}",
+     *     name="api_get_one_cursus"
+     * )
+     * @View(serializerGroups={"api_cursus"})
+     * @ApiDoc(
+     *     description="Returns a cursus",
+     *     views = {"cursus"}
+     * )
+     */
+    public function getOneCursusAction(Cursus $cursus)
+    {
+        return [$cursus];
     }
 
     /**
@@ -453,6 +474,90 @@ class CursusController extends FOSRestController
         return $results;
     }
 
+    /**
+     * @View(serializerGroups={"api_cursus"})
+     * @ApiDoc(
+     *     description="Returns the courses list",
+     *     views = {"cursus"}
+     * )
+     * @Get("/all/courses/ordered/by/{orderedBy}/order/{order}/page/{page}/max/{max}")
+     */
+    public function getAllCoursesAction($orderedBy = 'title', $order = 'ASC', $page = 1, $max = 20)
+    {
+        $courses = $this->cursusManager->getAllCourses('', $orderedBy, $order, true, $page, $max);
+
+        return [
+            'search' => '',
+            'currentPage' => $courses->getCurrentPage(),
+            'maxPerPage' => $courses->getMaxPerPage(),
+            'nbPages' => $courses->getNbPages(),
+            'courses' => $courses->getCurrentPageResults()
+        ];
+    }
+
+    /**
+     * @View(serializerGroups={"api_cursus"})
+     * @ApiDoc(
+     *     description="Returns the searched courses list",
+     *     views = {"cursus"}
+     * )
+     * @Get("/searched/courses/ordered/by/{orderedBy}/order/{order}/page/{page}/max/{max}/search/{search}")
+     */
+    public function getSearchedCoursesAction($search, $orderedBy = 'title', $order = 'ASC', $page = 1, $max = 20)
+    {
+        $courses = $this->cursusManager->getAllCourses($search, $orderedBy, $order, true, $page, $max);
+
+        return [
+            'search' => $search,
+            'currentPage' => $courses->getCurrentPage(),
+            'maxPerPage' => $courses->getMaxPerPage(),
+            'nbPages' => $courses->getNbPages(),
+            'courses' => $courses->getCurrentPageResults()
+        ];
+    }
+
+    /**
+     * @View(serializerGroups={"api_cursus"})
+     * @ApiDoc(
+     *     description="Returns the unmapped courses list",
+     *     views = {"cursus"}
+     * )
+     * @Get("/cursus/{cursus}/all/unmapped/courses/ordered/by/{orderedBy}/order/{order}/page/{page}/max/{max}")
+     */
+    public function getAllUnmappedCoursesAction(Cursus $cursus, $orderedBy = 'title', $order = 'ASC', $page = 1, $max = 20)
+    {
+        $courses = $this->cursusManager->getUnmappedCoursesByCursus($cursus, '', $orderedBy, $order, true, $page, $max);
+
+        return [
+            'search' => '',
+            'currentPage' => $courses->getCurrentPage(),
+            'maxPerPage' => $courses->getMaxPerPage(),
+            'nbPages' => $courses->getNbPages(),
+            'courses' => $courses->getCurrentPageResults()
+        ];
+    }
+
+    /**
+     * @View(serializerGroups={"api_cursus"})
+     * @ApiDoc(
+     *     description="Returns the searched unmapped courses list",
+     *     views = {"cursus"}
+     * )
+     * @Get("/cursus/{cursus}/searched/unmapped/courses/ordered/by/{orderedBy}/order/{order}/page/{page}/max/{max}/search/{search}")
+     */
+    public function getSearchedUnmappedCoursesAction(Cursus $cursus, $search, $orderedBy = 'title', $order = 'ASC', $page = 1, $max = 20)
+    {
+        $courses = $this->cursusManager->getUnmappedCoursesByCursus($cursus, $search, $orderedBy, $order, true, $page, $max);
+
+        return [
+            'search' => $search,
+            'currentPage' => $courses->getCurrentPage(),
+            'maxPerPage' => $courses->getMaxPerPage(),
+            'nbPages' => $courses->getNbPages(),
+            'courses' => $courses->getCurrentPageResults()
+        ];
+    }
+
     /***********************************
      * Not used in angular refactoring *
      ***********************************/
@@ -532,7 +637,7 @@ class CursusController extends FOSRestController
      *     description="Register an user to a cursus",
      *     views = {"cursus"}
      * )
-     * @ParamConverter("user", class="ClarolineCoreBundle:User", options={"repository_method" = "findForApi"})
+     * @EXT\ParamConverter("user", class="ClarolineCoreBundle:User", options={"repository_method" = "findForApi"})
      */
     public function addUserToCursusAction(User $user, Cursus $cursus)
     {
@@ -547,7 +652,7 @@ class CursusController extends FOSRestController
      *     description="Unregister an user from a cursus",
      *     views = {"cursus"}
      * )
-     * @ParamConverter("user", class="ClarolineCoreBundle:User", options={"repository_method" = "findForApi"})
+     * @EXT\ParamConverter("user", class="ClarolineCoreBundle:User", options={"repository_method" = "findForApi"})
      */
     public function removeUserFromCursusAction(User $user, Cursus $cursus)
     {
@@ -562,7 +667,7 @@ class CursusController extends FOSRestController
      *     description="Register an user to a course session",
      *     views = {"cursus"}
      * )
-     * @ParamConverter("user", class="ClarolineCoreBundle:User", options={"repository_method" = "findForApi"})
+     * @EXT\ParamConverter("user", class="ClarolineCoreBundle:User", options={"repository_method" = "findForApi"})
      */
     public function addUserToSessionAction(User $user, CourseSession $session, $type = 0)
     {
@@ -591,7 +696,7 @@ class CursusController extends FOSRestController
      *     description="Register an user to a cursus hierarchy",
      *     views = {"cursus"}
      * )
-     * @ParamConverter("user", class="ClarolineCoreBundle:User", options={"repository_method" = "findForApi"})
+     * @EXT\ParamConverter("user", class="ClarolineCoreBundle:User", options={"repository_method" = "findForApi"})
      */
     public function addUserToCursusHierarchyAction(User $user, Cursus $cursus)
     {

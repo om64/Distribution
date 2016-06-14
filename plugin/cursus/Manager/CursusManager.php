@@ -1854,7 +1854,8 @@ class CursusManager
                 );
             }
         }
-        $this->importRootCursus($roots, $cursusChildren, $courses);
+
+        return $this->importRootCursus($roots, $cursusChildren, $courses);
     }
 
     private function getAllCoursesCodes()
@@ -1905,7 +1906,8 @@ class CursusManager
     {
         $this->om->startFlushSuite();
         $codes = $this->getAllCursusCodes();
-        $createdCursus = array();
+        $createdCursus = [];
+        $rootCursus = [];
 
         $index = 0;
 
@@ -1943,8 +1945,11 @@ class CursusManager
                     $index
                 );
             }
+            $rootCursus[] = $cursus;
         }
         $this->om->endFlushSuite();
+
+        return $rootCursus;
     }
 
     private function importCursusChildren(
@@ -1966,6 +1971,7 @@ class CursusManager
 
                 if (isset($createdCursus[$parent['id']])) {
                     $cursus->setParent($createdCursus[$parent['id']]);
+                    $createdCursus[$parent['id']]->addChild($cursus);
                 }
 
                 if (!empty($child['course']) && isset($courses[$child['course']])) {

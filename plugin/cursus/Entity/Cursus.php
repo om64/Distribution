@@ -272,6 +272,13 @@ class Cursus
         return $this->children->toArray();
     }
 
+    public function addChild(Cursus $cursus)
+    {
+        if (!$this->children->contains($cursus)) {
+            $this->children->add($cursus);
+        }
+    }
+
     public function getCursusOrder()
     {
         return $this->cursusOrder;

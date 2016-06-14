@@ -151,6 +151,13 @@ class Course
      */
     protected $validators;
 
+    /**
+     * @ORM\Column(name="session_duration", nullable=false, type="integer", options={"default" = 1})
+     * @Groups({"api_cursus"})
+     * @SerializedName("defaultSessionDuration")
+     */
+    protected $defaultSessionDuration = 1;
+
     public function __construct()
     {
         $this->sessions = new ArrayCollection();
@@ -317,11 +324,6 @@ class Course
         return $this->validators->toArray();
     }
 
-    /**
-     * Adds a validator to the course.
-     *
-     * @param \Claroline\CoreBundle\Entity\User $validator
-     */
     public function addValidator(User $validator)
     {
         if (!$this->validators->contains($validator)) {
@@ -331,11 +333,6 @@ class Course
         return $this;
     }
 
-    /**
-     * Removes a validator from the course.
-     *
-     * @param \Claroline\CoreBundle\Entity\User $validator
-     */
     public function removeValidator(User $validator)
     {
         if ($this->validators->contains($validator)) {
@@ -348,6 +345,16 @@ class Course
     public function hasValidation()
     {
         return $this->userValidation || $this->registrationValidation;
+    }
+
+    public function getDefaultSessionDuration()
+    {
+        return $this->defaultSessionDuration;
+    }
+
+    public function setDefaultSessionDuration($defaultSessionDuration)
+    {
+        $this->defaultSessionDuration = $defaultSessionDuration;
     }
 
     public function __toString()

@@ -193,12 +193,26 @@ class CourseSession
      */
     protected $type = 0;
 
+    /**
+     * @ORM\OneToMany(
+     *     targetEntity="Claroline\CursusBundle\Entity\SessionEvent",
+     *     mappedBy="session"
+     * )
+     */
+    protected $events;
+
+    /**
+     * @ORM\Column(name="default_event", type="boolean", options={"default" = 1})
+     */
+    private $defaultEvent = true;
+
     public function __construct()
     {
         $this->cursus = new ArrayCollection();
         $this->sessionUsers = new ArrayCollection();
         $this->sessionGroups = new ArrayCollection();
         $this->validators = new ArrayCollection();
+        $this->events = new ArrayCollection();
     }
 
     public function getId()
@@ -410,11 +424,6 @@ class CourseSession
         return $shortTitle.' - '.$this->getName();
     }
 
-    public function __toString()
-    {
-        return $this->getName();
-    }
-
     public function setExtra(array $extra)
     {
         $this->extra = $extra;
@@ -491,5 +500,25 @@ class CourseSession
     public function hasValidation()
     {
         return $this->userValidation || $this->registrationValidation;
+    }
+
+    public function getEvents()
+    {
+        return $this->events->toArray();
+    }
+
+    public function getDefaultEvent()
+    {
+        return $this->defaultEvent;
+    }
+
+    public function setDefaultEvent($defaultEvent)
+    {
+        $this->defaultEvent = $defaultEvent;
+    }
+
+    public function __toString()
+    {
+        return $this->getName();
     }
 }

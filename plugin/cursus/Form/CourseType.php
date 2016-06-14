@@ -12,27 +12,27 @@
 namespace Claroline\CursusBundle\Form;
 
 use Claroline\CoreBundle\Entity\User;
+use Claroline\CoreBundle\Form\Angular\AngularType;
 use Claroline\CursusBundle\Manager\CursusManager;
 use Doctrine\ORM\EntityRepository;
-use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolverInterface;
 use Symfony\Component\Translation\TranslatorInterface;
 use Symfony\Component\Validator\Constraints\Image;
 use Symfony\Component\Validator\Constraints\Range;
 
-class CourseType extends AbstractType
+class CourseType extends AngularType
 {
     private $cursusManager;
+    private $forApi = false;
+    private $ngAlias;
     private $translator;
     private $user;
 
-    public function __construct(
-        User $user,
-        CursusManager $cursusManager,
-        TranslatorInterface $translator
-    ) {
+    public function __construct(User $user, CursusManager $cursusManager, TranslatorInterface $translator, $ngAlias = 'cmc')
+    {
         $this->cursusManager = $cursusManager;
+        $this->ngAlias = $ngAlias;
         $this->translator = $translator;
         $this->user = $user;
     }
@@ -46,60 +46,74 @@ class CourseType extends AbstractType
         $builder->add(
             'title',
             'text',
-            array(
+            [
                 'required' => true,
                 'label' => 'title',
                 'translation_domain' => 'platform',
-            )
+            ]
         );
         $builder->add(
             'code',
             'text',
-            array(
+            [
                 'required' => true,
                 'label' => 'code',
                 'translation_domain' => 'platform',
-            )
+            ]
         );
         $builder->add(
             'description',
             'tinymce',
-            array(
+            [
                 'required' => false,
                 'label' => 'description',
                 'translation_domain' => 'platform',
-            )
+            ]
         );
         $builder->add(
             'icon',
             'file',
-            array(
+            [
                 'required' => false,
                 'mapped' => false,
                 'label' => 'icon',
-                'constraints' => array(new Image()),
-            )
+                'constraints' => [new Image()],
+            ]
         );
         $builder->add(
             'publicRegistration',
-            'checkbox',
-            array(
+            'choice',
+            [
+                'choices' => ['yes' => true, 'no' => false],
+                'choices_as_values' => true,
                 'required' => true,
                 'label' => 'public_registration',
-            )
+            ]
         );
         $builder->add(
             'publicUnregistration',
-            'checkbox',
-            array(
+            'choice',
+            [
+                'choices' => ['yes' => true, 'no' => false],
+                'choices_as_values' => true,
                 'required' => true,
                 'label' => 'public_unregistration',
-            )
+            ]
+        );
+        $builder->add(
+            'defaultSessionDuration',
+            'integer',
+            [
+                'required' => true,
+                'constraints' => [new Range(['min' => 0])],
+                'attr' => ['min' => 0],
+                'label' => 'default_session_duration_label',
+            ]
         );
         $builder->add(
             'workspace',
             'entity',
-            array(
+            [
                 'class' => 'ClarolineCoreBundle:Workspace\Workspace',
                 'choices' => $workspaces,
                 'property' => 'name',
@@ -107,12 +121,12 @@ class CourseType extends AbstractType
                 'label' => 'workspace',
                 'translation_domain' => 'platform',
                 'multiple' => false,
-            )
+            ]
         );
         $builder->add(
             'workspaceModel',
             'entity',
-            array(
+            [
                 'class' => 'ClarolineCoreBundle:Model\WorkspaceModel',
                 'query_builder' => function (EntityRepository $er) use ($user) {
 
@@ -125,74 +139,78 @@ class CourseType extends AbstractType
                 'property' => 'name',
                 'required' => false,
                 'label' => 'workspace_model',
-            )
+            ]
         );
         $builder->add(
             'tutorRoleName',
             'text',
-            array(
+            [
                 'required' => false,
-                'attr' => array('class' => 'role-name-txt'),
+                'attr' => ['class' => 'role-name-txt'],
                 'label' => 'tutor_role_name',
-            )
+            ]
         );
         $builder->add(
             'learnerRoleName',
             'text',
-            array(
+            [
                 'required' => false,
-                'attr' => array('class' => 'role-name-txt'),
+                'attr' => ['class' => 'role-name-txt'],
                 'label' => 'learner_role_name',
-            )
+            ]
         );
         $builder->add(
             'maxUsers',
             'integer',
-            array(
+            [
                 'required' => false,
-                'constraints' => array(
-                    new Range(array('min' => 0)),
-                ),
-                'attr' => array('min' => 0),
+                'constraints' => [new Range(['min' => 0])],
+                'attr' => ['min' => 0],
                 'label' => 'max_users',
-            )
+            ]
         );
         $builder->add(
             'userValidation',
-            'checkbox',
-            array(
+            'choice',
+            [
+                'choices' => ['yes' => true, 'no' => false],
+                'choices_as_values' => true,
                 'required' => true,
                 'label' => 'user_validation',
-            )
+            ]
         );
         $builder->add(
             'organizationValidation',
-            'checkbox',
-            array(
+            'choice',
+            [
+                'choices' => ['yes' => true, 'no' => false],
+                'choices_as_values' => true,
                 'required' => true,
                 'label' => 'organization_validation',
-            )
+            ]
         );
         $builder->add(
             'registrationValidation',
-            'checkbox',
-            array(
+            'choice',
+            [
+                'choices' => ['yes' => true, 'no' => false],
+                'choices_as_values' => true,
                 'required' => true,
                 'label' => 'registration_validation',
-            )
+            ]
         );
         $builder->add(
             'validators',
             'userpicker',
-            array(
+            [
                 'required' => false,
                 'picker_name' => 'validators-picker',
-                'picker_title' => $this->translator->trans('validators_selection', array(), 'cursus'),
+                'picker_title' => $this->translator->trans('validators_selection', [], 'cursus'),
                 'multiple' => true,
                 'attach_name' => false,
                 'forced_roles' => $validatorsRoles,
-                'label' => $this->translator->trans('validators', array(), 'cursus'),
-            )
+                'label' => $this->translator->trans('validators', [], 'cursus'),
+            ]
         );
     }
 
@@ -203,6 +221,18 @@ class CourseType extends AbstractType
 
     public function setDefaultOptions(OptionsResolverInterface $resolver)
     {
-        $resolver->setDefaults(array('translation_domain' => 'cursus'));
+        $default = ['translation_domain' => 'cursus'];
+
+        if ($this->forApi) {
+            $default['csrf_protection'] = false;
+        }
+        $default['ng-model'] = 'course';
+        $default['ng-controllerAs'] = $this->ngAlias;
+        $resolver->setDefaults($default);
+    }
+
+    public function enableApi()
+    {
+        $this->forApi = true;
     }
 }
