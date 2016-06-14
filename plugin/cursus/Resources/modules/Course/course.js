@@ -13,7 +13,7 @@ import bootstrap from 'angular-bootstrap'
 import colorpicker from 'angular-bootstrap-colorpicker'
 import translation from 'angular-ui-translation/angular-translation'
 
-import clarolineAPI from '#/main/core/Resources/modules/services/module'
+import clarolineAPI from '../../../../../main/core/Resources/modules/services/module'
 import CourseService from './Service/CourseService'
 
 angular.module('CourseModule', [

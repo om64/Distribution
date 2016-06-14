@@ -16,7 +16,7 @@ import translation from 'angular-ui-translation/angular-translation'
 import breadcrumbs from 'angular-breadcrumb'
 import loading from 'angular-loading-bar'
 
-import '#/main/core/Resources/modules/fos-js-router/module'
+import '../../../../../main/core/Resources/modules/fos-js-router/module'
 import CursusModule from '../Cursus/cursus'
 import CourseModule from '../Course/course'
 import SessionModule from '../Session/session'
@@ -40,23 +40,6 @@ angular.module('CursusManagementModule', [
 ])
 .controller('RootCursusManagementCtrl', ['$http', 'CursusService', 'CourseService', RootCursusManagementCtrl])
 .controller('CursusManagementCtrl', ['$stateParams', '$http', 'CursusService', 'CourseService', CursusManagementCtrl])
-//.controller('CursusRegistrationManagementCtrl', ['$stateParams', '$http', '$uibModal', CursusRegistrationManagementCtrl])
-//.controller('CursusRegistrationSearchCtrl', ['$stateParams', '$http', '$uibModal', CursusRegistrationSearchCtrl])
-//.controller('CursusDescriptionModalCtrl', CursusDescriptionModalCtrl)
-//.controller('CursusGroupUnregistrationModalCtrl', CursusGroupUnregistrationModalCtrl)
-//.controller('CursusGroupsListRegistrationModalCtrl', CursusGroupsListRegistrationModalCtrl)
-//.controller('CursusGroupsUnregistrationModalCtrl', CursusGroupsUnregistrationModalCtrl)
-//.controller('CursusRegistrationSessionsModalCtrl', CursusRegistrationSessionsModalCtrl)
-//.controller('CursusUserUnregistrationModalCtrl', CursusUserUnregistrationModalCtrl)
-//.controller('CursusUsersUnregistrationModalCtrl', CursusUsersUnregistrationModalCtrl)
-//.controller('SimpleModalCtrl', SimpleModalCtrl)
-//.directive('cursusRegistrationGroups', () => new CursusRegistrationGroupsDirective)
-//.directive('cursusRegistrationInformations', () => new CursusRegistrationInformationsDirective)
-//.directive('cursusList', () => new CursusRegistrationListDirective)
-//.directive('cursusRegistrationUsers', () => new CursusRegistrationUsersDirective)
-//.controller('CursusQueueManagementCtrl', ['$http', '$uibModal', CursusQueueManagementCtrl])
-//.controller('SessionsChoicesTransferModalCtrl', SessionsChoicesTransferModalCtrl)
-//.directive('registrationQueueCourses', () => new RegistrationQueueCoursesDirective)
 .config(Routing)
 .config([
   'cfpLoadingBarProvider',
