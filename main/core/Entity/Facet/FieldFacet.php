@@ -103,6 +103,12 @@ class FieldFacet
      */
     protected $isEditable;
 
+    /**
+     * @ORM\Column(type="boolean")
+     * @Groups({"api_profile"})
+     */
+    protected $isRequired = false;
+
     public function __construct()
     {
         $this->fieldsFacetValue = new ArrayCollection();
@@ -239,6 +245,16 @@ class FieldFacet
     public function isEditable()
     {
         return $this->isEditable;
+    }
+
+    public function isRequired()
+    {
+        return $this->isRequired;
+    }
+
+    public function setIsRequired($isRequired)
+    {
+        $this->isRequired = $isRequired;
     }
 
     public function getPrettyName()

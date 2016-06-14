@@ -80,7 +80,11 @@ class FacetVoter
 
     public function checkPanelView(TokenInterface $token, PanelFacet $panel)
     {
-        $userRoles = $token->getUser()->getRoles();
+        $userRoles = array_map(
+            function ($el) { return $el->getRole(); },
+            $token->getRoles()
+        );
+
         $panelRoles = $panel->getPanelFacetsRole();
 
         foreach ($panelRoles as $panelRole) {
@@ -96,7 +100,11 @@ class FacetVoter
 
     public function checkPanelEdit(TokenInterface $token, PanelFacet $panel)
     {
-        $userRoles = $token->getUser()->getRoles();
+        $userRoles = array_map(
+            function ($el) { return $el->getRole(); },
+            $token->getRoles()
+        );
+
         $panelRoles = $panel->getPanelFacetsRole();
 
         foreach ($panelRoles as $panelRole) {
