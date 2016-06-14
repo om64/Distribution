@@ -501,6 +501,7 @@ class UserControllerTest extends TransactionalTestCase
         $admin = $this->createAdmin();
         $user = $this->persister->user('user');
 
+        //A user can see himself
         $this->logIn($user);
         $this->client->request('GET', "/api/user/{$user->getId()}/public");
         $data = json_decode($this->client->getResponse()->getContent(), true);
@@ -509,17 +510,19 @@ class UserControllerTest extends TransactionalTestCase
             $data
         );
 
+        //A use can see other people...
         $this->client->request('GET', "/api/user/{$admin->getId()}/public");
         $data = json_decode($this->client->getResponse()->getContent(), true);
         $this->assertEquals([], $data);
 
-        //add a few profileProperty
+        //...unless some permissions were granted explicitely
         $prop = $this->persister->profileProperty('username', 'ROLE_USER');
         $this->persister->flush();
         $this->client->request('GET', "/api/user/{$admin->getId()}/public");
         $data = json_decode($this->client->getResponse()->getContent(), true);
         $this->assertEquals(['username' => 'admin'], $data);
 
+        //and the admin can see everyone.
         $this->logIn($admin);
         $this->client->request('GET', "/api/user/{$user->getId()}/public");
         $data = json_decode($this->client->getResponse()->getContent(), true);
