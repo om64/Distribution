@@ -176,12 +176,16 @@ class FacetController extends FOSRestController
     public function createFieldFacetAction(PanelFacet $panel)
     {
         $field = $this->request->request->get('field');
+        $isRequired = isset($field['is_required']) ? $field['is_required'] : false;
 
-        //there should be a facet validation here
+        if ($isRequired) {
+            $isRequired = $isRequired === 'true' ? true : false;
+        }
 
         $fiendEntity = $this->facetManager->addField(
             $panel,
             $field['name'],
+            $isRequired,
             $field['type']
         );
 
@@ -201,8 +205,11 @@ class FacetController extends FOSRestController
     public function editFieldFacetAction(FieldFacet $field)
     {
         $data = $this->request->request->get('field');
+        $isRequired = isset($data['is_required']) ? $data['is_required'] : false;
 
-        //there should be a facet validation here
+        if ($isRequired) {
+            $isRequired = $isRequired === 'true' ? true : false;
+        }
 
         $this->om->startFlushSuite();
 
@@ -212,7 +219,7 @@ class FacetController extends FOSRestController
             }
         }
 
-        $field = $this->facetManager->editField($field, $data['name'], $data['type']);
+        $field = $this->facetManager->editField($field, $data['name'], $isRequired, $data['type']);
         $this->om->endFlushSuite();
 
         return $field;
@@ -245,6 +252,8 @@ class FacetController extends FOSRestController
             $this->facetManager->setPanelFacetRole($panel, $role, $canOpen, $canEdit);
         }
 
+        $isEditable = $params['is_editable'] === 'true';
+        $this->facetManager->setPanelEditable($panel, $isEditable);
         $this->om->endFlushSuite();
 
         return $panel;

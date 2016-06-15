@@ -30,6 +30,7 @@ class FieldFacet
     const SELECT_TYPE = 5;
     const CHECKBOXES_TYPE = 6;
     const COUNTRY_TYPE = 7;
+    const EMAIL_TYPE = 8;
 
     /**
      * @ORM\Id
@@ -105,9 +106,9 @@ class FieldFacet
 
     /**
      * @ORM\Column(type="boolean")
-     * @Groups({"api_profile"})
+     * @Groups({"api_profile", "api_facet_admin"})
      */
-    protected $isRequired = false;
+    protected $isRequired;
 
     public function __construct()
     {
@@ -192,6 +193,7 @@ class FieldFacet
             case self::SELECT_TYPE: return 'select';
             case self::CHECKBOXES_TYPE: return 'checkbox';
             case self::COUNTRY_TYPE: return 'country';
+            case self::EMAIL_TYPE: return 'email';
             default: return 'error';
         }
     }
@@ -206,6 +208,7 @@ class FieldFacet
             case self::SELECT_TYPE: return 'select';
             case self::CHECKBOXES_TYPE: return 'checkbox';
             case self::COUNTRY_TYPE: return 'country';
+            case self::EMAIL_TYPE: return 'email';
             default: return 'error';
         }
     }
