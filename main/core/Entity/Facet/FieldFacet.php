@@ -89,6 +89,7 @@ class FieldFacet
      *     mappedBy="fieldFacet"
      * )
      * @Groups({"api_facet_admin", "api_profile"})
+     * @ORM\OrderBy({"position" = "ASC"})
      */
     protected $fieldFacetChoices;
 

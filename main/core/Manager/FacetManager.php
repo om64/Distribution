@@ -573,12 +573,15 @@ class FacetManager
     /**
      * Takes an array from the API/FacetController.php.
      */
-    public function editFacetFieldChoice(array $choiceDef, FieldFacet $field)
+    public function editFacetFieldChoice(array $choiceDef, FieldFacet $field, $position = null)
     {
         $choice = $this->om->getRepository('Claroline\CoreBundle\Entity\Facet\FieldFacetChoice')->find($choiceDef['id']);
 
         if ($choice) {
             $choice->setLabel($choiceDef['label']);
+            if ($position) {
+                $choice->setPosition($position);
+            }
             $this->om->persist($choice);
             $this->om->flush();
         } else {

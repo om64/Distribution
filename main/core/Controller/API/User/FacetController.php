@@ -214,8 +214,8 @@ class FacetController extends FOSRestController
         $this->om->startFlushSuite();
 
         if (isset($data['field_facet_choices'])) {
-            foreach ($data['field_facet_choices'] as $choice) {
-                $this->facetManager->editFacetFieldChoice($choice, $field);
+            foreach ($data['field_facet_choices'] as $position => $choice) {
+                $this->facetManager->editFacetFieldChoice($choice, $field, $position + 1);
             }
         }
 

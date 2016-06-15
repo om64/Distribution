@@ -25,7 +25,7 @@ export default class HelpBlockDirective {
       return this.$parse(attrs.field)(scope.$parent)
     }, field => {
       const options = field[2]
-      this.showErrors = options.show_errors === undefined ? true: options.show_errors
+      if (options) this.showErrors = options.show_errors === undefined ? true: options.show_errors
       ngModel.formValidators = {}
 
       if (options && options.validators) {

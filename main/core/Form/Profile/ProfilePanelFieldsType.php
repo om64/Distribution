@@ -53,6 +53,19 @@ class ProfilePanelFieldsType extends AbstractType
                         )
                     );
                     break;
+                case FieldFacet::EMAIL_TYPE:
+                    $builder->add(
+                        $field->getPrettyName(),
+                        'email',
+                        array(
+                            'label' => $this->translator->trans($field->getName(), array(), 'platform'),
+                            'mapped' => false,
+                            'required' => false,
+                            'attr' => array('facet' => $this->panel->getFacet()->getName()),
+                            'constraints' => $constraints,
+                        )
+                    );
+                    break;
                 case FieldFacet::DATE_TYPE:
                     $builder->add(
                         $field->getPrettyName(),
