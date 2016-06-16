@@ -9,34 +9,33 @@
  * file that was distributed with this source code.
  */
 
-namespace Claroline\CoreBundle\Command;
+namespace Claroline\CoreBundle\Command\Import;
 
 use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
-use Claroline\CoreBundle\Validator\Constraints\CsvUser;
-use Claroline\CoreBundle\Library\Logger\ConsoleLogger;
-use Claroline\CoreBundle\Listener\DoctrineDebug;
+use Claroline\CoreBundle\Validator\Constraints\CsvWorkspace;
 
 /**
  * Creates an user, optionaly with a specific role (default to simple user).
  */
-class CreateUserFromCsvCommand extends ContainerAwareCommand
+class CreateWorkspaceFromCsvCommand extends ContainerAwareCommand
 {
     protected function configure()
     {
-        $this->setName('claroline:users:load')
-            ->setDescription('Create users from a csv file');
+        $this->setName('claroline:workspaces:load')
+            ->setDescription('Create workspaces from a csv file')
+            ->setAliases(['claroline:csv:workspace']);
         $this->setDefinition(
-            array(new InputArgument('csv_user_path', InputArgument::REQUIRED, 'The absolute path to the csv file.'))
+            array(new InputArgument('csv_workspace_path', InputArgument::REQUIRED, 'The absolute path to the csv file.'))
         );
     }
 
     protected function interact(InputInterface $input, OutputInterface $output)
     {
         //@todo ask authentication source
-        $params = array('csv_user_path' => 'Absolute path to the csv file: ');
+        $params = array('csv_workspace_path' => 'Absolute path to the workspace file: ');
 
         foreach ($params as $argument => $argumentName) {
             if (!$input->getArgument($argument)) {
@@ -67,17 +66,10 @@ class CreateUserFromCsvCommand extends ContainerAwareCommand
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         //validate the csv file...
-        $consoleLogger = ConsoleLogger::get($output);
-        $om = $this->getContainer()->get('claroline.persistence.object_manager');
-        $om->setLogger($consoleLogger)->activateLog();
-        $this->getContainer()->get('claroline.doctrine.debug')->setLogger($consoleLogger)
-            ->activateLog()
-            ->setDebugLevel(DoctrineDebug::DEBUG_ALL)
-            ->setVendor('Claroline');
         $validator = $this->getContainer()->get('validator');
-        $file = $input->getArgument('csv_user_path');
+        $file = $input->getArgument('csv_workspace_path');
         $lines = str_getcsv(file_get_contents($file), PHP_EOL);
-        $errors = $validator->validateValue($file, new CsvUser());
+        $errors = $validator->validateValue($file, new CsvWorkspace());
 
         if (count($errors)) {
             foreach ($errors as $error) {
@@ -87,11 +79,13 @@ class CreateUserFromCsvCommand extends ContainerAwareCommand
         }
 
         foreach ($lines as $line) {
-            $users[] = str_getcsv($line, ';');
+            if (trim($line) !== '') {
+                $workspaces[] = str_getcsv($line, ';');
+            }
         }
 
-        $userManager = $this->getContainer()->get('claroline.manager.user_manager');
-        $userManager->importUsers($users, false, function ($message) use ($output) {
+        $workspaceManager = $this->getContainer()->get('claroline.manager.workspace_manager');
+        $workspaceManager->importWorkspaces($workspaces, function ($message) use ($output) {
             $output->writeln($message);
         });
     }
