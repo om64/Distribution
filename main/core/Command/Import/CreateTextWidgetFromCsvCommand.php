@@ -15,27 +15,27 @@ use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
-use Claroline\CoreBundle\Validator\Constraints\CsvHomeTab;
 use Claroline\CoreBundle\Library\Logger\ConsoleLogger;
+use Claroline\CoreBundle\Validator\Constraints\CsvHomeTextWidget;
 
 /**
  * Creates an user, optionaly with a specific role (default to simple user).
  */
-class HomeTabFromCsvCommand extends ContainerAwareCommand
+class CreateTextWidgetFromCsvCommand extends ContainerAwareCommand
 {
     protected function configure()
     {
-        $this->setName('claroline:csv:home_tab')
-            ->setDescription('Create tabs from a csv file');
+        $this->setName('claroline:csv:home_text_widget')
+            ->setDescription('Create widget from a csv file');
         $this->setDefinition(
-            array(new InputArgument('csv_tabs_path', InputArgument::REQUIRED, 'The absolute path to the csv file.'))
+            array(new InputArgument('csv_widget_path', InputArgument::REQUIRED, 'The absolute path to the csv file.'))
         );
     }
 
     protected function interact(InputInterface $input, OutputInterface $output)
     {
         //@todo ask authentication source
-        $params = array('csv_tabs_path' => 'Absolute path to the workspace file: ');
+        $params = array('csv_widget_path' => 'Absolute path to the workspace file: ');
 
         foreach ($params as $argument => $argumentName) {
             if (!$input->getArgument($argument)) {
@@ -67,8 +67,9 @@ class HomeTabFromCsvCommand extends ContainerAwareCommand
     {
         //validate the csv file...
         $validator = $this->getContainer()->get('validator');
-        $file = $input->getArgument('csv_tabs_path');
-        $errors = $validator->validateValue($file, new CsvHomeTab());
+        $file = $input->getArgument('csv_widget_path');
+
+        $errors = $validator->validateValue($file, new CsvHomeTextWidget());
 
         if (count($errors)) {
             foreach ($errors as $error) {
@@ -79,8 +80,8 @@ class HomeTabFromCsvCommand extends ContainerAwareCommand
 
         $consoleLogger = ConsoleLogger::get($output);
 
-        $homeTabManager = $this->getContainer()->get('claroline.manager.home_tab_manager');
-        $homeTabManager->setLogger($consoleLogger);
-        $homeTabManager->importFromCsv($file);
+        $widgetManager = $this->getContainer()->get('claroline.manager.widget_manager');
+        $widgetManager->setLogger($consoleLogger);
+        $widgetManager->importTextFromCsv($file);
     }
 }

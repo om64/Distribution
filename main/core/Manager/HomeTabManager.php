@@ -38,15 +38,13 @@ class HomeTabManager
     private $widgetHomeTabConfigRepo;
     private $om;
     private $container;
-    private $ut;
 
     /**
      * Constructor.
      *
      * @DI\InjectParams({
      *     "om"        = @DI\Inject("claroline.persistence.object_manager"),
-     *     "container" =  @DI\Inject("service_container"),
-     *     "ut"        = @DI\Inject("claroline.utilities.misc")
+     *     "container" =  @DI\Inject("service_container")
      * })
      */
     public function __construct(
@@ -128,9 +126,15 @@ class HomeTabManager
             $values = str_getcsv($line, ';');
             $code = $values[0];
             $workspace = $this->om->getRepository('ClarolineCoreBundle:Workspace\Workspace')->findOneByCode($code);
+
             $name = $values[1];
-            $this->createHomeTab($name, $workspace);
-            ++$i;
+            $tab = $this->om->getRepository('ClarolineCoreBundle:Home\HomeTab')->findBy(['workspace' => $workspace, 'name' => $name]);
+            if (!$tab) {
+                $this->createHomeTab($name, $workspace);
+                ++$i;
+            } else {
+                $this->log("Tab {$name} already exists for workspace {$code}");
+            }
 
             if ($i % 100 === 0) {
                 $this->om->forceFlush();
