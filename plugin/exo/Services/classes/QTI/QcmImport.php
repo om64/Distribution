@@ -26,6 +26,9 @@ class QcmImport extends QtiImport
         $this->qtiRepos = $qtiRepos;
         $this->getQTICategory();
         $this->initAssessmentItem($assessmentItem);
+        if ($this->qtiValidate() === false) {
+            return false;
+        }
         $this->createQuestion(InteractionQCM::TYPE);
         $this->createInteractionQCM();
 
