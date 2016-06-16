@@ -115,6 +115,8 @@ class FacetVoter
         switch ($action) {
             case self::EDIT: return $this->checkFieldEdit($token, $collection);
         }
+
+        return VoterInterface::ACCESS_DENIED;
     }
 
     public function checkFieldEdit(TokenInterface $token, $collection)

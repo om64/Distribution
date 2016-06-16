@@ -17,8 +17,6 @@ export default class ModalController {
         return handle.className === 'handle'
       }
     })
-
-    $scope.$on('field-bag.drop', this.onPanelBagDrop.bind(this))
   }
 
   onSubmit (form) {
@@ -61,10 +59,4 @@ export default class ModalController {
       this.ClarolineAPIService.removeElements([choice], this.model.field_facet_choices)
     }
   }
-
-  onPanelBagDrop(el, target, source, siblings) {
-      console.log(drop)
-
-  }
-
 }

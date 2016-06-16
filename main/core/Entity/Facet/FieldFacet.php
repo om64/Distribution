@@ -109,7 +109,7 @@ class FieldFacet
      * @ORM\Column(type="boolean")
      * @Groups({"api_profile", "api_facet_admin"})
      */
-    protected $isRequired;
+    protected $isRequired = false;
 
     public function __construct()
     {

@@ -176,11 +176,7 @@ class FacetController extends FOSRestController
     public function createFieldFacetAction(PanelFacet $panel)
     {
         $field = $this->request->request->get('field');
-        $isRequired = isset($field['is_required']) ? $field['is_required'] : false;
-
-        if ($isRequired) {
-            $isRequired = $isRequired === 'true' ? true : false;
-        }
+        $isRequired = isset($field['is_required']) && $field['is_required'] === 'true';
 
         $fiendEntity = $this->facetManager->addField(
             $panel,
@@ -205,12 +201,7 @@ class FacetController extends FOSRestController
     public function editFieldFacetAction(FieldFacet $field)
     {
         $data = $this->request->request->get('field');
-        $isRequired = isset($data['is_required']) ? $data['is_required'] : false;
-
-        if ($isRequired) {
-            $isRequired = $isRequired === 'true' ? true : false;
-        }
-
+        $isRequired = isset($field['is_required']) && $field['is_required'] === 'true';
         $this->om->startFlushSuite();
 
         if (isset($data['field_facet_choices'])) {
