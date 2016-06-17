@@ -575,10 +575,6 @@ class ResourceQueryBuilder
                 $otherRoles[] = $roleName;
             }
         }
-        /*
-        if (in_array('ROLE_ADMIN', $otherRoles)) {
-            return $this;
-        }*/
 
         $eol = PHP_EOL;
 
