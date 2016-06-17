@@ -81,6 +81,7 @@ class OpenImport extends QtiImport
      */
     protected function qtiValidate()
     {
+        $validated = false;
         switch ($this->getCodeTypeOpen()) {
             case 'numerical':
                 $validated = $this->numericalQtiValidate();
