@@ -275,13 +275,12 @@ class ResourceNodeRepository extends MaterializedPathRepository implements Conta
      * these roles are matched.
      * WARNING: the recursive search is far from being optimized.
      *
-     * @param array $criteria    An array of search filters
-     * @param array $roles       An array of user's roles
-     * @param bool  $isRecursive Will the search follow links.
+     * @param array $criteria An array of search filters
+     * @param array $roles    An array of user's roles
      *
      * @return array[array] An array of resources represented as arrays
      */
-    public function findByCriteria(array $criteria, array $roles = null, $isRecursive = false)
+    public function findByCriteria(array $criteria, array $roles = null)
     {
         $this->builder->selectAsArray();
         $this->addFilters($this->builder, $criteria, $roles);
