@@ -201,7 +201,7 @@ class FacetController extends FOSRestController
     public function editFieldFacetAction(FieldFacet $field)
     {
         $data = $this->request->request->get('field');
-        $isRequired = isset($field['is_required']) && $field['is_required'] === 'true';
+        $isRequired = isset($data['is_required']) && $data['is_required'] === 'true';
         $this->om->startFlushSuite();
 
         if (isset($data['field_facet_choices'])) {
