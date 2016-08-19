@@ -2,18 +2,18 @@ formatDatetime: 'd/m/Y H:i'
 Resource: 'Resource'
 dropzone_edit: 'Modify'
 Common: Common
-Peer review criteria: 'Critères d''évaluation par les pairs'
+Peer review criteria: Review criteria by peers
 Participant: 'Participant'
-Common information: 'Informations Générales'
-Instruction: 'Instructions'
-innova_collecticiel_common_form_instruction: 'Instruction'
-Document type allowed: 'Types de document autorisés'
-Allow workspace resource: 'Ressources de l''espace d''activités'
-Allow upload: 'Fichiers téléchargés (upload)'
+Common information: Common information
+Instruction: Instructions
+innova_collecticiel_common_form_instruction: Instruction
+Document type allowed: Allowed document types
+Allow workspace resource: Workspace resources
+Allow upload: Uploaded files
 Allow url: 'Liens web'
 Allow rich text: 'Zones de texte libre'
 Type of evaluation: 'Type de correction titi'
-Standard evaluation: 'Les enseignants corrigent les copies'
+Standard evaluation: Teachers correct the copies
 Peer review evaluation: 'Les apprenants se corrigent entre eux (Evaluation par les pairs)'
 Expected total correction: 'Nombre de correction attendue par copie'
 Allow drop in review: 'Autoriser le dépôt de document lors de l''évaluation par les pairs'
@@ -21,9 +21,9 @@ Rating: 'Notation'
 Display notation to learners: 'Afficher la note aux apprenants'
 Display notation message to learners: 'Afficher un message de réussite ou d''échec aux apprenants'
 Minimum score to pass: 'Note minimum pour réussir l''évaluation (sur 20)'
-Planning: 'Planification'
+Planning: Planning
 manualPlanning: 'Manuellement'
-scheduleByDatePlanning: 'Par dates'
+scheduleByDatePlanning: By dates
 notStartedManualState: 'L''évaluation n''a pas encore commencé.'
 allowDropManualState: 'Les apprenants peuvent soumettre leurs travaux.'
 peerReviewManualState: 'Les apprenants peuvent corriger les copies (Evaluation par les pairs).'
@@ -33,17 +33,17 @@ Start allow drop: 'Début du dépôt'
 End allow drop: 'Fin du dépôt'
 End review: 'Fin de l''évaluation par les pairs'
 innova_collecticiel_criterion_form_instruction: 'Instruction'
-Create: 'Créer'
-Cancel: 'Annuler'
+Create: Create
+Cancel: Cancel
 Save and continue: 'Sauvegarder et continuer'
-Return: 'Retour'
+Return: Return
 Allow comment in correction: 'Proposer une zone de commentaire'
-Total criteria column: 'Nombre de colonne'
+Total criteria column: Number of columns
 Evaluation Criteria: 'Critères d''évaluation par les pairs'
 Add a criterion: 'Ajouter un critère INNOVA'
-Delete: ' Supprimer'
-Edit a criterion: 'Modifier un critère'
-Delete a criterion: 'Supprimer un critère'
+Delete: Delete
+Edit a criterion: Edit a criterion
+Delete a criterion: Delete a criterion
 Choose at least one type of document: 'Choisissez au moins un type de document'
 Choose at least one type of ranking: 'Choisissez au moins un type de notation'
 Must be before end allow drop: 'Doit être inferieur à la fin du dépôt'
@@ -52,7 +52,7 @@ Must be before end peer review: 'Doit être inférieur à la fin de l''évaluati
 Must be after start peer review: 'Doit être supérieur au début de l''évaluation par les pairs'
 Must be before start peer review: 'Doit être inférieur au début de l''évaluation par les pairs'
 Must be after end allow drop: 'Doit être supérieur à la fin du dépôt'
-Choose a date: 'Choisissez une date'
+Choose a date: Choose a date
 Evaluation not started: 'L''évaluation n''a pas démarré'
 Start %date%: 'commence le %date%'
 From %startDate% to %endDate%: 'du %startDate% au %endDate%'
