@@ -1,29 +1,29 @@
 formatDatetime: 'd/m/Y H:i'
 Resource: 'Resource'
 dropzone_edit: 'Modify'
-Common: Common
-Peer review criteria: Review criteria by peers
+Common: 'Common'
+Peer review criteria: 'Review criteria by peers'
 Participant: 'Participant'
-Common information: Common information
-Instruction: Instructions
-innova_collecticiel_common_form_instruction: Instruction
-Document type allowed: Allowed document types
-Allow workspace resource: Workspace resources
-Allow upload: Uploaded files
+Common information: 'Common information'
+Instruction: 'Instructions'
+innova_collecticiel_common_form_instruction: 'Instruction'
+Document type allowed: 'Allowed document types'
+Allow workspace resource: 'Workspace resources'
+Allow upload: 'Uploaded files'
 Allow url: 'Liens web'
 Allow rich text: 'Zones de texte libre'
 Type of evaluation: 'Type de correction titi'
-Standard evaluation: Teachers correct the copies
-Peer review evaluation: 'Les apprenants se corrigent entre eux (Evaluation par les pairs)'
-Expected total correction: 'Nombre de correction attendue par copie'
+Standard evaluation: 'Teachers correct the copies'
+Peer review evaluation: 'Learners correct each others (Peer review)'
+Expected total correction: 'Nombre de correction attendues par copie'
 Allow drop in review: 'Autoriser le dépôt de document lors de l''évaluation par les pairs'
-Rating: 'Notation'
-Display notation to learners: 'Afficher la note aux apprenants'
+Rating: 'Rating'
+Display notation to learners: 'Display rating to learners'
 Display notation message to learners: 'Afficher un message de réussite ou d''échec aux apprenants'
 Minimum score to pass: 'Note minimum pour réussir l''évaluation (sur 20)'
-Planning: Planning
+Planning: 'Planning'
 manualPlanning: 'Manuellement'
-scheduleByDatePlanning: By dates
+scheduleByDatePlanning: 'By dates'
 notStartedManualState: 'L''évaluation n''a pas encore commencé.'
 allowDropManualState: 'Les apprenants peuvent soumettre leurs travaux.'
 peerReviewManualState: 'Les apprenants peuvent corriger les copies (Evaluation par les pairs).'
@@ -99,28 +99,28 @@ Established on: 'Copie rendue le :'
 Last correction: 'Dernière correction le :'
 Documents: 'Documents :'
 Grade: 'Note :'
-Sort by date: 'Tri par date'
-Author: 'Auteur :'
+Sort by date: Sort by date
+Author: 'Author :'
 Awaiting: 'En attente'
 Corr.: 'Corr.'
-Delete a copy: 'Supprimer une copie'
+Delete a copy: Delete a copy
 Drop by: 'Rendu par :'
 This copy has been reported: 'Cette copie a été signalé'
 Copy detail: 'Détail d''une copie'
-Learner: 'Apprenant :'
+Learner: 'Learner :'
 Number of validated corrections: 'Nombre de corrections validées :'
 Average validated corrections: 'Moyenne des corrections validées :'
 Add a correction: 'Ajouter une correction'
 Invalidate all corrections: 'Invalider toutes les corrections'
-Not finished: 'Pas terminé'
-Started: 'Commencé le :'
+Not finished: Not finished
+Started: Started on :
 Last open: 'Dernière ouverture le :'
 Finished: 'Terminé le :'
 Invalidate: 'Invalider'
 Validate: 'Valider'
 Retail copy of %firstName% %lastName%: 'Détail de la copie de %firstName% %lastName%'
-Copy of %firstName% %lastName%: 'Copie de %firstName% %lastName%'
-Correction by %firstName% %lastName%: 'Correction par %firstName% %lastName%'
+Copy of %firstName% %lastName%: Copy of %firstName% %lastName%
+Correction by %firstName% %lastName%: Review by par %firstName% %lastName%
 Corrector: 'Correcteur :'
 Grade attribuated: 'Note attribuée :'
 Correcting a copy: 'Corriger une copie'
@@ -242,10 +242,10 @@ This copy contain a denied correction: 'Cette copie contient une correction dén
 notStarted: ' non démarée'
 allowDrop:  ' dépots autorisés'
 allowDropAndPeerReview: 'dépots autorisés et corrections par les pairs'
-peerReview: ' correction par les pairs '
+peerReview: review by peers
 finished :  ' Evaluations terminée'
-user : ' Utilisateur'
-tools: ' Outils'
+user : User
+tools: Tools
 fully corrected copies: 'Copies terminées dont l''évaluation est complète'
 Awaiting for correction copies: 'Copies terminées en attente de correction(s)'
 revalidate: 'revalider'
@@ -253,14 +253,14 @@ Need to be the author: 'Vous devez être l''auteur de la correction pour effectu
 sort by reported: 'Signalées'
 default sort: 'Tri par défaut'
 no reported copies: 'Aucune copie signalée'
-Examiners : 'Correcteurs'
+Examiners : Examiners
 Empty field warning: "Attention, certains champs ne sont pas vides, il ne seront pas intégrés dans la copie tant que vous n''aurez pas cliqué sur le bouton 'Ajouter'. Seuls les documents listés en haut feront parti de la copie."
 Documents added  the copy: 'Documents ajoutés à la copie'
 no document added yet: 'aucun document ajouté pour l''instant'
 Instructions for examiners: 'Instructions spécifiques aux correcteurs'
 Examiners Instructions: 'Instructions aux correcteurs'
 successMessage: 'Message en cas de réussite '
-failMessage: 'Message en cas d''échec'
+failMessage: Message in case of failure
 Evaluation not started: "L'évaluation n'a pas encore commencée. "
 awaiting for drop: 'Evaluation commencée, en attente du dépot'
 drop provided: 'Copie déposée'
@@ -275,7 +275,7 @@ Do you want to valid all drop started but not validated yet ?: 'Voulez vous vali
 yes: 'oui'
 no: 'non'
 People that have a copy in this dropzone: 'Personnes ayant déposé une copie dans la zone de dépot'
-List of examiners: 'Liste des correcteurs'
+List of examiners: List of examiners
 Started Corrections: 'Corrections commencées'
 Complete Corrections: 'Corrections terminées'
 number of Report: 'Nombre de signalement'
