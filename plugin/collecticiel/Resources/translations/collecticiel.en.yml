@@ -314,30 +314,30 @@ Deleted drop: "Copie supprimée"
 Recalculate all grade: "Recalculer toutes les notes"
 Grades were recalculated: "Les notes ont été recalculées"
 Just save: "Sauvegarder sans recalculer"
-Save and recalculate all grade: "Sauvegarder et recalculer les notes"
-You will be abble to do it later if you want: "note : Vous avez la possibilité de le faire plus tard"
-copy: "copy"
-Report reason: "Reason"
-Reported copy : "Copie signalée"
-Your modifications will only affect new corrections. For older, do you want to apply modification and recalculate grades: "Vos modifications vont affecter seulement les nouvelles corrections. Voulez vous appliquer ces modifications aux corrections déjà créées  et recalculer les notes déjà données ? Cette opération peut prendre du temps."
+Save and recalculate all grade: 'Save and recalculate the scores'
+You will be abble to do it later if you want: 'Remark: You will be able to do it later if you want'
+copy: 'copy'
+Report reason: 'Reason
+Reported copy : 'Copy has been reported'
+Your modifications will only affect new corrections. For older, do you want to apply modification and recalculate grades: 'Your modifications will only affect new corrections. Do you want to apply the changes and recalculate the grades for older corrections?'
 Validate copies: "Validate the copies"
 Do nothing: "Don''t do anything with these copies"
-Help on peerReview mode: "Aide sur le mode d'évaluation par les pairs"
-PeerReview_helper_ideal_case: "Dans le cadre de l'évaluation par les pairs, les répondants se corrigeront de façon totalement <b>autonome seulement dans un cadre idéal </b> où le nombre de participant est égal au nombre de corrections attendues + 1 ou à un multiple de ce nombre."
-PeerReview_helper_ideal_case_example: "Exemple : si on a 2 corrections attendues, l'évaluation sera totalement autonome uniquement dans le cas ou on aura un nombre de participants multiple de 3. ( Eleve 1 corrige 2 et 3 , Eleve 2 corrige 1 et 3, Eleve 3 corrige 1 et 2)."
-PeerReview_helper_other_cases: "Dans les autres cas, <b>le gestionnaire de l'évaluation devra intervenir</b> afin de rajouter la/les corrections manquante lorsque l'évaluation est terminée."
-PeerReview_helper_unlock_tool: " Note: Un outil permet aussi au gestionnaire de 'débloquer' une copie si celle ci a déjà reçu au minimum 1 correction (qu'il peut ajouter lui même ). Cela permet d'éviter au gestionnaire, par exemple, de créer toutes les corrections attendues (ex 3 )  si une copie n'en a reçue aucune. Il lui suffira d'en créer une puis de débloquer la copie. Cet outil n'est disponible que lorsque l'évaluation est dans la phase 'terminée'."
-Made by: "Rendue par"
-Force comment in correction: "Rendre le commentaire obligatoire"
+Help on peerReview mode: 'Help on peer review mode.'
+PeerReview_helper_ideal_case: 'In the peer review, the respondents will correct themselves <b>autonomously in ideal conditions </b>where the number of participants is equal to the number of corrections + 1 or a multiple of this number.'
+PeerReview_helper_ideal_case_example: 'Example : If two corrections are expected, the evaluation will be totally autonomous only if the number of participants is a multiple of 3. (Student 1 corrects 2 and 3 , Student 2 corrects 1 and 3, Student 3 corrects 1 and 2).'
+PeerReview_helper_other_cases: 'In the other cases, <b>the evaluation manager will have to intervene</b> to add the missing correction(s) when the evaluation is finished.'
+PeerReview_helper_unlock_tool: 'Remark: A tool allows the manager to 'unblock' a copy if it has been corrected at least once. He may correct it himself. It allows the administrator to avoid to create all the expected corrections (e.g. 3)  if there are no corrections for a copy. This tool is only available when the evaluation is in the "finished" phase.'
+Made by: "Rendered by"
+Force comment in correction: "Make the comment compulsory."
 Please comment: "Please leave a comment."
 This field is required.: "This field is required."
 The comment field is required please let a comment: "The comment field is required. Please leave a comment."
-Criteria: "Critère"
-Evaluation %dropzonename% opening: "Phase de dépot de l'évaluation  %dropzonename% "
-Deposit phase of the %dropzonename% evaluation: "Phase de dépot de %dropzonename% "
-Peer Review is starting in %dropzonename% evaluation: "Phase de corrections par les pairs de  %dropzonename%"
+Criteria: "Criteria"
+Evaluation %dropzonename% opening: "Evaluation dropping phase of %dropzonename% "
+Deposit phase of the %dropzonename% evaluation: "Dropping phase of %dropzonename% "
+Peer Review is starting in %dropzonename% evaluation: "Peer review phase of %dropzonename%"
 unlocked user: "unblocked user"
 unlock user: "unblock"
-unlock_user_tooltip: "Débloquer un utilisateur lui permetra de voir sa copie sans qu'il ait besoin de faire les corrections requises"
-unlock_all: "débloquer tous"
-cancel_unlock: "annuler le déblocage"
+unlock_user_tooltip: "Unblocking a user will allow him to see his copy without having to make the required corrections."
+unlock_all: "unblock all"
+cancel_unlock: "Cancel unblocking"
