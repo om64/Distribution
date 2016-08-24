@@ -1,5 +1,5 @@
-actions: actions
-app_want_access_to_your_account: app_want_access_to_your_account
+actions: 'Acties'
+app_want_access_to_your_account: 'De applicatie wenst toegang tot uw rekening'
 application_revoked_error_message: application_revoked_error_message
 application_revoked_success_message: application_revoked_success_message
 authorization_code_grant_type: authorization_code_grant_type
