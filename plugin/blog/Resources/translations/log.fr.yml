@@ -59,7 +59,7 @@ log_post_author:     'Auteur'
 log_comment_content: 'Contenu'
 log_comment_author:  'Auteur'
 
-postPerPage: 'Article par page'
+postPerPage: 'Articles par page'
 content:     'Contenu'
 message: 'Message'
 
