@@ -3,8 +3,8 @@ log_resource-icap_blog-post_create_title:     'Création d''un article dans un b
 log_resource-icap_blog-post_create_filter:    'Création d''un article dans un blog'
 
 log_resource-icap_blog-post_read_shortname: 'Ouverture d''un article'
-log_resource-icap_blog-post_read_title:     'Ouverture d''un article d'un blog'
-log_resource-icap_blog-post_read_filter:    'Ouverture d''un article d'un blog'
+log_resource-icap_blog-post_read_title:     'Ouverture d''un article d''un blog'
+log_resource-icap_blog-post_read_filter:    'Ouverture d''un article d''un blog'
 
 log_resource-icap_blog-configure_shortname: 'Configuration d''un blog'
 log_resource-icap_blog-configure_title:     'Configuration d''un blog'
@@ -15,16 +15,16 @@ log_resource-icap_blog-configure_banner_title:     'Configuration de la bannièr
 log_resource-icap_blog-configure_banner_filter:    'Configuration de la bannière d''un blog'
 
 log_resource-icap_blog-post_update_shortname: 'Modification d''un article'
-log_resource-icap_blog-post_update_title:     'Modification d''un article d'un blog'
+log_resource-icap_blog-post_update_title:     'Modification d''un article d''un blog'
 log_resource-icap_blog-post_update_filter:    'Modification d''un article d'un blog'
 
 log_resource-icap_blog-post_delete_shortname: 'Suppression d''un article'
-log_resource-icap_blog-post_delete_title:     'Suppression d''un article d'un blog'
-log_resource-icap_blog-post_delete_filter:    'Suppression d''un article d'un blog'
+log_resource-icap_blog-post_delete_title:     'Suppression d''un article d''un blog'
+log_resource-icap_blog-post_delete_filter:    'Suppression d''un article d''un blog'
 
 log_resource-icap_blog-post_publish_shortname: 'Publication d''un article'
-log_resource-icap_blog-post_publish_title:     'Publication d''un article d'un blog'
-log_resource-icap_blog-post_publish_filter:    'Publication d''un article d'un blog'
+log_resource-icap_blog-post_publish_title:     'Publication d''un article d''un blog'
+log_resource-icap_blog-post_publish_filter:    'Publication d''un article d''un blog'
 
 log_resource-icap_blog-comment_create_shortname: 'Création d''un commentaire'
 log_resource-icap_blog-comment_create_title:     'Création d''un commentaire dans un article'
