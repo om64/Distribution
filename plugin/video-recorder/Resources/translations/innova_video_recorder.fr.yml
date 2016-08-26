@@ -27,4 +27,4 @@ stop_recording: 'Arrêter l''enregistrement'
 stop: 'Stop'
 
 # w
-warning_message_record_end: 'L''enregistrement est terminé.<br/>Cliquez sur "Valider" s''il convient ou sur Recommencer.<br/>(Recommencer effacera l''enregistrement actuel.)'
+warning_message_record_end: 'L''enregistrement est terminé.<br/>Cliquez sur "Valider" s''il convient ou sur "Recommencer".<br/>(Recommencer effacera l''enregistrement actuel.)'
