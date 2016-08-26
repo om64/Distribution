@@ -1,30 +1,30 @@
 # c
-creating_resource: Creating resource
+creating_resource: 'Creating resource'
 
 # d
-download_video: Download video file
-db_meter: Db meter
+download_video: 'Download video file'
+db_meter: 'Db meter'
 
 # m
-my_recordings: My recordings
-max_recording_time: Maximum recording time:
+my_recordings: 'My recordings'
+max_recording_time: 'Maximum recording time: '
 
 # o
-ok: Validate
+ok: 'Validate'
 
 # r
-resource_name: Name:
-resource_name_placeholder: The resource name is mandatory.
-resource_creation_error: An error occured while creating resource.
-resource_creation_error_download: Please use the download button to save locally your video file.
-resource_modal_title: Video recorder
-retry: Retry
+resource_name: 'Name: '
+resource_name_placeholder: 'The resource name is mandatory.'
+resource_creation_error: 'An error occured while creating resource.'
+resource_creation_error_download: 'Please use the download button to save your video file locally.'
+resource_modal_title: 'Video recorder'
+retry: 'Retry'
 
 # s
-start_recording: Start recording
-stop_recording: Stop recording
-start: Start
-stop: Stop
+start_recording: 'Start recording'
+stop_recording: 'Stop recording'
+start: 'Start'
+stop: 'Stop'
 
 # w
-warning_message_record_end:
+warning_message_record_end: 'The recording is finished.<br/>Click on "Validate" if it suits you or "Retry".<br/>(Retry will delete the current recording.)'
