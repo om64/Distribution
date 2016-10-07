@@ -34,7 +34,7 @@ save_all_options: Alle opties opslaan
 'enable_copyright': De auteursrechten in de voettekst tonen.
 'enable_analytics': Koppelen met de externe werktuigen voor bezoeken.
 'css_code': CSS-code toepassen op de inhoud van de pagina's van de website.
-'analytics_info': 'Voorbeeld: "UA-XXXXX-Y" voor Google Analytics of "xxxxxxx" voor XiTi. Als site in Google Analytics verklaren http://mon_instance.univ-lyon1.fr/webapp/website/website.html zonder de ID van de URL aan te melden.'
+'analytics_info': 'Voorbeeld: "UA-XXXXX-Y" voor Google Analytics of "xxxxxxx" voor XiTi. Verklaar "http://mon_instance.univ-lyon1.fr/icap_website/id" als site in Google Analytics.'
 'rich_content': 'Rijke tekst toevoegen :'
 'rich_content_explain': Rijke inhoud toevoegen dankzij de tekstverwerker door die in de voorbeeldweergave te tonen.
 'horizontally': Hor.
