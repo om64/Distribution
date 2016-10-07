@@ -25,7 +25,7 @@ dropdown_items: Éléments dans la liste
 max_per_page: Éléments par page
 purge_enabled: Effacement automatique
 purge_after_days: Effacer après (jours)
-purge_explain_text: *en activant cette option, l'historique des notifications sera effacé automatiquement en fonction de la valeur ci-dessous
+purge_explain_text: '* en activant cette option, l''historique des notifications sera effacé automatiquement en fonction de la valeur ci-dessous.'
 mark_all_viewed: Tout marquer comme lu
 filter_by_category: Filtrer par type
 badge: Badge
