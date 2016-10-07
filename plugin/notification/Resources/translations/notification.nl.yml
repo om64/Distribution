@@ -25,7 +25,7 @@ dropdown_items: Elementen in de lijst
 max_per_page: Elementen per pagina
 purge_enabled: Automatisch wissen
 purge_after_days: Na (dagen) wissen
-purge_explain_text: * Door deze optie te activeren wordt de notitiesgeschiedenis automatisch gewist in functie van onderstaande waarde.
+purge_explain_text: '* Door deze optie te activeren wordt de notitiesgeschiedenis automatisch gewist in functie van onderstaande waarde.'
 mark_all_viewed: Markeer alles als gelezen
 filter_by_category: Per type filtreren
 badge: Badge
