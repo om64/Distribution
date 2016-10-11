@@ -11,7 +11,7 @@ edit_post: Het artikel "%postTitle%" bewerken
 back_to_blog: Terug naar de blog
 icap_blog_edit_banner: De banner bewerken
 icap_blog_options_form_authorize_comment: Commentaren over de artikelen toelaten
-icap_blog_options_form_authorize_anonymous_comment: Commentaren door onbekenden toelaten (Geen vereiste authenticatie)'
+icap_blog_options_form_authorize_anonymous_comment: Commentaren door onbekenden toelaten (Geen vereiste authenticatie)
 icap_blog_options_form_post_per_page: Artikelen per pagina
 icap_blog_options_form_auto_publish_post: Artikelen automatisch publiceren.
 icap_blog_options_form_auto_publish_comment: De commentaren automatisch publiceren (geen matiging).
