@@ -4,8 +4,8 @@ all_day: toute la journée
 at: à
 cancel: Annuler
 close: Fermer
-confirm: 'Êtes-vous sûr ?'
-date_invalid: 'Une erreur s''est produite, vérifiez que la date de début se situe avant la date de fin'
+confirm: Êtes-vous sûr ?
+date_invalid: Une erreur s'est produite, vérifiez que la date de début se situe avant la date de fin.
 day_: Jour
 day:
   mon: Lun
