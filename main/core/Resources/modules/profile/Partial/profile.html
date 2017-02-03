@@ -1,6 +1,6 @@
 
 <script type="text/ng-template" id="facet_renderer.html">
-    <form role="form" class="form-horizontal">
+    <form class="form-horizontal" name="panel.name">
         <div class="panel-body">
             <div class="panel-group" id="panel-facet-{{ facet.id }}" role="tablist">
                 <div class="panel panel-default" ng-repeat="(key, panel) in facet.panels">
@@ -14,22 +14,25 @@
                     <div id="panel-{{ panel.id }}" class="panel-collapse collapse in" role="tabpanel" aria-labelledby="panel-{{ panel.id }}">
                         <div class="panel-body">
                             <div ng-repeat="(key, field) in panel.fields">
-                               <form-field field="[field.name, pc.fieldTypes[field.type - 1], { values: field.field_facet_choices, disabled: !(!pc.disabled && field.is_editable) }]" ng-model="field.user_field_value"></form-field>
+                               <form-field field="pc.fieldForms[field.id]" ng-model="field.user_field_value"></form-field>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
-            <input ng-if="!pc.disabled" type="submit" ng-click="pc.onSubmit(facet)" class="btn btn-primary" aria-hidden="true" value="{{ 'edit'|trans:{}:'platform' }}"></input>
+            <input ng-if="!pc.disabled" data-ng-disabled="!panel.name.$valid" type="submit" ng-click="pc.onSubmit(facet)" class="btn btn-primary" aria-hidden="true" value="{{ 'edit'|trans:{}:'platform' }}"></input>
         </div>
     </form>
 </script>
 
 <div class="panel-body">
-  <button ng-click="pc.switchProfileMode()" class="btn btn-primary" style="margin-bottom: 10px;"> {{ pc.profileModeLabel }} </button>
+  <button ng-if="pc.canEdit" ng-click="pc.switchProfileMode()" class="btn btn-primary" style="margin-bottom: 10px;"> {{ pc.profileModeLabel }} </button>
   <ul class="nav nav-tabs">
       <li class="active"><a href="#general-profile" data-toggle="tab">{{ 'general'|trans:{}:'platform' }}</a> </li>
-      <li ng-if="!facet.is_main" ng-repeat="(key, facet) in pc.facets"> <a href="#facet-{{ facet.id}}" data-toggle="tab"> {{ facet.name }}</a> </i>
+      <li ng-if="!facet.is_main" ng-repeat="(key, facet) in pc.facets"> <a href="#facet-{{ facet.id}}" data-toggle="tab"> {{ facet.name }}</a> </li>
+      <li ng-if="pc.displayCourses" ng-click="pc.loadCoursesProfile()">
+          <a href="#courses-profile" data-toggle="tab">{{ 'courses'|trans:{}:'cursus' }}</a>
+      </li>
   </ul>
   <div id="facet-pane" class="tab-content">
       <div class="tab-pane active" id="general-profile">
@@ -71,7 +74,31 @@
           </div>
       </div>
       <div class="tab-pane" id="facet-{{ facet.id }}"  ng-if="!facet.is_main" ng-repeat="(key, facet) in pc.facets">
-          <form ng-include="'facet_renderer.html'"></form>
+          <div ng-include="'facet_renderer.html'"></div>
+      </div>
+      <div class="tab-pane" id="courses-profile" ng-if="pc.displayCourses">
+          <br>
+          <div class="table-responsive" ng-if="pc.sessions.length > 0">
+              <table class="table" ng-table="pc.sessionsTableParams" show-filter="true">
+                  <tr ng-repeat="session in $data">
+                      <td class="text-center" data-title="'course'|trans:{}:'cursus'" filter="{courseTitle: 'text'}" sortable="'courseTitle'">
+                          {{ session['courseTitle'] }}
+                      </td>
+                      <td class="text-center" data-title="'course_code'|trans:{}:'cursus'" filter="{courseCode: 'text'}" sortable="'courseCode'">
+                          {{ session['courseCode'] }}
+                      </td>
+                      <td class="text-center" data-title="'session'|trans:{}:'cursus'" filter="{name: 'text'}" sortable="'name'">
+                          {{ session['name'] }}
+                      </td>
+                      <td class="text-center" data-title="'start_date'|trans:{}:'platform'" sortable="'startDate'">
+                          {{ session['startDate']|date:'dd/MM/yyyy' }}
+                      </td>
+                      <td class="text-center" data-title="'end_date'|trans:{}:'platform'" sortable="'endDate'">
+                          {{ session['endDate']|date:'dd/MM/yyyy' }}
+                      </td>
+                  </tr>
+              </table>
+          </div>
       </div>
   </div>
 </div>

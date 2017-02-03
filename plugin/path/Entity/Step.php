@@ -2,16 +2,16 @@
 
 namespace Innova\PathBundle\Entity;
 
-use Doctrine\ORM\Mapping as ORM;
-use Doctrine\Common\Collections\ArrayCollection;
-use Claroline\CoreBundle\Entity\Resource\Activity;
 use Claroline\CoreBundle\Entity\Activity\ActivityParameters;
+use Claroline\CoreBundle\Entity\Resource\Activity;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\ORM\Mapping as ORM;
 
 /**
  * Step.
  *
  * @ORM\Table("innova_step")
- * @ORM\Entity
+ * @ORM\Entity()
  */
 class Step implements \JsonSerializable
 {
@@ -79,7 +79,7 @@ class Step implements \JsonSerializable
      * Parent step.
      *
      * @var \Innova\PathBundle\Entity\Step
-     * 
+     *
      * @ORM\ManyToOne(targetEntity="Step", inversedBy="children")
      * @ORM\JoinColumn(name="parent_id", referencedColumnName="id", onDelete="CASCADE")
      */
@@ -89,7 +89,7 @@ class Step implements \JsonSerializable
      * Children steps.
      *
      * @var \Doctrine\Common\Collections\ArrayCollection
-     * 
+     *
      * @ORM\OneToMany(targetEntity="Step", mappedBy="parent", indexBy="id", cascade={"persist", "remove"})
      * @ORM\OrderBy({"order" = "ASC"})
      */
@@ -99,7 +99,7 @@ class Step implements \JsonSerializable
      * Path.
      *
      * @var \Innova\PathBundle\Entity\Path\Path
-     * 
+     *
      * @ORM\ManyToOne(targetEntity="Innova\PathBundle\Entity\Path\Path", inversedBy="steps")
      */
     protected $path;
@@ -278,7 +278,7 @@ class Step implements \JsonSerializable
      */
     public function setParent(Step $parent = null)
     {
-        if ($parent != $this->parent) {
+        if ($parent !== $this->parent) {
             $this->parent = $parent;
 
             if (null !== $parent) {
@@ -389,7 +389,7 @@ class Step implements \JsonSerializable
      */
     public function getDescription()
     {
-        if (!empty($this->activity) && ' ' != $this->activity->getDescription()) {
+        if (!empty($this->activity) && ' ' !== $this->activity->getDescription()) {
             return $this->activity->getDescription();
         }
 
@@ -527,7 +527,7 @@ class Step implements \JsonSerializable
      */
     public function getPropagatedResources($lvl = 0)
     {
-        $propagated = array();
+        $propagated = [];
 
         /** @var \Innova\PathBundle\Entity\Step $child */
         foreach ($this->children as $child) {
@@ -537,7 +537,7 @@ class Step implements \JsonSerializable
 
                 /** @var \Innova\PathBundle\Entity\InheritedResource $inherited */
                 foreach ($inheritedResources as $inherited) {
-                    if ($inherited->getLvl() == $lvl) {
+                    if ($inherited->getLvl() === $lvl) {
                         // Resource is inherited from the searched level => get it
                         $propagated[] = $inherited->getResource()->getId();
                     }
@@ -560,7 +560,7 @@ class Step implements \JsonSerializable
 
     public function getParentsSecondaryResources()
     {
-        $resources = array();
+        $resources = [];
 
         if (!empty($this->parent)) {
             if (!empty($this->parent->parameters)) {
@@ -619,7 +619,7 @@ class Step implements \JsonSerializable
         $accessibleUntil = $this->getAccessibleUntil();
 
         // Initialize data array
-        $jsonArray = array(
+        $jsonArray = [
             'id' => $this->id,               // A local ID for the step in the path (reuse step ID)
             'resourceId' => $this->id,               // The real ID of the Step into the DB
             'activityId' => null,
@@ -627,18 +627,18 @@ class Step implements \JsonSerializable
             'lvl' => $this->lvl,              // The depth of the step in the path structure
             'name' => $this->getName(),        // The name of the linked Activity (used as Step name)
             'description' => $this->getDescription(), // The description of the linked Activity (used as Step description)
-            'primaryResource' => array(),
-            'resources' => array(),
-            'excludedResources' => array(),
-            'children' => array(),
+            'primaryResource' => [],
+            'resources' => [],
+            'excludedResources' => [],
+            'children' => [],
             'withTutor' => false,
             'who' => null,
             'where' => null,
             'duration' => null, // Duration in seconds
-            'accessibleFrom' => $accessibleFrom  instanceof \DateTime ? $accessibleFrom->format('Y-m-d H:i:s')  : null,
+            'accessibleFrom' => $accessibleFrom  instanceof \DateTime ? $accessibleFrom->format('Y-m-d H:i:s') : null,
             'accessibleUntil' => $accessibleUntil instanceof \DateTime ? $accessibleUntil->format('Y-m-d H:i:s') : null,
             'evaluationType' => null, // automatic/manual
-        );
+        ];
 
         // Get activity properties
         if (!empty($this->activity)) {
@@ -648,15 +648,15 @@ class Step implements \JsonSerializable
             // Get primary resource
             $primaryResource = $this->activity->getPrimaryResource();
             if (!empty($primaryResource)) {
-                $jsonArray['primaryResource'] = array(
-                    array(
+                $jsonArray['primaryResource'] = [
+                    [
                         'id' => $primaryResource->getId(),
                         'resourceId' => $primaryResource->getId(),
                         'name' => $primaryResource->getName(),
                         'type' => $primaryResource->getResourceType()->getName(),
                         'mimeType' => $primaryResource->getMimeType(),
-                    ),
-                );
+                    ],
+                ];
             }
         }
 
@@ -677,14 +677,14 @@ class Step implements \JsonSerializable
                 $propagatedResources = $this->getPropagatedResources($this->lvl);
 
                 foreach ($secondaryResources as $secondaryResource) {
-                    $jsonArray['resources'][] = array(
+                    $jsonArray['resources'][] = [
                         'id' => $secondaryResource->getId(),
                         'resourceId' => $secondaryResource->getId(),
                         'name' => $secondaryResource->getName(),
                         'type' => $secondaryResource->getResourceType()->getName(),
                         'mimeType' => $secondaryResource->getMimeType(),
                         'propagateToChildren' => in_array($secondaryResource->getId(), $propagatedResources),
-                    );
+                    ];
                 }
             }
 
@@ -705,7 +705,7 @@ class Step implements \JsonSerializable
 
             /** @var \Innova\PathBundle\Entity\InheritedResource $inherited */
             foreach ($this->inheritedResources as $inherited) {
-                if ($inherited->getResource()->getId() == $resource->getId()) {
+                if ($inherited->getResource()->getId() === $resource->getId()) {
                     $exist = true;
                     break;
                 }

@@ -2,16 +2,17 @@
 
 namespace Innova\PathBundle\EventListener\Resource;
 
-use Symfony\Component\DependencyInjection\ContainerAware;
-use Symfony\Component\HttpFoundation\RedirectResponse;
-use Claroline\CoreBundle\Event\OpenResourceEvent;
-use Claroline\CoreBundle\Event\DeleteResourceEvent;
+use Claroline\CoreBundle\Entity\Resource\ResourceNode;
+use Claroline\CoreBundle\Event\CopyResourceEvent;
 use Claroline\CoreBundle\Event\CreateFormResourceEvent;
 use Claroline\CoreBundle\Event\CreateResourceEvent;
-use Claroline\CoreBundle\Event\CopyResourceEvent;
 use Claroline\CoreBundle\Event\CustomActionResourceEvent;
+use Claroline\CoreBundle\Event\DeleteResourceEvent;
+use Claroline\CoreBundle\Event\OpenResourceEvent;
+use Claroline\ScormBundle\Event\ExportScormResourceEvent;
 use Innova\PathBundle\Entity\Path\Path;
-use Claroline\CoreBundle\Entity\Resource\ResourceNode;
+use Symfony\Component\DependencyInjection\ContainerAware;
+use Symfony\Component\HttpFoundation\RedirectResponse;
 
 /**
  * Path Event Listener
@@ -39,9 +40,9 @@ class PathListener extends ContainerAware
 
         $url = $this->container->get('router')->generate(
             $route,
-            array(
+            [
                 'id' => $path->getId(),
-            )
+            ]
         );
 
         $event->setResponse(new RedirectResponse($url));
@@ -54,9 +55,9 @@ class PathListener extends ContainerAware
 
         $route = $this->container->get('router')->generate(
             'innova_path_editor_wizard',
-            array(
+            [
                 'id' => $path->getId(),
-            )
+            ]
         );
 
         $event->setResponse(new RedirectResponse($route));
@@ -75,10 +76,10 @@ class PathListener extends ContainerAware
 
         $content = $this->container->get('templating')->render(
             'ClarolineCoreBundle:Resource:createForm.html.twig',
-            array(
+            [
                 'form' => $form->createView(),
                 'resourceType' => 'innova_path',
-            )
+            ]
         );
 
         $event->setResponseContent($content);
@@ -108,14 +109,14 @@ class PathListener extends ContainerAware
             $path->initializeStructure();
 
             // Send new path to dispatcher through event object
-            $event->setResources(array($path));
+            $event->setResources([$path]);
         } else {
             $content = $this->container->get('templating')->render(
                 'ClarolineCoreBundle:Resource:createForm.html.twig',
-                array(
+                [
                     'form' => $form->createView(),
                     'resourceType' => 'innova_path',
-                )
+                ]
             );
 
             $event->setErrorFormContent($content);
@@ -156,24 +157,32 @@ class PathListener extends ContainerAware
         $path->setName($pathToCopy->getName());
         $path->setDescription($pathToCopy->getDescription());
 
+        // we set the old structure to be able to insert the path in DB tp have its ID
+        $path->setStructure($pathToCopy->getStructure());
+
         $parent = $event->getParent();
         $structure = json_decode($pathToCopy->getStructure());
 
         // Process steps
-        $processedNodes = array();
+        $processedNodes = [];
         foreach ($structure->steps as $step) {
             $processedNodes = $this->copyStepContent($step, $parent, $processedNodes);
         }
+
+        $om->persist($path);
 
         // End the transaction
         $om->endFlushSuite();
         // We need the resources ids
         $om->forceFlush();
 
-        //update the structure tree
+        // update the structure tree
         foreach ($structure->steps as $step) {
             $this->updateStep($step, $processedNodes);
         }
+
+        // Replace the Path ID by the new one
+        $structure->id = $path->getId();
 
         $path->setStructure(json_encode($structure));
         $event->setCopy($path);
@@ -184,7 +193,86 @@ class PathListener extends ContainerAware
         $event->stopPropagation();
     }
 
-    private function copyStepContent(\stdClass $step, ResourceNode $newParent, array $processedNodes = array())
+    public function onExportScorm(ExportScormResourceEvent $event)
+    {
+        /** @var Path $path */
+        $path = $event->getResource();
+
+        // Add embed resources
+        // Decode the path structure to grab embed resources ans generate resource URL
+        // We export them before rendering the template to have the correct structure in twig/angular
+        $structure = json_decode($path->getStructure());
+        if ($structure && !empty($structure->steps)) {
+            foreach ($structure->steps as $step) {
+                $this->exportStepResources($event, $step);
+            }
+        }
+
+        $template = $this->container->get('templating')->render(
+            'InnovaPathBundle:Scorm:export.html.twig', [
+                '_resource' => $path,
+                'structure' => json_encode($structure),
+            ]
+        );
+
+        // Set export template
+        $event->setTemplate($template);
+
+        // Set translations
+        $event->addTranslationDomain('path_wizards');
+
+        // Add template required files
+        $webpack = $this->container->get('claroline.extension.webpack');
+        $event->addAsset('tinymce.jquery.min.js', 'bundles/stfalcontinymce/vendor/tinymce/tinymce.jquery.min.js');
+        $event->addAsset('jquery.tinymce.min.js', 'bundles/stfalcontinymce/vendor/tinymce/jquery.tinymce.min.js');
+        $event->addAsset('commons.js', $webpack->hotAsset('dist/commons.js', true));
+        $event->addAsset('claroline-distribution-plugin-path-player.js', $webpack->hotAsset('dist/claroline-distribution-plugin-path-player.js', true));
+        $event->addAsset('claroline-home.js', 'bundles/clarolinecore/js/home/home.js');
+        $event->addAsset('claroline-common.js', 'bundles/clarolinecore/js/common.js');
+        $event->addAsset('claroline-tinymce.js', $webpack->hotAsset('dist/claroline-distribution-main-core-tinymce.js', true));
+
+        $event->addAsset('wizards.js', 'vendor/innovapath/wizards.js');
+        $event->addAsset('wizards.css', 'vendor/innovapath/wizards.css');
+
+        $event->stopPropagation();
+    }
+
+    private function exportStepResources(ExportScormResourceEvent $event, \stdClass $step)
+    {
+        if (!empty($step->primaryResource)) {
+            foreach ($step->primaryResource as $primary) {
+                $resource = $this->getResource($primary->resourceId);
+                $event->addEmbedResource($resource);
+                // Generate resource URL
+                $primary->url = '../scos/resource_'.$primary->resourceId.'.html';
+            }
+        }
+
+        if (!empty($step->resources)) {
+            foreach ($step->resources as $secondary) {
+                $resource = $this->getResource($secondary->resourceId);
+                $event->addEmbedResource($resource);
+                // Generate resource URL
+                $secondary->url = '../scos/resource_'.$secondary->resourceId.'.html';
+            }
+        }
+
+        if (!empty($step->children)) {
+            foreach ($step->children as $child) {
+                $this->exportStepResources($event, $child);
+            }
+        }
+    }
+
+    private function getResource($nodeId)
+    {
+        $node = $this->container->get('claroline.manager.resource_manager')->getById($nodeId);
+        $resource = $this->container->get('claroline.manager.resource_manager')->getResourceFromNode($node);
+
+        return $resource;
+    }
+
+    private function copyStepContent(\stdClass $step, ResourceNode $newParent, array $processedNodes = [])
     {
         // Remove reference to Step Entity
         $step->resourceId = null;
@@ -214,7 +302,7 @@ class PathListener extends ContainerAware
         return $processedNodes;
     }
 
-    private function copyResource(\stdClass $resource, ResourceNode $newParent, array $processedNodes = array())
+    private function copyResource(\stdClass $resource, ResourceNode $newParent, array $processedNodes = [])
     {
         // Get current User
         $user = $this->container->get('security.token_storage')->getToken()->getUser();
@@ -227,7 +315,7 @@ class PathListener extends ContainerAware
         if ($resourceNode) {
             // Check if Node is in a subdirectory
             $wsRoot = $manager->getWorkspaceRoot($resourceNode->getWorkspace());
-            if ($wsRoot->getId() != $resourceNode->getParent()->getId()) {
+            if ($wsRoot->getId() !== $resourceNode->getParent()->getId()) {
                 // ResourceNode is not stored in WS root => create subdirectories tree
                 $ancestors = $manager->getAncestors($resourceNode);
 
@@ -272,15 +360,21 @@ class PathListener extends ContainerAware
         return $processedNodes;
     }
 
-    private function updateStep(\stdClass $step, array $processedNodes = array())
+    private function updateStep(\stdClass $step, array $processedNodes = [])
     {
         if (!empty($step->primaryResource) && !empty($step->primaryResource[0])) {
-            $this->replaceResourceId($step->primaryResource[0], $processedNodes);
+            $primaryFound = $this->replaceResourceId($step->primaryResource[0], $processedNodes);
+            if (!$primaryFound) {
+                unset($step->primaryResource[0]);
+            }
         }
 
         if (!empty($step->resources)) {
-            foreach ($step->resources as $resource) {
-                $this->replaceResourceId($resource, $processedNodes);
+            foreach ($step->resources as $index => $resource) {
+                $resourceFound = $this->replaceResourceId($resource, $processedNodes);
+                if (!$resourceFound) {
+                    unset($step->resources[$index]);
+                }
             }
         }
 
@@ -296,6 +390,39 @@ class PathListener extends ContainerAware
     {
         $manager = $this->container->get('claroline.manager.resource_manager');
         $resourceNode = $manager->getNode($resource->resourceId);
-        $resource->resourceId = $processedNodes[$resourceNode->getId()]->getId();
+
+        $found = false;
+        if ($resourceNode) {
+            $resource->resourceId = $processedNodes[$resourceNode->getId()]->getId();
+            $found = true;
+        }
+
+        return $found;
+    }
+
+    public function onUnlock(CustomActionResourceEvent $event)
+    {
+        $path = $event->getResource();
+        $route = $this->container->get('router')->generate(
+            'innova_path_unlock_management',
+            [
+                'id' => $path->getId(),
+            ]
+        );
+        $event->setResponse(new RedirectResponse($route));
+        $event->stopPropagation();
+    }
+
+    public function onManageresults(CustomActionResourceEvent $event)
+    {
+        $path = $event->getResource();
+        $route = $this->container->get('router')->generate(
+            'innova_path_manage_results',
+            [
+                'id' => $path->getId(),
+            ]
+        );
+        $event->setResponse(new RedirectResponse($route));
+        $event->stopPropagation();
     }
 }

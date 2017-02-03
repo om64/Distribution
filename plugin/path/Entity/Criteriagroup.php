@@ -2,8 +2,8 @@
 
 namespace Innova\PathBundle\Entity;
 
-use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\ORM\Mapping as ORM;
 
 /**
  * Criteriagroup.
@@ -130,7 +130,7 @@ class Criteriagroup implements \JsonSerializable
      */
     public function setParent(Criteriagroup $parent = null)
     {
-        if ($parent != $this->parent) {
+        if ($parent !== $this->parent) {
             $this->parent = $parent;
             $parent->addChild($this);
         }
@@ -298,23 +298,12 @@ class Criteriagroup implements \JsonSerializable
 
     public function jsonSerialize()
     {
-        // Initialize data array
-        $jsonArray = array(
-            'id' => $this->id,               // A local ID for the criteriagroup in the condition
-            'cgid' => $this->id,               // The real ID of the criteriagroup into the DB
-            'lvl' => $this->lvl,              // The depth of the criteriagroup in the condition structure
-        );
-
-        // Get step criteriagroup
-        if (!empty($this->children)) {
-            $jsonArray['criteriagroup'] = array_values($this->children->toArray());
-        }
-
-        // list of criteria attached to a criteriagroup
-        if (!empty($this->criteria)) {
-            $jsonArray['criterion'] = array_values($this->criteria->toArray());
-        }
-
-        return $jsonArray;
+        return [
+            'id' => $this->id, // A local ID for the criteriagroup in the condition
+            'cgid' => $this->id, // The real ID of the criteriagroup into the DB
+            'lvl' => $this->lvl, // The depth of the criteriagroup in the condition structure
+            'criterion' => !empty($this->criteria) ? array_values($this->criteria->toArray()) : [],
+            'criteriagroup' => !empty($this->children) ? array_values($this->children->toArray()) : [],
+        ];
     }
 }

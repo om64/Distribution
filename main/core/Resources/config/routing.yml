@@ -153,6 +153,11 @@ claro_resource:
     prefix: resource
     type: annotation
 
+claro_resource_icon:
+    resource: "@ClarolineCoreBundle/Controller/ResourceIconController.php"
+    prefix: resource_icon
+    type: annotation
+
 claro_resource_parameters:
     resource: "@ClarolineCoreBundle/Controller/ResourcePropertiesController.php"
     prefix: resource
@@ -444,6 +449,14 @@ claro_portal:
 claro_admin_widget:
     prefix: admin/widget
     resource: "@ClarolineCoreBundle/Controller/Administration/WidgetController.php"
+    type: annotation
+
+claro_desktop_home_api:
+    resource: "@ClarolineCoreBundle/Controller/API/Desktop/DesktopHomeController.php"
+    type: annotation
+
+claro_workspace_home_api:
+    resource: "@ClarolineCoreBundle/Controller/API/Workspace/WorkspaceHomeController.php"
     type: annotation
 
 claro_client:

@@ -26,13 +26,13 @@ class UserProgression implements \JsonSerializable
      *
      * @var array
      */
-    protected static $statusAvailable = array(
+    protected static $statusAvailable = [
         'unseen',
         'seen',
         'to_do',
         'done',
         'to_review',
-    );
+    ];
 
     /**
      * Unique identifier.
@@ -82,6 +82,23 @@ class UserProgression implements \JsonSerializable
      * @ORM\Column(name="authorized_access", type="boolean")
      */
     protected $authorized;
+    /**
+     * State of the access to the step.
+     *
+     * @var bool
+     *
+     * @ORM\Column(name="locked_access", type="boolean")
+     */
+    protected $locked;
+
+    /**
+     * Has the lock been called for removal ?
+     *
+     * @var bool
+     *
+     * @ORM\Column(name="lockedcall_access", type="boolean")
+     */
+    protected $lockedcall;
 
     /**
      * CLass constructor.
@@ -90,6 +107,8 @@ class UserProgression implements \JsonSerializable
     {
         // Set the default status
         $this->status = static::$statusDefault;
+        $this->lockedcall = false;
+        $this->locked = false;
     }
 
     /**
@@ -196,13 +215,15 @@ class UserProgression implements \JsonSerializable
 
     public function jsonSerialize()
     {
-        return array(
+        return [
             'id' => $this->id,
-            'userId' => $this->user->getId(),
+            'userId' => ($this->user instanceof User) ? $this->user->getId() : 0,
             'stepId' => $this->step->getId(),
             'status' => $this->status,
             'authorized' => $this->authorized,
-        );
+            'locked' => $this->locked,
+            'lockedcall' => $this->lockedcall,
+        ];
     }
 
     /**
@@ -227,5 +248,53 @@ class UserProgression implements \JsonSerializable
     public function getAuthorized()
     {
         return $this->authorized;
+    }
+
+    /**
+     * Set locked.
+     *
+     * @param bool $locked
+     *
+     * @return UserProgression
+     */
+    public function setLocked($locked)
+    {
+        $this->locked = $locked;
+
+        return $this;
+    }
+
+    /**
+     * Get locked.
+     *
+     * @return bool
+     */
+    public function getLocked()
+    {
+        return $this->locked;
+    }
+
+    /**
+     * Set lockedcall.
+     *
+     * @param bool $lockedcall
+     *
+     * @return UserProgression
+     */
+    public function setLockedcall($lockedcall)
+    {
+        $this->lockedcall = $lockedcall;
+
+        return $this;
+    }
+
+    /**
+     * Get lockedcall.
+     *
+     * @return bool
+     */
+    public function getLockedcall()
+    {
+        return $this->lockedcall;
     }
 }

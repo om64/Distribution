@@ -24,26 +24,31 @@ class Exercise extends AbstractResource
     private $description = '';
 
     /**
-     * Are the Questions shuffled in the Steps ?
+     * Are the Steps shuffled ?
      *
      * @ORM\Column(name="shuffle", type="boolean", nullable=true)
      */
     private $shuffle = false;
 
     /**
-     * Number of Questions to use when we play the Exercise
-     * If 0, all the questions are used in the Player.
+     * Number of Steps to use when we play the Exercise
+     * If 0, all the steps are used in the Player.
      *
      * @var int
      *
      * @ORM\Column(name="nb_question", type="integer")
      */
-    private $nbQuestion = 0;
+    private $pickSteps = 0;
 
     /**
+     * Do we need to always give a same User the same Steps in the same order ?
+     * Works with `shuffle` and `pickSteps`.
+     *
+     * @var bool
+     *
      * @ORM\Column(name="keepSameQuestion", type="boolean", nullable=true)
      */
-    private $keepSameQuestion;
+    private $keepSteps = false;
 
     /**
      * Maximum time allowed to do the Exercise.
@@ -128,6 +133,14 @@ class Exercise extends AbstractResource
     private $lockAttempt = false;
 
     /**
+     * Flag indicating that we do not show the entire correction for the exercise
+     * (equals hide Awaited answer filed) when displaying instant feedback and exercise correction page.
+     *
+     * @ORM\Column(name="minimal_correction", type="boolean")
+     */
+    private $minimalCorrection = false;
+
+    /**
      * Flag indicating whether the exercise has been published at least
      * one time. An exercise that has never been published has all its
      * existing papers deleted at the first publication.
@@ -159,7 +172,7 @@ class Exercise extends AbstractResource
 
     /**
      * @var ArrayCollection
-     * 
+     *
      * @ORM\OneToMany(targetEntity="Step", mappedBy="exercise", cascade={"all"})
      * @ORM\OrderBy({"order" = "ASC"})
      */
@@ -220,41 +233,43 @@ class Exercise extends AbstractResource
     }
 
     /**
-     * Set nbQuestion.
+     * Set pickSteps.
      *
-     * @param int $nbQuestion
+     * @param int $pickSteps
      */
-    public function setNbQuestion($nbQuestion)
+    public function setPickSteps($pickSteps)
     {
-        $this->nbQuestion = $nbQuestion;
+        $this->pickSteps = $pickSteps;
     }
 
     /**
-     * Get nbQuestion.
+     * Get pickSteps.
      *
      * @return int
      */
-    public function getNbQuestion()
+    public function getPickSteps()
     {
-        return $this->nbQuestion;
+        return $this->pickSteps;
     }
 
     /**
-     * Set keepSameQuestion.
+     * Set keepSteps.
      *
-     * @param bool $keepSameQuestion
+     * @param bool $keepSteps
      */
-    public function setKeepSameQuestion($keepSameQuestion)
+    public function setKeepSteps($keepSteps)
     {
-        $this->keepSameQuestion = $keepSameQuestion;
+        $this->keepSteps = $keepSteps;
     }
 
     /**
-     * Get keepSameQuestion.
+     * Get keepSteps.
+     *
+     * @return bool
      */
-    public function getKeepSameQuestion()
+    public function getKeepSteps()
     {
-        return $this->keepSameQuestion;
+        return $this->keepSteps;
     }
 
     /**
@@ -449,6 +464,26 @@ class Exercise extends AbstractResource
     public function getLockAttempt()
     {
         return $this->lockAttempt;
+    }
+
+    /**
+     * Do we have to show the minimal correction view ?
+     */
+    public function setMinimalCorrection($minimalCorrection)
+    {
+        $this->minimalCorrection = $minimalCorrection;
+
+        return $this;
+    }
+
+    /**
+     * Do we have to show the minimal correction view ?
+     *
+     * @return bool
+     */
+    public function isMinimalCorrection()
+    {
+        return $this->minimalCorrection;
     }
 
     public function archiveExercise()

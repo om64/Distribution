@@ -4,16 +4,16 @@ namespace Innova\PathBundle\Manager;
 
 use Claroline\CoreBundle\Entity\User;
 use Claroline\CoreBundle\Entity\Widget\WidgetInstance;
-use Claroline\CoreBundle\Library\Security\Collection\ResourceCollection;
-use Doctrine\Common\Persistence\ObjectManager;
-use Innova\PathBundle\Entity\PathWidgetConfig;
-use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
-use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
-use Claroline\CoreBundle\Manager\ResourceManager;
-use Claroline\CoreBundle\Library\Security\Utilities;
-use Symfony\Component\Security\Core\Exception\AccessDeniedException;
 use Claroline\CoreBundle\Entity\Workspace\Workspace;
+use Claroline\CoreBundle\Library\Security\Collection\ResourceCollection;
+use Claroline\CoreBundle\Library\Security\Utilities;
+use Claroline\CoreBundle\Manager\ResourceManager;
+use Doctrine\Common\Persistence\ObjectManager;
 use Innova\PathBundle\Entity\Path\Path;
+use Innova\PathBundle\Entity\PathWidgetConfig;
+use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
+use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
+use Symfony\Component\Security\Core\Exception\AccessDeniedException;
 use Symfony\Component\Security\Core\User\UserInterface;
 
 /**
@@ -73,8 +73,8 @@ class PathManager
         TokenStorageInterface         $securityToken,
         ResourceManager               $resourceManager,
         Utilities                     $utils,
-        StepManager                   $stepManager)
-    {
+        StepManager                   $stepManager
+    ) {
         $this->om = $objectManager;
         $this->securityAuth = $securityAuth;
         $this->securityToken = $securityToken;
@@ -117,7 +117,7 @@ class PathManager
             return $this->securityAuth->isGranted($managerRole->getName());
         }
 
-        $collection = new ResourceCollection(array($path->getResourceNode()));
+        $collection = new ResourceCollection([$path->getResourceNode()]);
 
         return $this->securityAuth->isGranted($actionName, $collection);
     }
@@ -132,7 +132,7 @@ class PathManager
     public function getWidgetConfig(WidgetInstance $config = null)
     {
         return $this->om->getRepository('InnovaPathBundle:PathWidgetConfig')
-            ->findOneBy(array('widgetInstance' => $config));
+            ->findOneBy(['widgetInstance' => $config]);
     }
 
     /**
@@ -145,7 +145,7 @@ class PathManager
      */
     public function getWidgetPaths(PathWidgetConfig $config = null, Workspace $workspace = null)
     {
-        $roots = array();
+        $roots = [];
         if (!empty($workspace)) {
             $root = $this->resourceManager->getWorkspaceRoot($workspace);
             $roots[] = $root->getPath();
@@ -157,12 +157,12 @@ class PathManager
         $entities = $this->om->getRepository('InnovaPathBundle:Path\Path')->findWidgetPaths($userRoles, $roots, $config);
 
         // Check edit and delete access for paths
-        $paths = array();
+        $paths = [];
         foreach ($entities as $entity) {
-            $paths[] = array(
+            $paths[] = [
                 'entity' => $entity,
                 'canEdit' => $this->isAllow('EDIT', $entity),
-            );
+            ];
         }
 
         return $paths;
@@ -183,7 +183,7 @@ class PathManager
             $user = $this->securityToken->getToken()->getUser();
         }
 
-        $results = array();
+        $results = [];
         if ($user instanceof UserInterface) {
             // We have a logged User => get its progression
             $results = $this->om->getRepository('InnovaPathBundle:UserProgression')->findByPathAndUser($path, $user);
@@ -275,10 +275,10 @@ class PathManager
 
     public function export(Workspace $workspace, array &$files, Path $path)
     {
-        $data = array();
+        $data = [];
 
         // Get path data
-        $pathData = array();
+        $pathData = [];
         $pathData['description'] = $path->getDescription();
         $pathData['breadcrumbs'] = $path->hasBreadcrumbs();
         $pathData['modified'] = $path->isModified();
@@ -298,9 +298,9 @@ class PathManager
         $data['path'] = $pathData;
 
         // Process Steps
-        $data['steps'] = array();
+        $data['steps'] = [];
         if ($path->isPublished()) {
-            $stepsData = array();
+            $stepsData = [];
             foreach ($path->getSteps() as $step) {
                 $stepsData[] = $this->stepManager->export($step);
             }
@@ -320,7 +320,7 @@ class PathManager
      *
      * @return Path
      */
-    public function import($structure, array $data, array $resourcesCreated = array())
+    public function import($structure, array $data, array $resourcesCreated = [])
     {
         // Create a new Path object which will be populated with exported data
         $path = new Path();
@@ -337,7 +337,7 @@ class PathManager
         // Create steps
         $stepData = $data['data']['steps'];
         if (!empty($stepData)) {
-            $createdSteps = array();
+            $createdSteps = [];
             foreach ($stepData as $step) {
                 $createdSteps = $this->stepManager->import($path, $step, $resourcesCreated, $createdSteps);
             }
@@ -347,5 +347,74 @@ class PathManager
         $path->setStructure($structure);
 
         return $path;
+    }
+
+    /**
+     * Get list of users who have called for unlock.
+     *
+     * @param Path $path
+     *
+     * @return mixed
+     */
+    public function getPathLockedProgression(Path $path)
+    {
+        $results = $this->om->getRepository('InnovaPathBundle:UserProgression')
+            ->findByPathAndLockedStep($path);
+
+        return $results;
+    }
+
+    /**
+     * Get all Paths of the Platform.
+     *
+     * @param bool $toPublish If false, returns all paths, if true returns only paths which need publishing
+     */
+    public function getPlatformPaths($toPublish = false)
+    {
+        return $this->om->getRepository('InnovaPathBundle:Path\Path')->findPlatformPaths($toPublish);
+    }
+
+    /**
+     * Get all Paths of a Workspace.
+     *
+     * @param \Claroline\CoreBundle\Entity\Workspace\Workspace $workspace
+     * @param bool                                             $toPublish If false, returns all paths, if true returns only paths which need publishing
+     */
+    public function getWorkspacePaths(Workspace $workspace, $toPublish = false)
+    {
+        return $this->om->getRepository('InnovaPathBundle:Path\Path')->findWorkspacePaths($workspace, $toPublish);
+    }
+
+    /**
+     * Find accessible Paths.
+     *
+     * @param \Claroline\CoreBundle\Entity\Workspace\Workspace $workspace
+     *
+     * @return array
+     */
+    public function findAccessibleByUser(Workspace $workspace = null)
+    {
+        $roots = [];
+        if (!empty($workspace)) {
+            $root = $this->resourceManager->getWorkspaceRoot($workspace);
+            $roots[] = $root->getPath();
+        }
+
+        $token = $this->securityToken->getToken();
+        $userRoles = $this->utils->getRoles($token);
+
+        $entities = $this->om->getRepository('InnovaPathBundle:Path\Path')->findAccessibleByUser($roots, $userRoles);
+
+        // Check edit and delete access for paths
+        $paths = [];
+        foreach ($entities as $entity) {
+            $paths[] = [
+                'entity' => $entity,
+                'canEdit' => $this->isAllow('EDIT', $entity),
+                'canDelete' => $this->isAllow('DELETE', $entity),
+            ];
+        }
+
+        return $paths;
     }
 }

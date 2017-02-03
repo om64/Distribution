@@ -2,9 +2,10 @@
 
 namespace Claroline\CoreBubdle\Tests\API\User;
 
+use Claroline\CoreBundle\Entity\Facet\FieldFacet;
 use Claroline\CoreBundle\Entity\User;
-use Claroline\CoreBundle\Library\Testing\TransactionalTestCase;
 use Claroline\CoreBundle\Library\Testing\Persister;
+use Claroline\CoreBundle\Library\Testing\TransactionalTestCase;
 
 /**
  * Specific tests for organizations
@@ -39,18 +40,23 @@ class ProfileControllerTest extends TransactionalTestCase
          * panelA is editable
          * panelB is read only
          * panelC is hidden
+         * panelD is self editable
          * => only 2 panels should be there
          */
 
-         $this->assertEquals(2, count($data[0]['panels']));
+        $this->assertEquals(3, count($data[0]['panels']));
 
         //fieldA is editable
-         $this->assertEquals('fieldA', $data[0]['panels'][0]['fields'][0]['name']);
+        $this->assertEquals('fieldA', $data[0]['panels'][0]['fields'][0]['name']);
         $this->assertEquals(true, $data[0]['panels'][0]['fields'][0]['is_editable']);
 
         //fieldB is readonly
-         $this->assertEquals('fieldB', $data[0]['panels'][1]['fields'][0]['name']);
+        $this->assertEquals('fieldB', $data[0]['panels'][1]['fields'][0]['name']);
         $this->assertEquals(false, $data[0]['panels'][1]['fields'][0]['is_editable']);
+
+        //fieldC is editable
+        $this->assertEquals('fieldD', $data[0]['panels'][3]['fields'][0]['name']);
+        $this->assertEquals(true, $data[0]['panels'][3]['fields'][0]['is_editable']);
     }
 
     public function testGetProfileLinksAction()
@@ -69,24 +75,24 @@ class ProfileControllerTest extends TransactionalTestCase
         $user = $this->persister->user('user');
         $this->login($user);
 
-        $values = array(
-            array(
+        $values = [
+            [
                 'id' => $fields[0]->getId(),
                 'user_field_value' => 'value',
-            ),
-        );
+            ],
+        ];
 
         $data['fields'] = $values;
 
         $this->client->request('PUT', "/api/profile/{$user->getId()}/fields", $data);
         $this->assertEquals(200, $this->client->getResponse()->getStatusCode());
 
-        $values = array(
-            array(
+        $values = [
+            [
                 'id' => $fields[1]->getId(),
                 'user_field_value' => 'value',
-            ),
-        );
+            ],
+        ];
 
         $data['fields'] = $values;
 
@@ -97,21 +103,23 @@ class ProfileControllerTest extends TransactionalTestCase
     private function createFields()
     {
         $facetA = $this->persister->facet('facetA', true, true);
-        $facetB = $this->persister->facet('facetB', true, true);
         $panelA = $this->persister->panelFacet($facetA, 'panelA', false);
         $panelB = $this->persister->panelFacet($facetA, 'panelB', false);
         $panelC = $this->persister->panelFacet($facetA, 'panelC', false);
-        $fieldA = $this->persister->fieldFacet($panelA, 'fieldA', 'text');
-        $fieldB = $this->persister->fieldFacet($panelB, 'fieldB', 'text');
-        $fieldC = $this->persister->fieldFacet($panelC, 'fieldC', 'text');
+        $panelD = $this->persister->panelFacet($facetA, 'panelD', false, true);
+        $fieldA = $this->persister->fieldFacet($panelA, 'fieldA', FieldFacet::STRING_TYPE);
+        $fieldB = $this->persister->fieldFacet($panelB, 'fieldB', FieldFacet::STRING_TYPE);
+        $fieldC = $this->persister->fieldFacet($panelC, 'fieldC', FieldFacet::STRING_TYPE);
+        $this->persister->fieldFacet($panelD, 'fieldD', FieldFacet::STRING_TYPE);
 
         $container = $this->client->getContainer();
         $role = $this->persister->role('ROLE_USER');
-        $container->get('claroline.manager.facet_manager')->setFacetRoles($facetA, array($role));
+        $container->get('claroline.manager.facet_manager')->setFacetRoles($facetA, [$role]);
         $container->get('claroline.manager.facet_manager')->setPanelFacetRole($panelA, $role, true, true);
         $container->get('claroline.manager.facet_manager')->setPanelFacetRole($panelB, $role, true, false);
         $container->get('claroline.manager.facet_manager')->setPanelFacetRole($panelC, $role, false, false);
+        $container->get('claroline.manager.facet_manager')->setPanelFacetRole($panelD, $role, true, false);
 
-        return array($fieldA, $fieldB, $fieldC);
+        return [$fieldA, $fieldB, $fieldC];
     }
 }

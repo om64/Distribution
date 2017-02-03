@@ -12,10 +12,10 @@
 namespace Claroline\CoreBundle\Entity\Facet;
 
 use Doctrine\Common\Collections\ArrayCollection;
-use Symfony\Component\Validator\Constraints as Assert;
 use Doctrine\ORM\Mapping as ORM;
-use JMS\Serializer\Annotation\Groups;
 use JMS\Serializer\Annotation\Accessor;
+use JMS\Serializer\Annotation\Groups;
+use Symfony\Component\Validator\Constraints as Assert;
 
 /**
  * @ORM\Entity(repositoryClass="Claroline\CoreBundle\Repository\FieldFacetRepository")
@@ -30,6 +30,18 @@ class FieldFacet
     const SELECT_TYPE = 5;
     const CHECKBOXES_TYPE = 6;
     const COUNTRY_TYPE = 7;
+    const EMAIL_TYPE = 8;
+
+    private static $types = [
+        self::STRING_TYPE,
+        self::FLOAT_TYPE,
+        self::DATE_TYPE,
+        self::RADIO_TYPE,
+        self::SELECT_TYPE,
+        self::CHECKBOXES_TYPE,
+        self::COUNTRY_TYPE,
+        self::EMAIL_TYPE,
+    ];
 
     /**
      * @ORM\Id
@@ -88,6 +100,7 @@ class FieldFacet
      *     mappedBy="fieldFacet"
      * )
      * @Groups({"api_facet_admin", "api_profile"})
+     * @ORM\OrderBy({"position" = "ASC"})
      */
     protected $fieldFacetChoices;
 
@@ -102,6 +115,12 @@ class FieldFacet
      * @Accessor(getter="isEditable")
      */
     protected $isEditable;
+
+    /**
+     * @ORM\Column(type="boolean")
+     * @Groups({"api_profile", "api_facet_admin"})
+     */
+    protected $isRequired = false;
 
     public function __construct()
     {
@@ -143,6 +162,12 @@ class FieldFacet
 
     public function setType($type)
     {
+        if (!in_array($type, static::$types)) {
+            throw new \InvalidArgumentException(
+                'Type must be a FieldFacet class constant'
+            );
+        }
+
         $this->type = $type;
     }
 
@@ -186,6 +211,7 @@ class FieldFacet
             case self::SELECT_TYPE: return 'select';
             case self::CHECKBOXES_TYPE: return 'checkbox';
             case self::COUNTRY_TYPE: return 'country';
+            case self::EMAIL_TYPE: return 'email';
             default: return 'error';
         }
     }
@@ -200,6 +226,7 @@ class FieldFacet
             case self::SELECT_TYPE: return 'select';
             case self::CHECKBOXES_TYPE: return 'checkbox';
             case self::COUNTRY_TYPE: return 'country';
+            case self::EMAIL_TYPE: return 'email';
             default: return 'error';
         }
     }
@@ -239,6 +266,16 @@ class FieldFacet
     public function isEditable()
     {
         return $this->isEditable;
+    }
+
+    public function isRequired()
+    {
+        return $this->isRequired;
+    }
+
+    public function setIsRequired($isRequired)
+    {
+        $this->isRequired = $isRequired;
     }
 
     public function getPrettyName()

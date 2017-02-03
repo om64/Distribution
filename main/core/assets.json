@@ -6,7 +6,11 @@
       "private-profile": "profile/module",
       "organization-management": "organization/module",
       "plugin-management": "plugins/module",
-      "portal": "portal/module"
+      "portal": "portal/module",
+      "tinymce": "tinymce/tinymce",
+      "desktop-home": "desktopHome/desktopHome",
+      "admin-home-tabs-config": "adminHomeTabsConfig/adminHomeTabsConfig",
+      "workspace-home": "workspace/tools/home/workspaceHome"
     }
   }
 }

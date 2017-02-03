@@ -11,23 +11,23 @@
 
 namespace Claroline\CoreBundle\Entity;
 
-use Serializable;
-use Symfony\Component\Security\Core\User\AdvancedUserInterface;
-use Symfony\Component\Security\Core\User\UserInterface;
-use Symfony\Component\Security\Core\User\EquatableInterface;
-use Symfony\Component\Validator\Constraints as Assert;
-use Symfony\Bridge\Doctrine\Validator\Constraints as DoctrineAssert;
-use Doctrine\ORM\Mapping as ORM;
-use Doctrine\Common\Collections\ArrayCollection;
-use Claroline\CoreBundle\Entity\Organization\Organization;
-use Claroline\CoreBundle\Entity\Model\WorkspaceModel;
-use Claroline\CoreBundle\Validator\Constraints as ClaroAssert;
-use Gedmo\Mapping\Annotation as Gedmo;
-use Symfony\Component\HttpFoundation\File\UploadedFile;
-use Symfony\Component\Validator\ExecutionContextInterface;
 use Claroline\CoreBundle\Entity\Facet\FieldFacetValue;
+use Claroline\CoreBundle\Entity\Model\WorkspaceModel;
+use Claroline\CoreBundle\Entity\Organization\Organization;
+use Claroline\CoreBundle\Validator\Constraints as ClaroAssert;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\ORM\Mapping as ORM;
+use Gedmo\Mapping\Annotation as Gedmo;
 use JMS\Serializer\Annotation\Groups;
 use JMS\Serializer\Annotation\SerializedName;
+use Serializable;
+use Symfony\Bridge\Doctrine\Validator\Constraints as DoctrineAssert;
+use Symfony\Component\HttpFoundation\File\UploadedFile;
+use Symfony\Component\Security\Core\User\AdvancedUserInterface;
+use Symfony\Component\Security\Core\User\EquatableInterface;
+use Symfony\Component\Security\Core\User\UserInterface;
+use Symfony\Component\Validator\Constraints as Assert;
+use Symfony\Component\Validator\ExecutionContextInterface;
 
 /**
  * @ORM\Table(name="claro_user")
@@ -45,7 +45,7 @@ class User extends AbstractRoleSubject implements Serializable, AdvancedUserInte
      * @ORM\Id
      * @ORM\Column(type="integer")
      * @ORM\GeneratedValue(strategy="AUTO")
-     * @Groups({"api_user", "api_organization_tree", "api_organization_list", "api_message"})
+     * @Groups({"api_user", "api_organization_tree", "api_organization_list", "api_message", "api_user_min"})
      */
     protected $id;
 
@@ -54,7 +54,7 @@ class User extends AbstractRoleSubject implements Serializable, AdvancedUserInte
      *
      * @ORM\Column(name="first_name", length=50)
      * @Assert\NotBlank()
-     * @Groups({"api_user", "api_message"})
+     * @Groups({"api_user", "api_message", "api_user_min"})
      * @SerializedName("firstName")
      */
     protected $firstName;
@@ -64,7 +64,7 @@ class User extends AbstractRoleSubject implements Serializable, AdvancedUserInte
      *
      * @ORM\Column(name="last_name", length=50)
      * @Assert\NotBlank()
-     * @Groups({"api_user","api_message"})
+     * @Groups({"api_user","api_message", "api_user_min"})
      * @SerializedName("lastName")
      */
     protected $lastName;
@@ -76,7 +76,7 @@ class User extends AbstractRoleSubject implements Serializable, AdvancedUserInte
      * @Assert\NotBlank()
      * @Assert\Length(min="3")
      * @ClaroAssert\Username()
-     * @Groups({"api_user", "api_organization_tree", "api_organization_list"})
+     * @Groups({"api_user", "api_organization_tree", "api_organization_list", "api_user_min"})
      * @SerializedName("username")
      */
     protected $username;
@@ -92,7 +92,7 @@ class User extends AbstractRoleSubject implements Serializable, AdvancedUserInte
      * @var string
      *
      * @ORM\Column(nullable=true)
-     * @Groups({"api_user"})
+     * @Groups({"api_user", "api_user_min"})
      * @SerializedName("locale")
      */
     protected $locale;
@@ -116,7 +116,7 @@ class User extends AbstractRoleSubject implements Serializable, AdvancedUserInte
      * @var string
      *
      * @ORM\Column(nullable=true)
-     * @Groups({"api_user"})
+     * @Groups({"api_user", "api_user_min"})
      * @SerializedName("phone")
      */
     protected $phone;
@@ -127,14 +127,14 @@ class User extends AbstractRoleSubject implements Serializable, AdvancedUserInte
      * @ORM\Column(unique=true)
      * @Assert\NotBlank()
      * @Assert\Email(checkMX = false)
-     * @Groups({"api_user"})
+     * @Groups({"api_user", "api_user_min"})
      * @SerializedName("mail")
      */
     protected $mail;
 
     /**
      * @ORM\Column()
-     * @Groups({"api_user"})
+     * @Groups({"api_user", "api_user_min"})
      * @SerializedName("guid")
      */
     protected $guid;
@@ -143,7 +143,7 @@ class User extends AbstractRoleSubject implements Serializable, AdvancedUserInte
      * @var string
      *
      * @ORM\Column(name="administrative_code", nullable=true)
-     * @Groups({"api_user"})
+     * @Groups({"api_user", "api_user_min"})
      * @SerializedName("administrativeCode")
      */
     protected $administrativeCode;
@@ -167,7 +167,7 @@ class User extends AbstractRoleSubject implements Serializable, AdvancedUserInte
      *     targetEntity="Claroline\CoreBundle\Entity\Role",
      *     inversedBy="users",
      *     fetch="EXTRA_LAZY",
-     *     cascade={"merge"}
+     *     cascade={"merge", "refresh"}
      * )
      * @Groups({"api_user"})
      * @ORM\JoinTable(name="claro_user_role")
@@ -235,7 +235,7 @@ class User extends AbstractRoleSubject implements Serializable, AdvancedUserInte
 
     /**
      * @ORM\Column(nullable=true)
-     * @Groups({"api_user"})
+     * @Groups({"api_user", "api_user_min"})
      * @SerializedName("picture")
      */
     protected $picture;
@@ -247,7 +247,7 @@ class User extends AbstractRoleSubject implements Serializable, AdvancedUserInte
 
     /**
      * @ORM\Column(type="text", nullable=true)
-     * @Groups({"api_user"})
+     * @Groups({"api_user", "api_user_min"})
      * @SerializedName("description")
      */
     protected $description;
@@ -262,13 +262,20 @@ class User extends AbstractRoleSubject implements Serializable, AdvancedUserInte
     protected $hasAcceptedTerms;
 
     /**
+     *  This should be renamed because this field really means "is not deleted".
+     *
      * @var bool
      *
      * @ORM\Column(name="is_enabled", type="boolean")
-     * @Groups({"api_user"})
-     * @SerializedName("isEnabled")
+     * @Groups({"api_user", "api_user_min"})
      */
     protected $isEnabled = true;
+
+    /**
+     * @ORM\Column(name="is_removed", type="boolean")
+     * @Groups({"api_user", "api_user_min"})
+     */
+    protected $isRemoved = false;
 
     /**
      * @var bool
@@ -611,7 +618,7 @@ class User extends AbstractRoleSubject implements Serializable, AdvancedUserInte
      */
     public function getEntityRoles($areGroupsIncluded = true)
     {
-        $roles = array();
+        $roles = [];
         if ($this->roles) {
             $roles = $this->roles->toArray();
         }
@@ -724,11 +731,11 @@ class User extends AbstractRoleSubject implements Serializable, AdvancedUserInte
     public function serialize()
     {
         return serialize(
-            array(
+            [
                 'id' => $this->id,
                 'username' => $this->username,
                 'roles' => $this->getRoles(),
-            )
+            ]
         );
     }
 
@@ -801,7 +808,7 @@ class User extends AbstractRoleSubject implements Serializable, AdvancedUserInte
         $roles = $this->getEntityRoles();
 
         foreach ($roles as $role) {
-            if ($role->getType() != Role::WS_ROLE) {
+            if ($role->getType() !== Role::WS_ROLE) {
                 return $role;
             }
         }
@@ -820,7 +827,7 @@ class User extends AbstractRoleSubject implements Serializable, AdvancedUserInte
         $roles = $this->getEntityRoles();
 
         foreach ($roles as $role) {
-            if ($role->getType() != Role::WS_ROLE) {
+            if ($role->getType() !== Role::WS_ROLE) {
                 $removedRole = $role;
             }
         }
@@ -840,10 +847,10 @@ class User extends AbstractRoleSubject implements Serializable, AdvancedUserInte
     public function setPlatformRoles($platformRoles)
     {
         $roles = $this->getEntityRoles();
-        $removedRoles = array();
+        $removedRoles = [];
 
         foreach ($roles as $role) {
-            if ($role->getType() != Role::WS_ROLE) {
+            if ($role->getType() !== Role::WS_ROLE) {
                 $removedRoles[] = $role;
             }
         }
@@ -924,7 +931,7 @@ class User extends AbstractRoleSubject implements Serializable, AdvancedUserInte
 
     public function getOrderableFields()
     {
-        return array('id', 'username', 'lastName', 'firstName', 'mail');
+        return ['id', 'username', 'lastName', 'firstName', 'mail'];
     }
 
     public function isAccountNonExpired()
@@ -934,9 +941,6 @@ class User extends AbstractRoleSubject implements Serializable, AdvancedUserInte
                 return true;
             }
         }
-
-        /* @var \DateTime */
-        $expDate = $this->getExpirationDate();
 
         return ($this->getExpirationDate() >= new \DateTime()) ? true : false;
     }
@@ -1025,7 +1029,7 @@ class User extends AbstractRoleSubject implements Serializable, AdvancedUserInte
     {
         // Search for whitespaces
         if (preg_match("/\s/", $this->getPublicUrl())) {
-            $context->addViolationAt('publicUrl', 'public_profile_url_not_valid', array(), null);
+            $context->addViolationAt('publicUrl', 'public_profile_url_not_valid', [], null);
         }
     }
 
@@ -1083,7 +1087,7 @@ class User extends AbstractRoleSubject implements Serializable, AdvancedUserInte
 
     public static function getEditableProperties()
     {
-        return array(
+        return [
             'username' => false,
             'firstName' => false,
             'lastName' => false,
@@ -1092,7 +1096,7 @@ class User extends AbstractRoleSubject implements Serializable, AdvancedUserInte
             'phone' => true,
             'picture' => true,
             'description' => true,
-        );
+        ];
     }
 
     public function getOptions()
@@ -1178,13 +1182,13 @@ class User extends AbstractRoleSubject implements Serializable, AdvancedUserInte
 
     public static function getUserSearchableFields()
     {
-        return array(
+        return [
             'firstName',
             'lastName',
             'mail',
             'administrativeCode',
             'username',
-        );
+        ];
     }
 
     public static function getSearchableFields()
@@ -1210,5 +1214,30 @@ class User extends AbstractRoleSubject implements Serializable, AdvancedUserInte
     public function setAdministratedOrganizations($organizations)
     {
         $this->administratedOrganizations = $organizations;
+    }
+
+    public function setIsRemoved($isRemoved)
+    {
+        $this->isRemoved = $isRemoved;
+    }
+
+    public function getIsRemoved()
+    {
+        return $this->isRemoved;
+    }
+
+    public function isRemoved()
+    {
+        return $this->isRemoved;
+    }
+
+    public function enable()
+    {
+        $this->isEnabled = true;
+    }
+
+    public function disable()
+    {
+        $this->isEnabled = false;
     }
 }

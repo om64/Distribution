@@ -3,15 +3,14 @@
 /**
  * To import a question in QTI.
  */
-
 namespace UJM\ExoBundle\Services\classes\QTI;
 
 use Claroline\CoreBundle\Entity\Resource\Directory;
 use Claroline\CoreBundle\Entity\Resource\File;
+use Claroline\CoreBundle\Persistence\ObjectManager;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
 use UJM\ExoBundle\Entity\Category;
 use UJM\ExoBundle\Entity\Question;
-use Claroline\CoreBundle\Persistence\ObjectManager;
 
 abstract class QtiImport
 {
@@ -24,6 +23,7 @@ abstract class QtiImport
     protected $question;
     protected $assessmentItem;
     protected $dirQTI;
+    protected $path;
 
     /**
      * Constructor.
@@ -52,7 +52,6 @@ abstract class QtiImport
         $this->question->setDateCreate(new \Datetime());
         $this->question->setUser($this->user);
         $this->question->setCategory($this->qtiCat);
-     //   $this->question->setDescription($this->getPrompt());
         $this->getDescription();
         $this->question->setInvite($this->getPrompt());
         $this->question->setType($type);
@@ -84,9 +83,9 @@ abstract class QtiImport
     {
         $this->qtiCat = $this->om
                              ->getRepository('UJMExoBundle:Category')
-                             ->findOneBy(array('value' => 'QTI',
-                                               'user' => $this->user->getId(), ));
-        if ($this->qtiCat == null) {
+                             ->findOneBy(['value' => 'QTI',
+                                               'user' => $this->user->getId(), ]);
+        if ($this->qtiCat === null) {
             $this->createQTICategory();
         }
     }
@@ -140,7 +139,7 @@ abstract class QtiImport
         foreach ($ib->childNodes as $child) {
             if ($child->nodeType === XML_CDATA_SECTION_NODE || $child->nodeType === XML_TEXT_NODE) {
                 $desc .= $child->textContent;
-            } elseif ($child->nodeName == 'a' || $child->nodeName == 'img') {
+            } elseif ($child->nodeName === 'a' || $child->nodeName === 'img') {
                 $desc .= $this->domElementToString($child);
                 $ib->removeChild($child);
             }
@@ -148,14 +147,14 @@ abstract class QtiImport
         foreach ($ib->getElementsByTagName('img') as $img) {
             $node = $img->parentNode;
             $i = 0;
-            while ($i == 0) {
-                if (($node->nodeName == 'itemBody') || ($node->nodeName == 'prompt') || ($node->nodeName == 'simpleChoice') || ($node->nodeName == 'simpleAssociableChoice')) {
+            while ($i === 0) {
+                if (($node->nodeName === 'itemBody') || ($node->nodeName === 'prompt') || ($node->nodeName === 'simpleChoice') || ($node->nodeName === 'simpleAssociableChoice')) {
                     ++$i;
                 } else {
                     $node = $node->parentNode;
                 }
             }
-            if ($node->nodeName == 'itemBody') {
+            if ($node->nodeName === 'itemBody') {
                 $desc .= $this->domElementToString($img);
             }
         }
@@ -168,7 +167,7 @@ abstract class QtiImport
      */
     private function objectToResource()
     {
-        $elements = array();
+        $elements = [];
         $objects = $this->assessmentItem->getElementsByTagName('object');
         $ws = $this->user->getPersonalWorkspace();
         $manager = $this->container->get('claroline.manager.resource_manager');
@@ -176,7 +175,7 @@ abstract class QtiImport
         $this->getDirQTIImport($ws);
         foreach ($objects as $ob) {
             $fileName = $this->getFileName($ob);
-            $tmpFile = $this->qtiRepos->getUserDir().'/'.$fileName;
+            $tmpFile = $this->path.'/'.$fileName;
             $extension = pathinfo($fileName, PATHINFO_EXTENSION);
             $hashName = $this->container->get('claroline.utilities.misc')->generateGuid().'.'.$extension;
             $mimeType = $ob->getAttribute('type');
@@ -195,9 +194,9 @@ abstract class QtiImport
                                     $ws,
                                     $this->dirQTI
                                 );
-            if ($ob->parentNode->nodeName != 'selectPointInteraction' &&
-                    $ob->parentNode->nodeName != 'hotspotInteraction') {
-                $elements[] = array($ob, $abstractResource->getResourceNode());
+            if ($ob->parentNode->nodeName !== 'selectPointInteraction' &&
+                    $ob->parentNode->nodeName !== 'hotspotInteraction') {
+                $elements[] = [$ob, $abstractResource->getResourceNode()];
             }
         }
         $this->callReplaceNode($elements);
@@ -217,7 +216,7 @@ abstract class QtiImport
             $fileURLExplode = explode('/', $fileURL);
             $fileName = $fileURLExplode[count($fileURLExplode) - 1];
             $ob->setAttribute('data', $fileName);
-            copy($fileURL, $this->qtiRepos->getUserDir().'/'.$fileName);
+            copy($fileURL, $this->path.'/'.$fileName);
         }
 
         return $fileName;
@@ -246,7 +245,7 @@ abstract class QtiImport
         if (strpos($mimeType, 'image/') !== false) {
             $url = $this->container->get('router')
                         ->generate('claro_file_get_media',
-                                array('node' => $resourceNode->getId())
+                                ['node' => $resourceNode->getGuid()]
                           );
             $imgTag = $this->assessmentItem->ownerDocument->createElement('img');
 
@@ -266,9 +265,9 @@ abstract class QtiImport
         } else {
             $url = $this->container->get('router')
                                    ->generate('claro_resource_open',
-                                           array('resourceType' => $resourceNode->getResourceType()->getName(),
+                                           ['resourceType' => $resourceNode->getResourceType()->getName(),
                                                  'node' => $resourceNode->getId(),
-                                     ));
+                                     ]);
             $aTag = $this->assessmentItem->ownerDocument->createElement('a', $resourceNode->getName());
             $hrefAttr = $this->assessmentItem->ownerDocument->createAttribute('href');
             $hrefAttr->value = $url;
@@ -311,7 +310,7 @@ abstract class QtiImport
     {
         $this->dirQTI = $this->om
                              ->getRepository('ClarolineCoreBundle:Resource\ResourceNode')
-                             ->findOneBy(array('workspace' => $ws, 'name' => 'QTI_SYS'));
+                             ->findOneBy(['workspace' => $ws, 'name' => 'QTI_SYS']);
 
         if (!is_object($this->dirQTI)) {
             $this->createDirQTIImport($ws);
@@ -331,8 +330,8 @@ abstract class QtiImport
         $text = $this->assessmentItem->ownerDocument->saveXML($domEl);
         $text = trim($text);
         //delete the line break in $text
-        $text = str_replace(CHR(10), '', $text);
-        $text = str_replace(CHR(13), '', $text);
+        $text = str_replace(chr(10), '', $text);
+        $text = str_replace(chr(13), '', $text);
         //delete CDATA
         $text = str_replace('<![CDATA[', '', $text);
         $text = str_replace(']]>', '', $text);
@@ -345,13 +344,19 @@ abstract class QtiImport
      *
      * @param qtiRepository $qtiRepos
      * @param DOMElement    $assessmentItem assessmentItem of the question to imported
+     * @param string        $path           parent directory of the files
      *
      * @return UJM\ExoBundle\Entity\InteractionQCM or InteractionGraphic or ....
      */
-    abstract public function import(qtiRepository $qtiRepos, $assessmentItem);
+    abstract public function import(qtiRepository $qtiRepos, $assessmentItem, $path);
 
     /**
      * abstract method to get the prompt.
      */
     abstract protected function getPrompt();
+
+    /**
+     * abstract method to validate the qti.
+     */
+    abstract protected function qtiValidate();
 }

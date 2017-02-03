@@ -2,16 +2,16 @@
 
 namespace Innova\PathBundle\Manager;
 
+use Claroline\CoreBundle\Entity\Activity\ActivityParameters;
+use Claroline\CoreBundle\Entity\Resource\Activity;
+use Claroline\CoreBundle\Manager\ResourceManager;
 use Doctrine\Common\Persistence\ObjectManager;
+use Innova\PathBundle\Entity\InheritedResource;
+use Innova\PathBundle\Entity\Path\Path;
+use Innova\PathBundle\Entity\Step;
+use Innova\PathBundle\Manager\Condition\StepConditionManager;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
 use Symfony\Component\Translation\TranslatorInterface;
-use Claroline\CoreBundle\Manager\ResourceManager;
-use Claroline\CoreBundle\Entity\Resource\Activity;
-use Claroline\CoreBundle\Entity\Activity\ActivityParameters;
-use Innova\PathBundle\Entity\InheritedResource;
-use Innova\PathBundle\Entity\Step;
-use Innova\PathBundle\Entity\Path\Path;
-use Innova\PathBundle\Manager\Condition\StepConditionManager;
 
 class StepManager
 {
@@ -87,7 +87,7 @@ class StepManager
      *
      * @return \Innova\PathBundle\Entity\Step Edited step
      */
-    public function create(Path $path, $level = 0, Step $parent = null, $order = 0, \stdClass $stepStructure)
+    public function create(Path $path, $level, Step $parent = null, $order, \stdClass $stepStructure)
     {
         $step = new Step();
 
@@ -106,7 +106,7 @@ class StepManager
      *
      * @return \Innova\PathBundle\Entity\Step Edited step
      */
-    public function edit(Path $path, $level = 0, Step $parent = null, $order = 0, \stdClass $stepStructure, Step $step)
+    public function edit(Path $path, $level, Step $parent = null, $order, \stdClass $stepStructure, Step $step)
     {
         // Update step properties
         $step->setPath($path);
@@ -207,9 +207,9 @@ class StepManager
             if (!empty($resource)) {
                 $activity->setPrimaryResource($resource);
             } else {
-                $warning = $this->translator->trans('warning_primary_resource_deleted', array('resourceId' => $stepStructure->primaryResource[0]->resourceId, 'resourceName' => $stepStructure->primaryResource[0]->name), 'innova_tools');
+                $warning = $this->translator->trans('warning_primary_resource_deleted', ['resourceId' => $stepStructure->primaryResource[0]->resourceId, 'resourceName' => $stepStructure->primaryResource[0]->name], 'innova_tools');
                 $this->session->getFlashBag()->add('warning', $warning);
-                $stepStructure->primaryResource = array();
+                $stepStructure->primaryResource = [];
             }
         } elseif ($activity->getPrimaryResource()) {
             // Step had a resource which has been deleted
@@ -301,17 +301,20 @@ class StepManager
         $existingResources = $existingResources->toArray();
 
         // Publish new resources
-        $publishedResources = array();
+        $publishedResources = [];
         if (!empty($stepStructure->resources)) {
             $i = 0;
-            foreach ($stepStructure->resources as $resource) {
+            foreach ($stepStructure->resources as $index => $resource) {
                 $resourceNode = $this->om->getRepository('ClarolineCoreBundle:Resource\ResourceNode')->findOneById($resource->resourceId);
                 if (!empty($resourceNode)) {
                     $parameters->addSecondaryResource($resourceNode);
                     $publishedResources[] = $resourceNode;
                 } else {
-                    $warning = $this->translator->trans('warning_compl_resource_deleted', array('resourceId' => $resource->resourceId, 'resourceName' => $resource->name), 'innova_tools');
+                    // Resource has been deleted => remove the reference in path
+                    $warning = $this->translator->trans('warning_compl_resource_deleted', ['resourceId' => $resource->resourceId, 'resourceName' => $resource->name], 'innova_tools');
                     $this->session->getFlashBag()->add('warning', $warning);
+
+                    unset($stepStructure->resources[$index]);
                 }
 
                 ++$i;
@@ -338,7 +341,7 @@ class StepManager
      *
      * @return array
      */
-    public function import(Path $path, array $data, array $createdResources = array(), array $createdSteps = array())
+    public function import(Path $path, array $data, array $createdResources = [], array $createdSteps = [])
     {
         $step = new Step();
 
@@ -390,22 +393,22 @@ class StepManager
         $parent = $step->getParent();
         $activity = $step->getActivity();
 
-        $data = array(
+        $data = [
             'uid' => $step->getId(),
-            'parent' => !empty($parent)   ? $parent->getId()                      : null,
-            'activityId' => !empty($activity) ? $activity->getId()                    : null,
+            'parent' => !empty($parent) ? $parent->getId() : null,
+            'activityId' => !empty($activity) ? $activity->getId() : null,
             'activityNodeId' => !empty($activity) ? $activity->getResourceNode()->getId() : null,
             'order' => $step->getOrder(),
             'lvl' => $step->getLvl(),
-            'inheritedResources' => array(),
-        );
+            'inheritedResources' => [],
+        ];
 
         $inheritedResources = $step->getInheritedResources();
         foreach ($inheritedResources as $inherited) {
-            $data['inheritedResources'][] = array(
+            $data['inheritedResources'][] = [
                 'resource' => $inherited->getResource()->getId(),
                 'lvl' => $inherited->getLvl(),
-            );
+            ];
         }
 
         return $data;
