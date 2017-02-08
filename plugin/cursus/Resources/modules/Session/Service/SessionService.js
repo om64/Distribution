@@ -16,6 +16,7 @@ import learnersGroupsRegistrationTemplate from '../Partial/learners_groups_regis
 import tutorsRegistrationTemplate from '../Partial/tutors_registration_modal.html'
 import sessionFormTemplate from '../Partial/session_form_modal.html'
 import sessionMessageTemplate from '../Partial/session_message_modal.html'
+import sessionUsersExportTemplate from '../Partial/session_users_export_modal.html'
 
 export default class SessionService {
   constructor ($http, $uibModal, ClarolineAPIService, CourseService) {
@@ -375,9 +376,6 @@ export default class SessionService {
     const startDate = new Date(start)
     const endDate = new Date(end)
     const currentDate = (now === null) ? new Date() : now
-    //startDate.setHours(0, 0, 0, 0, 0)
-    //endDate.setHours(0, 0, 0, 0, 0)
-    //currentDate.setHours(0, 0, 0, 0, 0)
 
     if (startDate.getTime() > currentDate.getTime()) {
       status = 'not_started'
@@ -711,5 +709,21 @@ export default class SessionService {
         session: () => { return session }
       }
     })
+  }
+
+  exportUsersForm (sessionId) {
+    this.$uibModal.open({
+      template: sessionUsersExportTemplate,
+      controller: 'SessionUsersExportModalCtrl',
+      controllerAs: 'cmc',
+      resolve: {
+        sessionId: () => { return sessionId }
+      }
+    })
+  }
+
+  exportUsers (sessionId, type) {
+    const url = Routing.generate('api_get_session_users_csv_export', {session: sessionId, type: type})
+    window.location.href = url
   }
 }

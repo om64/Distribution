@@ -12,26 +12,25 @@ function StepShowCtrl(UserPaperService, FeedbackService, QuestionService, StepSe
   this.QuestionService = QuestionService
   this.StepService = StepService
 
-  // Get the order of items from the Paper of the User (in case they are shuffled)
-  this.items = this.UserPaperService.orderStepQuestions(this.step)
-
   // Get feedback info
   this.feedback = this.FeedbackService.get()
 
   this.FeedbackService
-          .on('show', this.onFeedbackShow.bind(this))
+            .on('show', this.onFeedbackShow.bind(this))
 
-  if (this.getQuestionPaper(this.items[0]).nbTries && this.getQuestionPaper(this.items[0]).nbTries >= this.step.meta.maxAttempts && this.feedback.enabled) {
-    this.solutionShown = true
-  }
-  if (this.feedback.enabled && this.getQuestionPaper(this.items[0]).nbTries) {
-    this.onFeedbackShow()
+  if (!this.solutionShown && this.feedback.enabled && this.items[0]) {
+    const questionPaper = this.getQuestionPaper(this.items[0])
+    if (questionPaper.nbTries) {
+      this.FeedbackService.show()
 
-    if (this.allAnswersFound === 0) {
-      this.feedback.visible = true
-      this.solutionShown = true
+      if (questionPaper.nbTries >= this.step.meta.maxAttempts || this.FeedbackService.SOLUTION_FOUND === this.allAnswersFound) {
+        // Show correction if the User has done all is attempts or if his answer is correct
+        this.solutionShown = true
+      }
     }
   }
+
+  this.showScore = this.UserPaperService.isScoreAvailable(this.UserPaperService.getPaper())
 }
 
 /**
@@ -56,7 +55,7 @@ StepShowCtrl.prototype.items = []
  * Current step number
  * @type {Object}
  */
-StepShowCtrl.prototype.stepIndex = 0
+StepShowCtrl.prototype.position = 0
 
 /**
  *
@@ -71,6 +70,18 @@ StepShowCtrl.prototype.solutionShown = false
 StepShowCtrl.prototype.allAnswersFound = -1
 
 /**
+ *
+ * @type {boolean}
+ */
+StepShowCtrl.prototype.showScore = true
+
+/**
+ *
+ * @type {boolean}
+ */
+StepShowCtrl.prototype.stepNeedsManualCorrection = false
+
+/**
  * Get the Paper related to the Question
  * @param   {Object} question
  * @returns {Object}
@@ -80,16 +91,58 @@ StepShowCtrl.prototype.getQuestionPaper = function getQuestionPaper(question) {
 }
 
 /**
+ * Get step total available score and step current score
+ */
+StepShowCtrl.prototype.getStepAvailablePoints = function getStepAvailablePoints() {
+  if (this.items) {
+    for (const question of this.items) {
+      this.stepAvailablePoints += this.QuestionService.getTypeService(question.type).getTotalScore(question)
+    }
+  }
+}
+
+/**
+ * Get step total available score and step current score
+ */
+StepShowCtrl.prototype.getStepScores = function getStepScores() {
+  let availablePoints = 0
+  let stepScore = 0
+  let nbWithoutScore = 0
+  if(this.items){
+    for (const question of this.items) {
+      availablePoints += this.QuestionService.getTypeService(question.type).getTotalScore(question)
+      const questionPaper = this.getQuestionPaper(question)
+      let score = this.QuestionService.calculateScore(question, questionPaper)
+      // if question of type open long with no score
+      if(score !== -1){
+        stepScore += score
+      } else {
+        this.stepNeedsManualCorrection = true
+        ++nbWithoutScore
+      }
+    }
+    stepScore = nbWithoutScore === this.items.length ? '?' : stepScore
+  }
+
+  return stepScore + '/' + availablePoints
+}
+
+/**
  * On Feedback Show
  */
 StepShowCtrl.prototype.onFeedbackShow = function onFeedbackShow() {
+
   this.allAnswersFound = this.FeedbackService.SOLUTION_FOUND
-  for (var i = 0; i < this.items.length; i++) {
-    var question = this.items[i]
-    var answer = this.getQuestionPaper(question).answer
-    this.feedback.state[question.id] = this.QuestionService.getTypeService(question.type).answersAllFound(question, answer)
-    if (this.feedback.state[question.id] !== 0) {
-      this.allAnswersFound = this.FeedbackService.MULTIPLE_ANSWERS_MISSING
+
+  if(this.items){
+    for (const question of this.items) {
+      const userPaper = this.getQuestionPaper(question)
+      const answer = userPaper.answer
+
+      this.feedback.state[question.id] = this.QuestionService.getTypeService(question.type).answersAllFound(question, answer)
+      if (this.feedback.state[question.id] !== 0) {
+        this.allAnswersFound = this.FeedbackService.MULTIPLE_ANSWERS_MISSING
+      }
     }
   }
 }
@@ -128,7 +181,13 @@ StepShowCtrl.prototype.getSuiteFeedback = function getSuiteFeedback() {
     if (this.currentTry < this.step.meta.maxAttempts) {
       sentence = 'some_answers_miss_try_again'
     } else {
-      sentence = 'max_attempts_reached_see_solution'
+      if (this.step.maxAttempts !== 0) {
+        if (this.StepService.getExerciseMeta().minimalCorrection === false) {
+          sentence = 'max_attempts_reached_see_solution'
+        } else {
+          sentence = 'max_attempts_reached_continue'
+        }
+      }
     }
   }
 

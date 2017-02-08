@@ -525,7 +525,7 @@ ul.desktop-parameters-menu
     }
     > .nav.nav-pills{
         > li > a {
-            background-color: @component-active-bg;
+            background-color: @navbar-inverse-bg;
             color: #fff;
             &:hover {
                  background-color: darken(@body-bg, 30%);
@@ -752,10 +752,6 @@ ul.desktop-parameters-menu
     .node-zoom-rules(150, 18px, 20px);
     .node-zoom-rules(200, 20px, 28px);
 
-    .resource-li {
-        height: 50px;
-    }
-
     .node-thumbnail {
 
         &.ui-state-default {
@@ -771,18 +767,12 @@ ul.desktop-parameters-menu
             background-position: center center;
             background-size: auto 100% ;
             background-repeat: no-repeat;
-
             padding: 0px;
             margin: 5px 0 5px 15%;
             cursor: pointer;
             &.unpublished {
-                -webkit-filter: grayscale(100%);
-                -moz-filter: grayscale(100%);
-                -ms-filter: grayscale(100%);
-                -o-filter: grayscale(100%);
+                opacity: 0.5;
                 filter: grayscale(100%);
-                filter: url(grayscale.svg); /* Firefox 4+ */
-                filter: gray; /* IE 6-9 */
             }
         }
 
@@ -1148,24 +1138,7 @@ form .global-error {
 }
 
 .general_parameters_form {
-    .portfolio_url_row {
-        .portfolio_url {
-            .portfolio_url_field {
-                margin-left: 20px;
-            }
-            input[type=radio] {
-                margin-top: 10px;
-                margin-left: 0px;
-            }
-            .portfolio_url_field {
-                padding-left: 0;
-            }
-            .portfolio_url_help {
-                margin-top: 5px;
-            }
-        }
-    }
-    .redirect-after-login {
+    .redirect-after-login, .portfolio-url {
         .radio-with-input{
             line-height: 34px;
             min-height: 40px;
@@ -1834,4 +1807,16 @@ body.mce-fullscreen .modal.fullscreen {
 .unclickable {
     pointer-events: none;
     cursor: default;
+}
+
+/*************/
+/* MODERNIZR */
+/*************/
+
+.outdated-browser-warning {
+  display: none;
+}
+
+.no-mutationobserver .outdated-browser-warning {
+  display: block;
 }

@@ -8,7 +8,6 @@ use JMS\DiExtraBundle\Annotation as DI;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\Translation\TranslatorInterface;
 use UJM\ExoBundle\Entity\Exercise;
-use UJM\ExoBundle\Entity\Hint;
 use UJM\ExoBundle\Entity\Paper;
 use UJM\ExoBundle\Entity\Question;
 use UJM\ExoBundle\Entity\Response;
@@ -103,7 +102,7 @@ class PaperManager
      * @param Exercise $exercise
      * @param User     $user
      *
-     * @return array
+     * @return Paper
      */
     public function openPaper(Exercise $exercise, User $user = null)
     {
@@ -127,7 +126,7 @@ class PaperManager
             }
         }
 
-        return $this->exportPaper($paper);
+        return $paper;
     }
 
     /**
@@ -340,7 +339,7 @@ class PaperManager
 
             $paperQuestions = new \stdClass();
             $paperQuestions->paperId = $paper->getId();
-            $paperQuestions->questions = $this->exportPaperQuestions($paper, $isAdmin);
+            $paperQuestions->questions = $this->exportPaperQuestions($paper, $isAdmin, true);
 
             $exportQuestions[] = $paperQuestions;
         }
@@ -370,7 +369,7 @@ class PaperManager
             'start' => $paper->getStart()->format('Y-m-d\TH:i:s'),
             'end' => $paper->getEnd() ? $paper->getEnd()->format('Y-m-d\TH:i:s') : null,
             'interrupted' => $paper->getInterupt(),
-            'scoreTotal' => $scoreAvailable ? $paper->getScore() : null,
+            'score' => $scoreAvailable ? $paper->getScore() : null,
             'order' => $this->getStepsQuestions($paper),
             'questions' => $this->exportPaperAnswers($paper, $scoreAvailable),
         ];
@@ -438,17 +437,18 @@ class PaperManager
      *
      * @param Paper $paper
      * @param bool  $withSolution
+     * @param bool  $forPaperList
      *
      * @return array
      */
-    public function exportPaperQuestions(Paper $paper, $withSolution = false)
+    public function exportPaperQuestions(Paper $paper, $withSolution = false, $forPaperList = false)
     {
         $solutionAvailable = $withSolution || $this->isSolutionAvailable($paper->getExercise(), $paper);
 
         $export = [];
         $questions = $this->getPaperQuestions($paper);
         foreach ($questions as $question) {
-            $exportedQuestion = $this->questionManager->exportQuestion($question, $solutionAvailable, true);
+            $exportedQuestion = $this->questionManager->exportQuestion($question, $solutionAvailable, $forPaperList);
 
             $exportedQuestion->stats = null;
             if ($paper->getExercise()->hasStatistics()) {
@@ -515,9 +515,9 @@ class PaperManager
         $nbTries = $response ? $response->getNbTries() : 0;
 
         $paperQuestion = null;
-        if ($answer || count($hints) > 0) {
+        if ($response || count($hints) > 0) {
             $paperQuestion = [
-                'id' => (string) $question->getId(),
+                'id' => $question->getId(),
                 'answer' => $answer,
                 'hints' => $hints,
                 'nbTries' => $nbTries,
@@ -649,7 +649,9 @@ class PaperManager
             case MarkMode::AFTER_END:
                 $available = !empty($paper->getEnd());
                 break;
-
+            case MarkMode::NEVER:
+                $available = false;
+                break;
             case MarkMode::WITH_CORRECTION:
             default:
                 $available = $this->isSolutionAvailable($exercise, $paper);
@@ -675,6 +677,7 @@ class PaperManager
         $finalQuestions = [];
 
         foreach ($steps as $step) {
+            // TODO : do not load the Questions from DB they already are in `$step->getStepQuestions()`
             $questions = $questionRepo->findByStep($step);
             $finalQuestions = array_merge($finalQuestions, $questions);
         }

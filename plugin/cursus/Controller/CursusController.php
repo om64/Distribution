@@ -23,6 +23,7 @@ use Claroline\CursusBundle\Entity\Cursus;
 use Claroline\CursusBundle\Entity\CursusDisplayedWord;
 use Claroline\CursusBundle\Entity\SessionEvent;
 use Claroline\CursusBundle\Entity\SessionEventComment;
+use Claroline\CursusBundle\Entity\SessionEventUser;
 use Claroline\CursusBundle\Form\CoursesWidgetConfigurationType;
 use Claroline\CursusBundle\Form\CourseType;
 use Claroline\CursusBundle\Form\CursusType;
@@ -42,6 +43,7 @@ use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 use Symfony\Component\Routing\RouterInterface;
+use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
 use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
 use Symfony\Component\Security\Core\Exception\AccessDeniedException;
 use Symfony\Component\Translation\TranslatorInterface;
@@ -55,6 +57,7 @@ class CursusController extends Controller
     private $request;
     private $router;
     private $serializer;
+    private $tokenStorage;
     private $toolManager;
     private $translator;
 
@@ -67,6 +70,7 @@ class CursusController extends Controller
      *     "requestStack"          = @DI\Inject("request_stack"),
      *     "router"                = @DI\Inject("router"),
      *     "serializer"            = @DI\Inject("jms_serializer"),
+     *     "tokenStorage"          = @DI\Inject("security.token_storage"),
      *     "toolManager"           = @DI\Inject("claroline.manager.tool_manager"),
      *     "translator"            = @DI\Inject("translator")
      * })
@@ -79,6 +83,7 @@ class CursusController extends Controller
         Serializer $serializer,
         RequestStack $requestStack,
         RouterInterface $router,
+        TokenStorageInterface $tokenStorage,
         ToolManager $toolManager,
         TranslatorInterface $translator
     ) {
@@ -89,6 +94,7 @@ class CursusController extends Controller
         $this->request = $requestStack->getCurrentRequest();
         $this->router = $router;
         $this->serializer = $serializer;
+        $this->tokenStorage = $tokenStorage;
         $this->toolManager = $toolManager;
         $this->translator = $translator;
     }
@@ -909,15 +915,21 @@ class CursusController extends Controller
      *     name="claro_cursus_courses_registration_widget",
      *     options={"expose"=true}
      * )
-     * @EXT\ParamConverter("authenticatedUser", options={"authenticatedUser" = true})
      * @EXT\Template("ClarolineCursusBundle:Widget:coursesRegistrationWidget.html.twig")
      */
     public function coursesRegistrationWidgetAction(WidgetInstance $widgetInstance)
     {
         $config = $this->cursusManager->getCoursesWidgetConfiguration($widgetInstance);
         $defaultMode = $config->getDefaultMode();
+        $disableSessionEventRegistration = $this->platformConfigHandler->hasParameter('cursus_disable_session_event_registration') ?
+            $this->platformConfigHandler->getParameter('cursus_disable_session_event_registration') :
+            true;
 
-        return ['widgetInstance' => $widgetInstance, 'mode' => $defaultMode];
+        return [
+            'widgetInstance' => $widgetInstance,
+            'mode' => $defaultMode,
+            'disableSessionEventRegistration' => $disableSessionEventRegistration,
+        ];
     }
 
     /**
@@ -927,11 +939,9 @@ class CursusController extends Controller
      *     defaults={"page"=1, "search"="", "max"=20, "orderedBy"="title","order"="ASC"},
      *     options={"expose"=true}
      * )
-     * @EXT\ParamConverter("authenticatedUser", options={"authenticatedUser" = true})
      * @EXT\Template("ClarolineCursusBundle:Widget:coursesListForRegistrationWidget.html.twig")
      */
     public function coursesListForRegistrationWidgetAction(
-        User $authenticatedUser,
         WidgetInstance $widgetInstance,
         $search = '',
         $page = 1,
@@ -939,6 +949,8 @@ class CursusController extends Controller
         $orderedBy = 'title',
         $order = 'ASC'
     ) {
+        $authenticatedUser = $this->tokenStorage->getToken()->getUser();
+        $isAnon = $authenticatedUser === 'anon.';
         $config = $this->cursusManager->getCoursesWidgetConfiguration($widgetInstance);
         $configCursus = $config->getCursus();
         $extra = $config->getExtra();
@@ -986,8 +998,9 @@ class CursusController extends Controller
         }
         $registeredSessions = [];
         $pendingSessions = [];
-        $userSessions = $this->cursusManager->getSessionUsersBySessionsAndUsers($courseSessions, [$authenticatedUser], 0);
-        $pendingRegistrations = $this->cursusManager->getSessionQueuesByUser($authenticatedUser);
+        $sessionEventUsersStatus = [];
+        $userSessions = $isAnon ? [] : $this->cursusManager->getSessionUsersBySessionsAndUsers($courseSessions, [$authenticatedUser], 0);
+        $pendingRegistrations = $isAnon ? [] : $this->cursusManager->getSessionQueuesByUser($authenticatedUser);
 
         foreach ($userSessions as $userSession) {
             $registeredSessions[$userSession->getSession()->getId()] = true;
@@ -997,10 +1010,21 @@ class CursusController extends Controller
             $pendingSessions[$pendingRegistration->getSession()->getId()] = $pendingRegistration;
         }
         $courseQueues = [];
-        $courseQueueRequests = $this->cursusManager->getCourseQueuesByUser($authenticatedUser);
+        $courseQueueRequests = $isAnon ? [] : $this->cursusManager->getCourseQueuesByUser($authenticatedUser);
 
         foreach ($courseQueueRequests as $courseQueueRequest) {
             $courseQueues[$courseQueueRequest->getCourse()->getId()] = true;
+        }
+        $disableSessionEventRegistration = $this->platformConfigHandler->hasParameter('cursus_disable_session_event_registration') ?
+            $this->platformConfigHandler->getParameter('cursus_disable_session_event_registration') :
+            true;
+        $sessionEventUsers = $isAnon ? [] : $this->cursusManager->getSessionEventUsersByUser($authenticatedUser);
+
+        foreach ($sessionEventUsers as $seu) {
+            $sessionEvent = $seu->getSessionEvent();
+            $seId = $sessionEvent->getId();
+            $status = $seu->getRegistrationStatus();
+            $sessionEventUsersStatus[$seId] = $status;
         }
 
         return [
@@ -1017,6 +1041,8 @@ class CursusController extends Controller
             'courseQueues' => $courseQueues,
             'collapseCourses' => $collapseCourses,
             'collapseSessions' => $collapseSessions,
+            'disableSessionEventRegistration' => $disableSessionEventRegistration,
+            'sessionEventUsersStatus' => $sessionEventUsersStatus,
         ];
     }
 
@@ -1027,11 +1053,12 @@ class CursusController extends Controller
      *     defaults={"search"=""},
      *     options={"expose"=true}
      * )
-     * @EXT\ParamConverter("authenticatedUser", options={"authenticatedUser" = true})
      * @EXT\Template("ClarolineCursusBundle:Widget:coursesListForRegistrationWidgetCalendar.html.twig")
      */
-    public function coursesListForRegistrationWidgetCalendarAction(User $authenticatedUser, WidgetInstance $widgetInstance, $search = '')
+    public function coursesListForRegistrationWidgetCalendarAction(WidgetInstance $widgetInstance, $search = '')
     {
+        $authenticatedUser = $this->tokenStorage->getToken()->getUser();
+        $isAnon = $authenticatedUser === 'anon.';
         $config = $this->cursusManager->getCoursesWidgetConfiguration($widgetInstance);
         $configCursus = $config->getCursus();
         $configPublicSessions = $config->isPublicSessionsOnly();
@@ -1061,8 +1088,9 @@ class CursusController extends Controller
         );
         $registeredSessions = [];
         $pendingSessions = [];
-        $userSessions = $this->cursusManager->getSessionUsersBySessionsAndUsers($courseSessions, [$authenticatedUser], 0);
-        $pendingRegistrations = $this->cursusManager->getSessionQueuesByUser($authenticatedUser);
+        $sessionEventUsersStatus = [];
+        $userSessions = $isAnon ? [] : $this->cursusManager->getSessionUsersBySessionsAndUsers($courseSessions, [$authenticatedUser], 0);
+        $pendingRegistrations = $isAnon ? [] : $this->cursusManager->getSessionQueuesByUser($authenticatedUser);
 
         foreach ($userSessions as $userSession) {
             $registeredSessions[$userSession->getSession()->getId()] = true;
@@ -1072,6 +1100,17 @@ class CursusController extends Controller
             $sessionId = $pendingRegistration->getSession()->getId();
             $pendingSessions[$sessionId] = $sessionId;
         }
+        $disableSessionEventRegistration = $this->platformConfigHandler->hasParameter('cursus_disable_session_event_registration') ?
+            $this->platformConfigHandler->getParameter('cursus_disable_session_event_registration') :
+            true;
+        $sessionEventUsers = $isAnon ? [] : $this->cursusManager->getSessionEventUsersByUser($authenticatedUser);
+
+        foreach ($sessionEventUsers as $seu) {
+            $sessionEvent = $seu->getSessionEvent();
+            $seId = $sessionEvent->getId();
+            $status = $seu->getRegistrationStatus();
+            $sessionEventUsersStatus[$seId] = $status;
+        }
 
         return [
             'widgetInstance' => $widgetInstance,
@@ -1079,6 +1118,8 @@ class CursusController extends Controller
             'registeredSessions' => $registeredSessions,
             'pendingSessions' => $pendingSessions,
             'courseSessions' => $serializedCourseSessions,
+            'disableSessionEventRegistration' => $disableSessionEventRegistration,
+            'sessionEventUsersStatus' => $sessionEventUsersStatus,
         ];
     }
 
@@ -1089,7 +1130,6 @@ class CursusController extends Controller
      *     options={"expose"=true}
      * )
      * @EXT\ParamConverter("authenticatedUser", options={"authenticatedUser" = true})
-     * @EXT\Template("ClarolineCursusBundle:Widget:coursesListForRegistrationWidget.html.twig")
      */
     public function courseSessionSelfRegisterAction(CourseSession $session, User $authenticatedUser)
     {
@@ -1101,6 +1141,28 @@ class CursusController extends Controller
             } else {
                 $results = $this->cursusManager->registerUsersToSession($session, [$authenticatedUser], 0);
             }
+        }
+
+        return new JsonResponse($results, 200);
+    }
+
+    /**
+     * @EXT\Route(
+     *     "/session/event/{sessionEvent}/self/register",
+     *     name="claro_cursus_session_event_self_register",
+     *     options={"expose"=true}
+     * )
+     * @EXT\ParamConverter("user", options={"authenticatedUser" = true})
+     */
+    public function sessionEventSelfRegisterAction(User $user, SessionEvent $sessionEvent)
+    {
+        $results = null;
+        $disableRegistration = $this->platformConfigHandler->hasParameter('cursus_disable_session_event_registration') ?
+            $this->platformConfigHandler->getParameter('cursus_disable_session_event_registration') :
+            true;
+
+        if (!$disableRegistration && ($sessionEvent->getRegistrationType() === CourseSession::REGISTRATION_PUBLIC)) {
+            $results = $this->cursusManager->selfRegisterUserToSessionEvent($sessionEvent, $user);
         }
 
         return new JsonResponse($results, 200);
@@ -1253,11 +1315,11 @@ class CursusController extends Controller
      *     name="claro_cursus_my_courses_widget",
      *     options={"expose"=true}
      * )
-     * @EXT\ParamConverter("user", options={"authenticatedUser" = true})
      * @EXT\Template("ClarolineCursusBundle:Widget:myCoursesWidget.html.twig")
      */
-    public function myCoursesWidgetAction(User $user, WidgetInstance $widgetInstance)
+    public function myCoursesWidgetAction(WidgetInstance $widgetInstance)
     {
+        $user = $this->tokenStorage->getToken()->getUser();
         $config = $this->cursusManager->getCoursesWidgetConfiguration($widgetInstance);
         $defaultMode = $config->getDefaultMode();
 
@@ -1372,6 +1434,7 @@ class CursusController extends Controller
         $workspacesList = [];
         $sessions = [];
         $editableSessions = [];
+        $sessionEventUsersStatus = [];
 
         foreach ($sessionUsers as $sessionUser) {
             $session = $sessionUser->getSession();
@@ -1395,6 +1458,14 @@ class CursusController extends Controller
             'json',
             SerializationContext::create()->setGroups(['api_user_min'])
         );
+        $sessionEventUsers = $this->cursusManager->getSessionEventUsersByUser($authenticatedUser);
+
+        foreach ($sessionEventUsers as $seu) {
+            $sessionEvent = $seu->getSessionEvent();
+            $seId = $sessionEvent->getId();
+            $status = $seu->getRegistrationStatus();
+            $sessionEventUsersStatus[$seId] = $status;
+        }
 
         return [
             'widgetInstance' => $widgetInstance,
@@ -1402,6 +1473,7 @@ class CursusController extends Controller
             'search' => $search,
             'workspacesList' => $workspacesList,
             'editableSessions' => $editableSessions,
+            'sessionEventUsersStatus' => $sessionEventUsersStatus,
         ];
     }
 
@@ -1420,6 +1492,7 @@ class CursusController extends Controller
         $openSessions = [];
         $closedSessions = [];
         $unstartedSessions = [];
+        $sessionEventUsersStatus = [];
         $config = $this->cursusManager->getCoursesWidgetConfiguration($widgetInstance);
         $configCursus = $config->getCursus();
         $extra = $config->getExtra();
@@ -1459,6 +1532,14 @@ class CursusController extends Controller
         foreach ($unstartedSessionUsers as $sessionUser) {
             $unstartedSessions[] = $sessionUser->getSession();
         }
+        $sessionEventUsers = $this->cursusManager->getSessionEventUsersByUser($user);
+
+        foreach ($sessionEventUsers as $seu) {
+            $sessionEvent = $seu->getSessionEvent();
+            $seId = $sessionEvent->getId();
+            $status = $seu->getRegistrationStatus();
+            $sessionEventUsersStatus[$seId] = $status;
+        }
 
         return [
             'widgetInstance' => $widgetInstance,
@@ -1473,24 +1554,32 @@ class CursusController extends Controller
             'displayUnstartedSessions' => $displayUnstartedSessions,
             'disableClosedSessionsWs' => $disableClosedSessionsWs,
             'disableUnstartedSessionsWs' => $disableUnstartedSessionsWs,
+            'sessionEventUsersStatus' => $sessionEventUsersStatus,
         ];
     }
 
     /**
      * @EXT\Route(
-     *     "/courses/widget/{widgetInstance}/session/{session}/informations/workspace/{withWorkspace}/mail/{withMail}",
+     *     "/courses/widget/{widgetInstance}/session/{session}/informations/workspace/{withWorkspace}/mail/{withMail}/type/{type}",
      *     name="claro_courses_widget_session_informations",
-     *     defaults={"withWorkspace"=1, "withMail"=1},
+     *     defaults={"withWorkspace"=1, "withMail"=1, "type"=0},
      *     options={"expose"=true}
      * )
-     * @EXT\ParamConverter("user", options={"authenticatedUser" = true})
      * @EXT\Template("ClarolineCursusBundle:Cursus:sessionInformationsModal.html.twig")
      */
-    public function coursesWidgetSessionInformationsAction(WidgetInstance $widgetInstance, CourseSession $session, $withWorkspace = 1, $withMail = 1)
-    {
+    public function coursesWidgetSessionInformationsAction(
+        WidgetInstance $widgetInstance,
+        CourseSession $session,
+        $withWorkspace = 1,
+        $withMail = 1,
+        $type = 0
+    ) {
+        $user = $this->tokenStorage->getToken()->getUser();
+        $isAnon = $user === 'anon.';
         $config = $this->cursusManager->getCoursesWidgetConfiguration($widgetInstance);
         $extra = $config->getExtra();
         $disableWs = intval($withWorkspace) === 0;
+        $allInfos = intval($type) === 0;
 
         if (intval($withWorkspace) === 1) {
             $disableClosedSessionsWs = isset($extra['disableClosedSessionsWs']) ? $extra['disableClosedSessionsWs'] : false;
@@ -1502,6 +1591,17 @@ class CursusController extends Controller
         }
         $sessionEvents = $this->cursusManager->getEventsBySession($session);
         $tutors = $this->cursusManager->getUsersBySessionAndType($session, CourseSessionUser::TEACHER);
+        $sessionEventUsersStatus = [];
+        $sessionEventUsers = $isAnon ?
+            [] :
+            $this->cursusManager->getSessionEventUsersByUserAndSessionAndStatus($user, $session, SessionEventUser::REGISTERED);
+
+        foreach ($sessionEventUsers as $seu) {
+            $sessionEvent = $seu->getSessionEvent();
+            $seId = $sessionEvent->getId();
+            $status = $seu->getRegistrationStatus();
+            $sessionEventUsersStatus[$seId] = $status;
+        }
 
         return [
             'session' => $session,
@@ -1511,6 +1611,8 @@ class CursusController extends Controller
             'workspace' => $session->getWorkspace(),
             'disableWs' => $disableWs,
             'withMail' => intval($withMail) === 1,
+            'sessionEventUsersStatus' => $sessionEventUsersStatus,
+            'allInfos' => $allInfos,
         ];
     }
 
@@ -1521,7 +1623,6 @@ class CursusController extends Controller
      *     defaults={"withMail"=1},
      *     options={"expose"=true}
      * )
-     * @EXT\ParamConverter("user", options={"authenticatedUser" = true})
      * @EXT\Template("ClarolineCursusBundle:Cursus:sessionEventInformationsModal.html.twig")
      */
     public function coursesWidgetSessionEventInformationsAction(SessionEvent $sessionEvent, $withMail = 1)
@@ -1674,17 +1775,16 @@ class CursusController extends Controller
 
         if (is_null($sessionTutor)) {
             $this->checkToolAccess();
-        } else {
-            $comment = $this->request->request->get('comment', false);
-            $sessionEventComment = $this->cursusManager->createSessionEventComment($user, $sessionEvent, $comment);
-            $serializedSessionEventComment = $this->serializer->serialize(
-                $sessionEventComment,
-                'json',
-                SerializationContext::create()->setGroups(['api_user_min'])
-            );
-
-            return new JsonResponse($serializedSessionEventComment, 200);
         }
+        $comment = $this->request->request->get('comment', false);
+        $sessionEventComment = $this->cursusManager->createSessionEventComment($user, $sessionEvent, $comment);
+        $serializedSessionEventComment = $this->serializer->serialize(
+            $sessionEventComment,
+            'json',
+            SerializationContext::create()->setGroups(['api_user_min'])
+        );
+
+        return new JsonResponse($serializedSessionEventComment, 200);
     }
 
     /**
